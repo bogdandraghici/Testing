@@ -27,12 +27,7 @@
   .controls{display:flex;flex-direction:column;gap:14px;margin-bottom:26px}
   .ctl-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
   .ctl-label{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-soft);font-weight:700;margin-right:2px}
-  .chip{background:none;border:1px solid var(--rule);border-radius:999px;padding:5px 13px;font:inherit;font-size:12.5px;cursor:pointer;color:var(--ink-soft);transition:all .12s}
-  .chip:hover{border-color:var(--ink);color:var(--ink)}
-  .chip[aria-pressed="true"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
   select.filter{font:inherit;font-size:13px;color:var(--ink);background:#fff;border:1px solid var(--rule);border-radius:8px;padding:6px 10px;cursor:pointer}
-  .sortbtn{background:none;border:1px solid var(--rule);border-radius:8px;padding:6px 12px;font:inherit;font-size:13px;cursor:pointer;color:var(--ink-soft)}
-  .sortbtn:hover{border-color:var(--ink);color:var(--ink)}
   .count{font-size:12px;color:var(--ink-soft);margin-left:auto}
 
   .grid{display:grid;gap:14px}
@@ -44,9 +39,6 @@
   .card .date{font-size:12px;color:var(--ink-soft);white-space:nowrap}
   .meta-line{font-size:12.5px;color:var(--ink-soft);margin:6px 0 0;display:flex;gap:14px;flex-wrap:wrap}
   .meta-line b{color:var(--ink);font-weight:600}
-  .topics{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px}
-  .topic{font-size:11px;color:var(--ink-soft);border:1px solid var(--rule);border-radius:999px;padding:2px 9px;line-height:1.6}
-  .topic.match{border-color:var(--green);color:var(--green);background:#EAF1EE}
   .empty{text-align:center;color:var(--ink-soft);padding:50px 0;font-size:14px}
   footer{margin-top:40px;border-top:1px solid var(--rule);padding-top:14px;font-size:11.5px;color:var(--ink-soft)}
   @media(max-width:560px){.card-top{flex-direction:column;gap:4px}.count{margin-left:0}}
@@ -62,13 +54,8 @@
 
   <div class="controls">
     <div class="ctl-row">
-      <span class="ctl-label">Topic</span>
-      <div id="topicChips" style="display:flex;gap:8px;flex-wrap:wrap"></div>
-    </div>
-    <div class="ctl-row">
       <span class="ctl-label">Feature</span>
       <select class="filter" id="featureFilter"><option value="">All features</option></select>
-      <button class="sortbtn" id="sortBtn" onclick="toggleSort()">↓ Newest first</button>
       <span class="count" id="count"></span>
     </div>
   </div>
@@ -126,15 +113,10 @@ const SESSIONS = [
 ];
 const GENERATED = "2026-06-26";
 
-let activeTopic = "", activeFeature = "", newestFirst = true;
+let activeFeature = "";
 
 const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 
-function allTopics(){
-  const s = new Set();
-  SESSIONS.forEach(x => (x.topics||[]).forEach(t => s.add(t)));
-  return [...s].sort((a,b)=>a.localeCompare(b));
-}
 function allFeatures(){
   const s = new Set();
   SESSIONS.forEach(x => x.feature && s.add(x.feature));
@@ -142,14 +124,6 @@ function allFeatures(){
 }
 
 function buildControls(){
-  const tc = document.getElementById('topicChips');
-  tc.innerHTML = '';
-  allTopics().forEach(t => {
-    const b = document.createElement('button');
-    b.className = 'chip'; b.textContent = t; b.setAttribute('aria-pressed','false');
-    b.onclick = () => { activeTopic = (activeTopic === t) ? "" : t; render(); };
-    tc.appendChild(b);
-  });
   const ff = document.getElementById('featureFilter');
   allFeatures().forEach(f => {
     const o = document.createElement('option'); o.value = f; o.textContent = f; ff.appendChild(o);
@@ -158,18 +132,12 @@ function buildControls(){
   document.getElementById('gen').textContent = GENERATED;
 }
 
-function toggleSort(){ newestFirst = !newestFirst; render(); }
-
 function render(){
-  // chip state
-  document.querySelectorAll('#topicChips .chip').forEach(c =>
-    c.setAttribute('aria-pressed', c.textContent === activeTopic ? 'true' : 'false'));
-  document.getElementById('sortBtn').textContent = newestFirst ? '↓ Newest first' : '↑ Oldest first';
-
-  let rows = SESSIONS.filter(x =>
-    (!activeTopic || (x.topics||[]).includes(activeTopic)) &&
-    (!activeFeature || x.feature === activeFeature));
-  rows.sort((a,b) => (a.date<b.date?-1:a.date>b.date?1:0) * (newestFirst?-1:1));
+  let rows = SESSIONS.filter(x => !activeFeature || x.feature === activeFeature);
+  // sort by feature (A→Z), newest date first within a feature
+  rows.sort((a,b) =>
+    (a.feature||'').localeCompare(b.feature||'') ||
+    (a.date<b.date?1:a.date>b.date?-1:0));
 
   const grid = document.getElementById('grid');
   grid.innerHTML = rows.map(x => `
@@ -183,8 +151,6 @@ function render(){
         ${x.feature ? `<span>Feature <b>${esc(x.feature)}</b></span>` : ''}
         ${x.insights != null ? `<span><b>${x.insights}</b> insights</span>` : ''}
       </div>
-      ${(x.topics&&x.topics.length) ? `<div class="topics">${x.topics.map(t =>
-        `<span class="topic${t===activeTopic?' match':''}">${esc(t)}</span>`).join('')}</div>` : ''}
     </a>`).join('');
 
   document.getElementById('empty').hidden = rows.length > 0;
