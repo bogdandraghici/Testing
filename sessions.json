@@ -1,22 +1,24 @@
 [
  {
   "id": "ml-doc-classification-2026-06-25",
-  "title": "ML Models — document classification training",
-  "feature": "ML Models — document classification training",
+  "title": "ML document classification — training & testing",
+  "feature": "ML document classification — model training & testing",
   "date": "2026-06-25",
-  "participant": "Andrei",
+  "participant": "George",
   "file": "sessions/ml-doc-classification-2026-06-25.html",
   "topics": [
-   "AI assistance",
-   "Auto-label & manual review",
-   "Candidate vs promote",
-   "Classifier setup & copy",
-   "Confusion matrix & comparison",
-   "Data lifecycle & re-labeling",
-   "Navigation & discoverability",
-   "Train / test split"
+   "Class definition",
+   "Guidance & transparency",
+   "Held-out pool & 80/20",
+   "Mental models & expectations",
+   "Navigation & IA",
+   "Promote & versioning",
+   "Review workflow",
+   "Testing & metrics",
+   "Training & upload",
+   "Workflow integration"
   ],
-  "insights": 20,
+  "insights": 32,
   "published": "2026-06-26"
  }
 ]

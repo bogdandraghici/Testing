@@ -6,7 +6,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,400;0,600;0,700;1,400;1,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<title>Session Review — ML Models doc classification</title>
+<title>Session Review — KB Export/Import (full)</title>
 <style>
   :root{
     --paper:#FBF8F1; --paper-2:#F3EEE2; --ink:#211F1B; --ink-soft:#5A554C;
@@ -240,13 +240,13 @@
 <body>
 <div class="wrap">
   <header class="mast">
-    <div class="eyebrow">User testing · 2026-06-25 · full recording · transcript repaired</div>
-    <h1>ML Models — document classification training</h1>
-    <div class="sub">41 min · 3 speakers (diarized) · RO-primary with EN terms</div>
+    <div class="eyebrow">User testing · 2026-06-25 · 2 recordings (call + continuation) · transcripts repaired</div>
+    <h1>ML document classification — training &amp; testing</h1>
+    <div class="sub">49 min + 26 min (②) · 3 speakers (diarized, reconciled) · RO-primary with EN terms</div>
     <div class="legend">
-      <i><span class="sw" style="background:var(--blue)"></span>Andrei — participant</i>
-      <i><span class="sw" style="background:var(--ink-soft)"></span>Ana — facilitator</i>
-      <i><span class="sw" style="background:var(--plum)"></span>Bogdan — facilitator</i>
+      <i><span class="sw" style="background:var(--blue)"></span>George — participant</i>
+      <i><span class="sw" style="background:var(--ink-soft)"></span>Bogdan — interviewer</i>
+      <i><span class="sw" style="background:var(--plum)"></span>Ana — product / facilitator</i>
     </div>
     <div class="mast-cmt">
       <button class="mast-note-btn" data-act="report-note" onclick="toggleReportNote(this)">💬 Comment on the whole report</button>
@@ -322,11 +322,15 @@
   </section>
 
   <section id="view-rep" class="hidden">
-    <div class="note"><b>Diarization reconciled.</b> The recording came back in 3 chunks and the ASR
-      <b>swapped its speaker numbers</b> at the ~20-min boundary (Speaker&nbsp;1&nbsp;↔&nbsp;Speaker&nbsp;2 between chunk&nbsp;1 and
-      chunks&nbsp;2–3). Collapsed to <b>3 real voices</b>: <b>Andrei</b> (participant), <b>Ana</b> (interviewer) and
-      <b>Bogdan</b> (technical facilitator / prototype owner) — re-attributed by content throughout. One unknown is
-      still open: <b>“Theta 1.9”</b>, the menu/version Andrei compared ML Models' placement to.</div>
+    <div class="note"><b>Two recordings, diarization reconciled.</b> This report merges the original
+      call (49 min) with its continuation (the <b>Sync · 16:00</b> recording, 26 min — turns marked
+      <b>②·</b>). In call 1 the transcriber reset its labels at every ~20-min boundary, so the same three
+      voices were relabeled each chunk (e.g. “Speaker 2” is <b>George</b> in minutes 20–40 but a
+      facilitator before and after); every turn was re-attributed. Call 2’s labels were stable, but its
+      first ~19 min were waiting-room dead air (dropped) and the opening recap was mis-timed (re-aligned).
+      Speakers throughout: <b>George</b> (participant), <b>Bogdan</b> (interviewer), <b>Ana</b>
+      (product/facilitator). Romanian was clean; a few English terms were restored (e.g. <b>OCR-izare</b>,
+      <b>groundedness</b>) and George’s on-screen modal readings remain flagged where the ASR garbled them.</div>
     <p class="hint">Phase-1 repairs. <span style="color:var(--green)">Green</span> = applied ·
       <span style="color:var(--amber)">amber</span> = confirm · <span style="color:var(--mark)">red</span> = needs you.</p>
     <div id="repairs"></div>
@@ -414,433 +418,637 @@
 
 <script>
 // [speaker, timestamp, text]
-const TURNS = [["F", "00:00", "Ok, <span class='unsure' title='ASR: „am donat astăzi” — probabil „am dat record/start astăzi”'>am dat record astăzi</span>. Și povestim despre un feature care se leagă cu unul dintre use case-urile la care ai lucrat, și anume <span class='unsure' title='ASR: „plăcerea de la Price Horizon”'>partea</span> de la Price Horizon."], ["F", "00:14", "Și acolo, dacă îmi aduc aminte bine, aveați un model de ML care clasifica paginile din documente, așa-i? Suntem în același scenariu, doar că… stai, te rog. Am să te rog să intri, dacă ai tu ceva; dacă nu, am să-ți dau eu."], ["P", "00:54", "Nu."], ["F", "00:55", "Nu, nu contează. Bun. Scenariul în care suntem e că vrei să îți creezi un model de ML ca să clasifici documente, similar cu ce se întâmpla în Price Horizon. Și vrei să-l antrenezi până ajungi la un rezultat cu care ești happy să-l folosești într-un workflow. Acum, dacă poți să ne spui un pic cum te-ai aștepta să funcționeze procesul de antrenare, sau dacă ai avut vreo tangență cu zona asta când a fost proiectul."], ["P", "01:41", "Da, deci noi înainte aveam nodul ăla de OCR; aveam un nod în care făceam un call pe Integration Designer, prin API, către Doc Parser, care avea modelul care făcea clasificarea. Și aveam acolo o configurare de JSON în care îi dădeam toți classifier-ii într-un obiect. Aveam într-o cheie numele classifier-ului, iar în interiorul cheii aveam o listă de string-uri care reprezentau termeni pe care să-i caute în textul extras de OCR din documentul respectiv."], ["P", "02:18", "Acum am primit de la Laura o librărie prin care pot să-mi setez niște reguli și, pentru termenii respectivi, să-mi pun niște weight-uri, ori pozitive, ori negative; și în funcție de acel rule set, el să-mi calculeze pe classifier-ul respectiv un scor. Și dacă am scorul peste un anume threshold, pe care tot eu pot să-l setez, îmi clasifică acel document ca classifier-ul respectiv. Adică, dacă am un document și am în setul meu de reguli pentru clasificatorul de contract de credit că, dacă îmi conține textul „contract de credit”, atunci să îi pună un scor destul de mare — să zicem 200 — și să mi-l clasifice ca și contract de credit. Iar threshold-ul pe care îl setez eu ca să decid că documentul e contract de credit să fie 100, de exemplu. Pot, de exemplu, să-i dau și cu minus: dacă am „poliță de asigurare” scris în titlu, pot să scad foarte mult scorul, că probabil nu ăla e documentul."], ["P", "03:36", "Deci cam așa o să-l folosim acuma."], ["F", "03:44", "Ok."], ["P", "03:45", "Și regulile alea pot fi de tipul: să includă niște termeni, să excludă niște termeni, sau să conțină un anumit număr din acei termeni în document. Adică, dacă văd că îmi apare deja de 10 ori „contract de credit”, cel mai probabil e un contract de credit."], ["F", "04:04", "Ok. Să zicem că vrei să faci asta — un model de ML care să-ți clasifice…"], ["P", "04:14", "M-aș duce aici la ML Models."], ["F", "04:16", "Cum ți se pare poziționarea lui acolo? Ți se pare că are sens să fie sub Reusable Resources, sau l-ai vedea în altă parte?"], ["P", "04:25", "Nu, în meniul ăsta mi se pare că stă bine. Mai sunt meniurile alea de pe <span class='unsure' title='ASR „Theta 1.9” — neclar; posibil o versiune/release FlowX sau o secțiune de meniu'>Theta 1.9</span> — adică dacă era în partea aia de Agent AI, acolo l-aș fi pus; dar din moment ce nu-l avem aici, mi se pare foarte ok."], ["B", "04:40", "Dar cred că-l pui la Integrations cu un server."], ["P", "04:42", "Mi se părea că ar trebui să știu eu că există feature-ul ăsta. Așa, știu că modelul ăsta de ML, pe care pot să-l configurez cel mai probabil prin labeling, e mai ok să-l văd aici. Adică știu că pot să ajung mai repede la el."], ["P", "05:01", "Îmi creez un model nou?"], ["B", "05:03", "Da."], ["P", "05:21", "Și aici nu știu ce ar trebui să trag. Probabil există un mod de a importa genul ăsta de clasificatori după un format .ml, sau? N-am mai folosit până acuma."], ["F", "05:34", "Putem să…"], ["B", "05:36", "Da, momentan nu ai; și fiind de la zero, putem să-l lăsăm gol."], ["P", "05:44", "Ok. Și aici… ok, am numărul de pagini, last test accuracy, training, testing. Și aici, dacă vreau de exemplu…"], ["B", "05:59", "O să fie mock data, deci o să fie la unele niște exemple. Ăsta ar trebui să fie absolut gol, dar o să mai apară mock data."], ["B", "06:06", "Ce sunt clasele?"], ["P", "06:10", "Clasele le văd ca și clasificatoare — niște clase de documente, ca niște label-uri pe care le setez eu. Și după, știu că pentru label-ul ăla, în funcție de rezultatul returnat, pot să-i zic dacă a fost corect sau n-a fost corect."], ["B", "06:30", "Ok, hai să facem."], ["P", "06:33", "Nu știu… credit contract. This is the LLM judge classifier."], ["P", "07:02", "Aici mi-e puțin neclar descrierea asta. Îmi zice că trebuie să fie mandatory, dar e luată în calcul și în spate, sau doar e pentru management purposes — adică să știu eu despre ce e vorba aici?"], ["F", "07:18", "Ai schimba ce pui în funcție de asta?"], ["P", "07:22", "Da. Adică dacă e mandatory și aș ști că partea asta cu „this is the LLM judge's <span class='unsure' title='ASR „glossary” — probabil „description/guidance”, hint-ul folosit de LLM'>glossary</span>” e luată în calcul, aș încerca să-i fiu mai descriptiv — gen „the classifier should return this class only for documents that contain credit contract information such as…”. Adică i-aș da un fel de mic prompt sau descrierea documentului."], ["F", "07:54", "Da, el e folosit pentru a fi aplicat într-o interacțiune, deci ar trebui să fie… Momentan datele o să fie mock, adică n-are sens să te gândești la content, dar…"], ["P", "07:57", "A, ok. A, adică pot să pun asta. Ok."], ["P", "08:08", "Și aici le-aș pune așa — nu știu, m-aș aștepta să fie non-case sensitive, adică să pot să-i trec orice și să le ia el. Aici aș da keywords pe care să mi le conțină — „contract” — și genul de termeni care să nu mi-i conțină. Și acuma mi l-am pus. Și m-aș duce după la training, să-l antrenez practic."], ["F", "09:03", "Ai antrena pe o singură clasă, sau ai adăuga mai multe clase și apoi?"], ["P", "09:09", "Acum am intrat pe o singură clasă. Aș putea să mi le adaug pe toate și după doar să-i zic dacă a fost corect sau nu. Eu, cum testam inițial, verificam mai întâi dacă merge pe unul singur, și după…"], ["B", "09:24", "Și adăugai succesiv, adică… testai."], ["P", "09:26", "Le adăugam, da. Testam. Pentru că din modelul vechi pe OCR ori îmi dădea per pagină unknown — și încercam să am cât mai puține unknown-uri, ca să mă asigur că îmi vede toate paginile ok."], ["B", "09:47", "Și e vreo situație în care, când adăugai al treilea, al patrulea…?"], ["P", "09:51", "Aveam hit-uri cu celelalte. Și încercam să le repar în funcție de ce aveam în spate. De exemplu, pe contractul de vânzare se specificau lucruri despre polița de asigurare pentru imobilul respectiv; și după ce-mi adăugasem clasificatorul de poliță, aveam hit-uri pe multe pagini în contractul de vânzare, cum că ar fi poliță — vreo trei-patru pagini. Și la fel invers, pe polița de asigurare cu contractul de vânzare, că aveam „cumpărătorul”, „rata va fi pe…” sau termeni din ăștia care se regăseau."], ["B", "10:30", "Și ce făceai? Modificai…?"], ["P", "10:32", "Modificam într-una termenii, keyword-urile; testam cu ambele și vedeam la care îmi iese mai rău. Vedeam că, dacă modific la sales contract termenii, mi-a reparat sales contract-ul, dar polița încă nu. Modificam polița, iar aveam hit și pe sales contract, și pe poliță, cu aceiași termeni — adică cu același clasificator. Și tot așa, trial and error."], ["F", "11:05", "Deci pare că mecanismul ăsta de positive și negative examples era cel prin care balansai."], ["P", "11:12", "Exact, da. Înainte nu aveam chestia de exemplu negativ; aveam doar termeni care să se regăsească în text."], ["F", "11:19", "Ok. Și făceai balansarea asta și din adăugarea mai multor exemple, sau în mare parte din…?"], ["P", "11:31", "Da, mai adăugam exemple de obicei, sau mai scoteam termeni problematici. Încercam să-i găsesc prin pagină, să-mi dau seama ca om care-s termenii care au dus la hit-ul ăla, îi scoteam pe ăia, lăsam eventual gol la sales contract, rulam iar, vedeam că am hit-ul pe polița de asigurare doar cu sales contract. Și după mă duceam la polița de asigurare, vedeam paginile pe care îmi dă termenii problematici, mă uitam la sales contract și îi scoteam de acolo."], ["F", "12:10", "Foarte iterativ."], ["P", "12:11", "Da, da."], ["F", "12:12", "Ok. Se presupune că ai pune toate clasele de la început, ca să ai o varietate mai mare din prima, că acum unele lucruri o să fie un pic mai…"], ["B", "12:30", "Mai adăugăm o clasă de probă, sau mergem pe ce ai făcut?"], ["F", "12:33", "Hai să…"], ["B", "12:34", "A, poți să deschizi unul dintre cele existente, care au deja vreo cinci adăugate."], ["P", "12:45", "Ok. Ziceam, m-aș duce după la training să-mi…"], ["F", "12:48", "Da."], ["B", "12:49", "Și ai niște opțiuni."], ["P", "12:52", "Și cum ai folosi…? Ok, deci aici înțeleg că pot să-mi încarc mai multe documente și automat să-mi scoată el clasificatorul; dar după, îmi imaginez — nu știu dacă în view-ul ăsta sau după — trebuie să mă duc eu în testing ca să văd rezultatele run-ului de clasificare, ca să-i setez manual valoarea de adevăr a clasificării respective."], ["F", "13:25", "Ok."], ["P", "13:26", "Și aici mi-e clar — adică încarc pe rând tipul specific de document, ca el să înțeleagă în spate toate in-urile și out-urile. A, ok, îmi apare aici fix după „review predictions”, deci tot aici. Ok, și am pagina respectivă."], ["P", "13:48", "Analyze the document. <span class='unsure' title='ASR „Zici că e cu poșta” — neclar; posibil „pare că e o corespondență”'>Pare că e o corespondență</span>, da. Aici văd că e vorba de o corespondență, deci probabil nu e pașaport; nici National ID nu are cum să fie, nici driver's license, pentru că nu ai texte de genul acolo. Mă gândesc ori la residence permit, ori la un refugee travel doc. Nu știu cum arată un refugee travel doc — acuma tind să cred că e ori un residence permit, ori unknown."], ["F", "14:34", "Ok, și în funcție de ăsta…"], ["P", "14:36", "Să fie corect, sau poate să fie greșit. Da, pot să-mi setez… îmi dau seama că aici îmi trece review-ul, și — ok — deci dacă nu sunt de acord cu clasificatorul, pot doar să-l modific; iar dacă sunt de acord, doar să-l bifez ca verificat. Mi-e destul de clar aici. Driving license. Clar."], ["B", "14:57", "Da."], ["P", "15:00", "Adică aici mi se pare destul de straightforward workflow-ul; și da, trebuie să treci prin multe valori, dar mi se pare foarte ok că așa funcționează de fapt — trebuie să le <span class='unsure' title='ASR „băriști” → „bifezi”'>bifezi</span> oricum tu de mână."], ["F", "15:14", "Ok. Cum ți se pare acțiunea aia de review manual pe fiecare pagină, chiar dacă e corect? Ai prefera mai degrabă să ai la final o acțiune de genul „dacă nu am schimbat eu label-ul, înseamnă că e corect”, sau ți se pare că te ajută să dai review manual la fiecare?"], ["P", "15:37", "Mi se pare că mă ajută. Doar că bănuiesc că în text box-ul ăsta puneți fix textul de la OCR; mă gândeam, dacă aș fi avut un text mai mare… Nu — dacă aș fi avut un file preview cu pagina curentă…"], ["B", "15:55", "Cred că e…"], ["P", "15:59", "…ar fi mai ușor, din punct de vedere al omului, să se uite pe o pagină și imediat să observe un layout — de exemplu la buletin. Așa ar trebui să citesc măcar două-trei rânduri de text ca să-mi dau seama dacă e content-ul din partea aia. By default oricum mai ușor aș vedea thumbnail-ul respectiv."], ["P", "16:34", "Nu știu sincer dacă își are sens ăsta cu „Mark all reviewed”, că practic mi-aș fura singur căciula și l-aș trece doar ca să pot să trec peste și să încep antrenarea. Și așa poți să pui niște useri să antreneze greșit unele modele."], ["F", "16:55", "Din experiența ta, mai degrabă treci prin fiecare?"], ["P", "16:59", "Eu mai degrabă aș trece; nu aș da „all reviewed” ca o opțiune, personal. Că, na, vrei să-ți faci repede treaba și după tot prost iese și trebuie să te întorci să faci iar."], ["F", "17:14", "Ok. Momentan, for the sake of… poți să-l folosești ca să dai…"], ["P", "17:18", "Da, da, da. Ok. Fac training."], ["P", "17:25", "Ok, și da, aici îmi dă matricea de confuzie. Training distribution."], ["F", "17:32", "În momentul în care ai antrenat peste ceva ce exista deja — adică peste un model care era deja. Asta așa ar arăta dacă ai antrena pentru prima dată, fără să ai nimic, deci pleci de la zero."], ["P", "17:47", "Da, mă gândesc că pe măsură ce sunt mai multe run-uri, se modifică și matricea asta, și începi să-ți dai seama pe ce document fail-uiesc termenii și pe care nu."], ["F", "17:58", "Da, ăsta e o primă versiune, de genul „1”."], ["P", "18:05", "Și candidate-ul e ăsta, pe care l-am rulat acum."], ["F", "18:07", "Pe care l-ai antrenat acum."], ["P", "18:08", "Da, e intuitiv, e ok."], ["F", "18:11", "Ai vrea să trecem un pic prin pagina asta — confusion matrix? Ți s-a părut… l-ai recunoscut ușor?"], ["P", "18:19", "Îs familiar cu conceptul."], ["F", "18:21", "Ok. Zona de training distribution — ce crezi că înseamnă?"], ["P", "18:30", "Păi uite, pe residence permit, de exemplu, am uploadat mai multe residence permit-uri decât passport-uri, și a avut mai multe pagini care au fost clasificate după termenii ăia. Clar, dacă am mai puține exemple, o să am rezultate mai proaste pentru clasificatorul respectiv."], ["F", "18:52", "Și în zona de testing data?"], ["P", "18:58", "Aici îmi arată doar părțile… A, e mișto asta! E fix ce făceam eu — că eu rulam documentul și vedeam că am hit greșit pe o anumită pagină cu un alt clasificator. Deci chestia asta mi se pare foarte utilă aici și intuitivă."], ["F", "19:21", "De unde vin paginile astea? De unde crezi că au ajuns aici?"], ["P", "19:39", "Nu prea am cum să-mi dau seama de unde vine documentul sau pagina respectivă. Adică îmi dau seama că asta e content-ul din pagina respectivă și manual, da, pot să-mi dau seama că e…"], ["F", "19:53", "Și dacă ar fi să te gândești la journey-ul prin care ai trecut — adică ai băgat un batch de 50 de documente…"], ["F", "19:59", "…documente, ai dat train, și acum pe…"], ["P", "20:06", "Adică JPEG-ul ăsta clar era în zip-ul pe care l-am uploadat pentru ăsta, dacă asta e [întrebarea]."], ["F", "20:13", "Da, asta e o parte din întrebare. Și apoi: fișierul ăsta pe care l-ai selectat acum a fost folosit pentru antrenare, sau nu a fost folosit pentru antrenare?"], ["P", "20:24", "A fost folosit pentru antrenare, eu așa înțeleg. Pentru că am aici true class-ul — valoarea pe care eu am pus-o după review — și ce a prezis modelul în training, la „predicted”."], ["F", "20:44", "Dacă ți-ar spune că…?"], ["P", "20:46", "Invers?"], ["F", "20:46", "Nu, nu ți-ar spune nimic. Dacă ți-ar spune că, odată ce un model a fost antrenat pe o pagină, n-are cum s-o greșească — adică dacă a fost folosită la antrenare, a doua oară, când se rulează modelul pe pagina respectivă, n-are cum s-o greșească, pentru că o știe deja."], ["P", "21:18", "Ă, da, înțeleg ce zici. Nu înțeleg atunci de unde vine pagina asta. Adică eu mai întâi am încărcat…"], ["B", "21:31", "Să zicem că ai încărcat 250 de documente. 250 de pagini."], ["P", "21:33", "Da, exact. Așa, și după am trecut prin review la fiecare pagină, unde i-am setat eu true class-ul — că mă gândesc că de aici vine true class-ul. Și după ce am marcat toate ca „review”, am apăsat pe… start training."], ["B", "21:57", "Ok."], ["P", "21:59", "Păi, în training, modelul are deja și datele de la review-ul meu când pleacă la training, nu? Că doar ce le-am updatat."], ["F", "22:15", "Dar ca să-l testezi, nu are neapărat sens să testezi cu ceva ce a fost folosit pentru antrenare."], ["P", "22:26", "Da, da, știu că n-are sens — că ți-ar da 100% acuratețe pe tot."], ["F", "22:31", "Și atunci, din fișierele pe care le-ai <span class='unsure' title='ASR „evoluat” → „uploadat/încărcat”'>uploadat</span> tu, el pe ce a testat?"], ["P", "22:37", "A, să fie niște fișiere generate diferit, după modelul fișierelor pe care le-am pus eu pentru testare? A, sau nu — e un calup separat din fișierele pe care le-am pus eu. Are sens, mi-am amintit și eu acuma."], ["F", "22:58", "Vezi undeva informația asta?"], ["P", "22:59", "Ă, da, e asta — „20% of each batch”. Că da, țin minte acuma că le <span class='unsure' title='ASR „beciuiai” → probabil „batch-uiai / le împărțeai în batch-uri”'>batch-uiai</span> mai întâi și după îți luai una de test."], ["F", "23:09", "Ok. E ceva ce am putea să facem ca să fie mai evidentă chestia asta?"], ["P", "23:16", "Poate înainte să dai pe „start training” să fie mai evident. Am văzut că era un „80% din datele încărcate vor fi folosite pentru training și 20% pentru testing” — poate acolo să fie un pic mai mare textul. Țin minte că era pus, dar îs relativ familiar cu subiectul din facultate; pentru cineva care n-a mai folosit, e mai greu de înțeles."], ["F", "23:47", "Deci să fie mai clar în momentul ăla, când treci între training și testing, să ai o…"], ["P", "23:51", "Da, da. Să înțeleagă că, din toate fișierele pe care le-a încărcat, nu o să fie toate folosite pentru antrenament; și ca să poți trece la testare, doar 20% o să fie folosit acolo."], ["F", "24:04", "Ok."], ["P", "24:07", "Bun. Așa, și aici la comparison mă gândesc că sunt metrici despre modelul vechi și ăsta care tocmai a fost testat."], ["F", "24:20", "Cum ai interpreta delta? De fapt, uită-te la ce vrei să te uiți."], ["P", "24:25", "Stai să văd, îmi dau un pic mai sus. Deci, true class-ul e cel pe care l-am setat eu; ăsta e classifier-ul pe care îl punea modelul vechi, și ăsta e classifier-ul pe care îl pune modelul nou. Ok, aici e clar. Le am pe toate cu roșu — „still wrong”, clar, ambele cu roșu. Ăsta cu „still right” nici nu știu dacă e useful, dar poate să fie. Dar ăsta cu „degraded” mi se pare important, că poți să vezi dacă ai modificat ceva prost."], ["P", "25:11", "Și aici ce înțeleg eu e că, pe residence permit, modelul curent a clasificat corect cu trei documente mai mult decât modelul vechi."], ["F", "25:27", "A clasificat cu trei mai mult."], ["P", "25:28", "A clasificat cu trei mai multe decât modelul vechi. Ăsta e modelul vechi, ăsta e modelul candidat. Și am improvement de trei hit-uri corecte cu true class-ul pe candidatul curent."], ["F", "25:47", "Mhm. Ok. Deci, dacă ai vrea să vezi între old și candidate pe training pool — deci documentele care au fost folosite la antrenare — care-s diferențele între training pool-ul de la old și cel de la new, unde te-ai uita?"], ["P", "26:16", "Aici oricum am doar testing data, nu știu dacă o să mai am ceva. Mmm. Nu-mi dau seama din ecranele astea unde ar trebui să mă duc."], ["F", "26:42", "Și din zona aia de training distribution, ce te-a făcut să crezi că plusul ăla e de fapt…?"], ["P", "26:52", "A, ăsta?"], ["F", "26:53", "Ce te-a făcut să crezi că e de fapt improve-ul?"], ["P", "26:58", "Comparația asta între barele astea două. Am clasificatorul, și am asociat partea asta gri cu hit-urile corecte ale modelului vechi. Adică să zicem că aici avem cinci hit-uri și aici opt."], ["F", "27:16", "Da, deci cu hit-ul — cu ce a identificat corect — nu cu ce a avut la dispoziție pentru antrenare."], ["P", "27:22", "Da. A, deci asta înseamnă că, față de modelul vechi, modelul nou a avut încă trei exemple în plus pentru clasificatorul respectiv. A, ok. Eu astea le-am interpretat ca fiind hit-uri corecte cu true class-ul."], ["F", "27:45", "Și cum am putea să facem asta mai clar? Ai avea vreo sugestie — un distribution, cum ai asocia?"], ["P", "28:01", "Da, exact, o chestie de genul ăsta. Cumva să ai aici o săgeată spre valoarea asta, care să spună că valoarea asta reprezintă numărul de documente de tipul respectiv pe care acest candidat le-a avut în plus față de modelul vechi."], ["F", "28:28", "În antrenare."], ["P", "28:29", "Da, în antrenare."], ["F", "28:33", "Și dacă ar fi să te uiți un pic în confusion matrix, cum ai interpreta acel minus unu, acel plus unu — ăla dintre refugee travel și driver's licenses?"], ["P", "28:49", "Deci, green egal „more correct, fewer errors”, red egal „new or increased errors” — asta e clar. Dar nu-mi dau seama care ar fi true class-ul. M-ar ajuta un indice pe matricea asta de confuzie, că mă gândesc că într-o parte avem true class-ul și într-o parte valoarea pusă de model. Și nu știu care dintre ele e."], ["B", "29:18", "Da."], ["P", "29:20", "Dacă ar fi să iau partea asta de true class, înseamnă că pentru documentul de refugee travel am avut o încurcătură și a fost clasificat ca driver's license. Dacă am true class-ul în stânga."], ["B", "29:43", "Da, da. Să presupunem așa. Ce înseamnă plus unu?"], ["P", "29:48", "Că un document de refugee travel, care știm sigur că e refugee travel, a fost clasificat prost ca driver's license de modelul curent, candidat."], ["B", "30:03", "Doar unul singur?"], ["P", "30:06", "O… nu știu aici cum să zic."], ["B", "30:15", "Uită-te un pic și vezi dacă îți dă…"], ["P", "30:19", "A, aici n-am… a, nu, da, am…"], ["B", "30:22", "E un mock, ca să aibă sens între ele."], ["P", "30:25", "Da, dar practic, dacă aici am zero, aici aș fi avut unu. Deci comparison-ul ar fi că modelul nou clasifică mai prost refugee travel doc ca driver's license. Da — că în stânga avem true class-ul, și că modelul nou vede un refugee travel doc mai des ca driver's license decât modelul vechi."], ["B", "30:58", "Ok. Poți să te uiți dacă, dând hover pe „plus unu”, explicația… nu, tot acolo. Dacă ajută explicația asta. Ar trebui să apară ceva dacă nu te miști."], ["P", "31:11", "A. A, ok, super! Aș pune totuși ăsta pe tot box-ul, nu doar pe text."], ["B", "31:20", "A, e pe… da, ok."], ["P", "31:22", "Bine, acuma cred că… a, ok, scuze."], ["B", "31:26", "Ajută să punem explicația."], ["P", "31:28", "Ar merge — nu știu dacă aici…"], ["B", "31:31", "Aici nu știu dacă e."], ["F", "31:32", "Ba da."], ["P", "31:33", "Ar merge pus tot cu behavior-ul ăsta de hover, că știu că poate se întâmplă ceva dacă îmi las [cursorul] — aici n-aveam niciun feedback. Și de asta."], ["B", "31:43", "Da, da. Ok."], ["B", "31:52", "Dacă ar fi să mai testezi — dacă ar mai fi să primești niște documente sample în momentul ăsta — ce crezi că s-ar întâmpla? Deci, în momentul ăsta ai varianta veche și candidatul curent."], ["P", "32:10", "Dacă îi dau „start testing” din nou, m-aș aștepta să se compare cu varianta veche, să se dea discard la candidat. Dar dacă ar fi să mă întorc direct, m-aș aștepta să se dea discard automat, dacă nu l-am promovat eu explicit. Că aici pot ori să zic „ok”… da, m-aș aștepta să se dea discard automat."], ["P", "32:39", "Că să zicem că nu sunt de acord deloc cu modificările pe care le-am făcut la candidatul curent, și am o acțiune — aș da „promote” direct și așa aș avea candidatul la versiunea old. Dar dacă nu, atunci doar m-aș uita pe date și aș mai avea o acțiune de făcut în plus până să mă duc să dau iar training."], ["B", "33:08", "Crezi că ar fi, de exemplu…?"], ["P", "33:12", "Ar fi util totuși un fel de modal de atenționare — „ai grijă, o să se șteargă candidatul curent”. Adică mai bine am acțiunea aia decât să dau discard."], ["B", "33:24", "Da, da. Are sens să fii warned. Mă gândesc la o situație în care tu ai trainat pe toate tipurile astea de clase, și la un moment dat National ID-ul se schimbă, arată altfel și se schimbă informațiile de pe el. Deci, dintr-un anumit punct, training-ul pe care l-ai făcut pe National ID nu l-ai mai vrea — ori să-l scoți din training data, ori să retrainezi un model fără să folosești documentele vechi și să vii cu exemple noi. Cum ți s-ar părea cel mai ușor să faci chestia asta? Nu e în prototipul ăsta, dar ca concept — care ar fi așteptările tale?"], ["P", "34:11", "M-aș duce și aș crea, cred, o nouă clasă pentru țara respectivă. Dar nu știu cât de scalabil e asta — că e inevitabil, trebuie să faci asta, că el se uită pe anumite pattern-uri: buletinul nostru arată într-un fel, pașaportul în alt fel."], ["B", "34:32", "E tot buletin românesc, să zicem — dar e o variantă veche și una nouă."], ["P", "34:35", "Da. Mi-aș crea o…"], ["B", "34:38", "Ai șterge datele vechi?"], ["P", "34:39", "N-aș șterge, că probabil tot aș primi la un moment dat exemple; dar mi-aș adăuga, pentru modelul nou, exemple din buletine noi."], ["F", "34:48", "Și dacă ai avut un model antrenat pe clasele astea și zici „de acum încolo nu mă mai interesează residence permit, nu mai vreau să clasific residence permit”?"], ["P", "35:03", "Ar fi bine să am și varianta de a-l șterge."], ["F", "35:08", "Ce ar însemna asta pentru model? Că, în sine, ștergerea label-ului nu e problematică."], ["P", "35:14", "Da. Păi ar însemna ca modelul să… nu știu în spate cum s-ar reține toate <span class='unsure' title='„eval-urile” — probabil „evaluările / run-urile de antrenare”'>eval-urile</span>."], ["F", "35:31", "Datele de antrenare."], ["P", "35:32", "Da, istoricul run-urilor, cum ar veni."], ["F", "35:39", "Dacă ai avea, să zicem, undeva o listă cu toate documentele pe care le poți folosi pentru antrenare — un tabel gigantic?"], ["P", "35:50", "Nu știu dacă ar avea sens să le reținem undeva. Maxim m-aș uita… nici dacă ar fi să aveți voi vectori sau ceva, să puteți face debugging din punct de vedere AI — dar nu știu dacă m-ar ajuta. Mai degrabă mi-aș face un clasificator nou de la zero pentru chestia asta. Adică nu văd sensul să… poate am făcut un model de clasificare și am rulat un an încontinuu pe el — nu văd de ce ai vrea să ștergi un model pe care l-ai rulat un an încontinuu."], ["F", "36:35", "Mai am un scenariu, care am înțeles că s-a întâmplat la un moment dat la unul dintre use case-uri: oamenii aveau datele labeled greșit. Adică a pus „National ID” și de fapt e „passport”. Și totul a fost nice and dandy până când a ajuns în producție și și-au dat seama că e o problemă la diferența între passport și National ID. Și au zis „ok, ca să îmbunătățim asta, trebuie să ne curățăm datele, că avem garbage în date — date label-uite cu passport care de fapt sunt National ID”."], ["P", "37:04", "Poate ar fi mișto să ai o opțiune de re-label — adică să poți să asignezi, de exemplu, residence permit la driver's license, și în baza de date din spate toate documentele… bine, nu știu cât de corect ar fi asta de fapt. Să poți reasigna label-ul la documentele care aveau label-ul problematic."], ["F", "37:37", "Dar te gândești la asta pentru toate documentele — tot ce ai acum în training pool?"], ["P", "37:39", "Da. Pentru că, dacă ar fi să faci asta, aș face operațiunea și schimb de pe residence permit, care era problematic, pe driver's license; și am modelul vechi, antrenez cu un set nou de documente, și când fac review oricum pot să văd improvement-ul."], ["F", "38:05", "Adică în momentul ăsta ai rămas fără residence permit, că ai mutat toate datele pe driver's license."], ["P", "38:11", "Păi da. Deci am mutat toate datele pe driver's license. Sau nu — hai să luăm exemplul cu National ID și passport, că ăla e mai straightforward. Șterg National ID și rămân doar cu passport. Orice buletin aș băga după, mi-l clasifică ca passport. Și eu, când mă duc la review, am să trec prin toate label-urile alea proaste de passport și tot manual le voi corecta."], ["F", "38:46", "Deci la final tot ajungi să corectezi manual o listă de…"], ["P", "38:49", "Exact."], ["F", "38:50", "Doar că e filtrată după ce era anterior National ID."], ["P", "38:55", "Exact. Că altfel nu văd… nu știu nici dacă merită să ștergi din spate toate datele; și dacă ai pus un classifier prost și ai antrenat o dată prost, mai degrabă mai petreci o oră să repari și ai reparat."], ["F", "39:17", "E ceva în journey-ul ăsta — de când adaugi clasele, până la review, compare, multiple candidates — ceva ce ți se pare că nu a fost clar?"], ["P", "39:28", "Nu, chiar îmi place foarte mult cum a fost făcut. Poate partea asta — description-ul ăsta care e folosit — ar merge o parte de sugestii, cum vorbisem atunci pentru prompt-uri la chat."], ["F", "39:46", "A, la intent."], ["P", "39:46", "Să-ți sugereze o descriere, da. Pe baza numelui clasificatorului — sau poți să-i dai și un document."], ["F", "39:50", "Pe baza numelui."], ["F", "39:58", "Dar să te ajute."], ["P", "40:00", "Da, să-ți tailoruiască descrierea — dacă tot o folosim în spate pentru platformă, cum folosește contextul în spate descrierea aia."], ["F", "40:17", "Cred că și la exemple ar putea să venim cu o sugestie — doar că trebuie să vii cu sugestia după un training."], ["P", "40:22", "Da, exact. Astea chiar ar fi mișto după ce ai rulat cel puțin un training — la fiecare training să-ți tot adauge exemple."], ["F", "40:36", "Dar ai vrea să dai okay-ul, nu?"], ["P", "40:37", "Păi da. Da, da. Eventual poate după partea asta de testare, când faci promote la un candidate — eventual să mai ai un pas de approve la termenii noi găsiți, ca să-și facă self-improve și clasificatorul."], ["B", "41:08", "E cum?"], ["F", "41:09", "Păi, mulțumim mult. Și să ne mai auzim, că mai e o bucată de…"]];
-
-const IDEAS = [
- {
-  "id": "idea-01",
-  "title": "ML Models under Reusable Resources feels right — easy to reach",
-  "category": "design_insight",
-  "detail": "Andrei validated the placement: he'd go straight to ML Models under Reusable Resources. He'd only put it under an Agent-AI section if one existed; absent that, here it's where he reaches first. Pushes back on Bogdan's Integrations suggestion.",
-  "quote": "în meniul ăsta mi se pare că stă bine… din moment ce nu-l avem aici, mi se pare foarte ok. Adică știu că pot să ajung mai repede la el.",
-  "speaker": "P",
-  "confidence": "high",
-  "needs": false,
-  "anchors": [
-   12,
-   10,
-   11,
-   13,
-   14
-  ],
-  "topics": [
-   "Navigation & discoverability"
-  ]
- },
- {
-  "id": "idea-02",
-  "title": "Class description: unclear if it's functional or just for management",
-  "category": "open_question",
-  "detail": "The mandatory class description confused Andrei — is it actually fed to the model/LLM judge, or only for human management? It changes how he'd write it: if functional, he'd make it a mini-prompt describing the document type.",
-  "quote": "Îmi zice că trebuie să fie mandatory, dar e luată în calcul și în spate, sau doar e pentru management purposes?",
-  "speaker": "P",
-  "confidence": "high",
-  "needs": false,
-  "anchors": [
-   26,
-   25,
-   27,
-   28,
-   29,
-   30
-  ],
-  "topics": [
-   "Classifier setup & copy"
-  ]
- },
- {
-  "id": "idea-03",
-  "title": "Keywords should be case-insensitive",
-  "category": "feature_request",
-  "detail": "When adding include/exclude keywords, Andrei expects matching to be non-case-sensitive — type anything and it should still match.",
-  "quote": "m-aș aștepta să fie non-case sensitive, adică să pot să-i trec orice și să le ia el.",
-  "speaker": "P",
-  "confidence": "medium",
-  "needs": false,
-  "anchors": [
-   31
-  ],
-  "topics": [
-   "Classifier setup & copy"
-  ]
- },
- {
-  "id": "idea-04",
-  "title": "Prior workflow: add all classes, then iterate keywords by trial-and-error",
-  "category": "context",
-  "detail": "How Andrei worked the old OCR/Doc Parser classifier: add classifiers successively, test, and hand-tune include/exclude terms to fix cross-class hits (e.g. sales-contract vs insurance-policy collisions). Positive/negative example weights were how he balanced. This is the mental model he brings to the new tool.",
-  "quote": "Modificam într-una termenii, keyword-urile, testam cu ambele și vedeam la care îmi iese mai rău… Și tot așa, trial and error.",
-  "speaker": "P",
-  "confidence": "high",
-  "needs": false,
-  "anchors": [
-   37,
-   32,
-   33,
-   34,
-   35,
-   36,
-   38,
-   39,
-   40,
-   41,
-   42,
-   43
-  ],
-  "topics": [
-   "Auto-label & manual review",
-   "Classifier setup & copy"
-  ]
- },
- {
-  "id": "idea-05",
-  "title": "Per-page manual review is valued, not seen as a chore",
-  "category": "design_insight",
-  "detail": "Andrei finds the review-each-page workflow straightforward and good — even though it means going through many values, he expects to verify them by hand anyway.",
-  "quote": "mi se pare destul de straightforward workflow-ul… mi se pare foarte ok că așa funcționează de fapt. Trebuie să le bifezi oricum tu de mână.",
-  "speaker": "P",
-  "confidence": "high",
-  "needs": false,
-  "anchors": [
-   60,
-   61,
-   62
-  ],
-  "topics": [
-   "Auto-label & manual review"
-  ]
- },
- {
-  "id": "idea-06",
-  "title": "“Mark all reviewed” is risky — invites users to shortcut and train bad models",
-  "category": "pain_point",
-  "detail": "Andrei is skeptical of the bulk “Mark all reviewed” action: it lets you cheat past review just to start training, and risks users training models on unverified labels. He wouldn't offer it.",
-  "quote": "mi-aș fura singur căciula… Și așa poți să pui niște useri să antreneze greșit unele modele. Nu aș da „all reviewed” ca o opțiune.",
-  "speaker": "P",
-  "confidence": "high",
-  "needs": false,
-  "anchors": [
-   65,
-   66,
-   67
-  ],
-  "topics": [
-   "Auto-label & manual review"
-  ]
- },
- {
-  "id": "idea-07",
-  "title": "Wants a page/file preview (thumbnail) during review, not just OCR text",
-  "category": "feature_request",
-  "detail": "During review only the OCR text box is shown. Andrei wants a file preview of the current page — a human can recognize a document by its layout (e.g. an ID card) far faster than by reading lines of text. A thumbnail would be his default.",
-  "quote": "dacă aș fi avut un file preview cu pagina curentă… imediat poate să observe un layout… by default oricum mai ușor aș vedea thumbnail-ul respectiv.",
-  "speaker": "P",
-  "confidence": "high",
-  "needs": false,
-  "anchors": [
-   64,
-   62,
-   63
-  ],
-  "topics": [
-   "Auto-label & manual review"
-  ]
- },
- {
-  "id": "idea-08",
-  "title": "Make the 80/20 train/test split prominent before Start Training",
-  "category": "feature_request",
-  "detail": "Andrei found the “80% training / 20% testing” note but says it should be more visible right before Start Training (bigger text). He's familiar with the concept from college; a first-time user would struggle to understand only 20% is held out for testing.",
-  "quote": "poate înainte să dai pe „start training” să fie mai evident… poate acolo să fie un pic mai mare textul… pentru cineva care n-a mai folosit e mai greu de înțeles.",
-  "speaker": "P",
-  "confidence": "high",
-  "needs": false,
-  "anchors": [
-   105,
-   104,
-   106,
-   107
-  ],
-  "topics": [
-   "Train / test split"
-  ]
- },
- {
-  "id": "idea-09",
-  "title": "Where the test pages come from isn't obvious (held-out 20% of each batch)",
-  "category": "pain_point",
-  "detail": "Andrei couldn't tell where the testing-data pages originated and worked through it out loud — eventually finding the “20% of each batch” note and recalling that a held-out slice is split off before training. The origin needs to be clearer up front.",
-  "quote": "Nu înțeleg atunci de unde vine pagina asta… A, da, e asta — „20% of each batch”.",
-  "speaker": "P",
-  "confidence": "medium",
-  "needs": false,
-  "anchors": [
-   103,
-   83,
-   84,
-   93,
-   94,
-   95,
-   97,
-   98,
-   99,
-   100,
-   101,
-   102
-  ],
-  "topics": [
-   "Train / test split"
-  ]
- },
- {
-  "id": "idea-10",
-  "title": "Old-vs-candidate comparison is clear; “degraded” matters, “still right” maybe not",
-  "category": "design_insight",
-  "detail": "Andrei reads the comparison table easily: true class he set, old-model classifier, new-model classifier. “Still wrong” and “still right” are clear; he questions whether “still right” is useful, but values “degraded” for catching a change that made things worse.",
-  "quote": "ăsta cu „still right” nici nu știu dacă e useful… Dar ăsta cu „degraded” mi se pare important, că poți să vezi dacă ai modificat ceva prost.",
-  "speaker": "P",
-  "confidence": "high",
-  "needs": false,
-  "anchors": [
-   111,
-   109,
-   112,
-   114
-  ],
-  "topics": [
-   "Confusion matrix & comparison"
-  ]
- },
- {
-  "id": "idea-11",
-  "title": "Training-distribution bars misread — add an annotation/arrow explaining them",
-  "category": "feature_request",
-  "detail": "Andrei first read the grey/colored distribution bars as correct hits vs the old model; only with guidance did he realize they show how many more training examples the candidate had per class. He suggests an arrow/annotation stating exactly what the value represents.",
-  "quote": "să ai aici o săgeată… care să spună că valoarea asta reprezintă numărul de documente de tipul respectiv pe care acest candidat le-a avut în plus față de modelul vechi.",
-  "speaker": "P",
-  "confidence": "high",
-  "needs": false,
-  "anchors": [
-   124,
-   117,
-   120,
-   121,
-   122,
-   123,
-   125,
-   126
-  ],
-  "topics": [
-   "Confusion matrix & comparison"
-  ]
- },
- {
-  "id": "idea-12",
-  "title": "Confusion matrix needs a true-class / predicted-class axis indicator",
-  "category": "feature_request",
-  "detail": "The green=more-correct / red=new-errors coloring is clear, but Andrei can't tell which axis is the true class vs the model's prediction. He wants an index/label on the matrix so the ±1 cells are interpretable.",
-  "quote": "nu-mi dau seama care ar fi true class-ul. M-ar ajuta un indice pe matricea asta de confuzie… nu știu care dintre ele e.",
-  "speaker": "P",
-  "confidence": "high",
-  "needs": false,
-  "anchors": [
-   128,
-   127,
-   130,
-   132,
-   138
-  ],
-  "topics": [
-   "Confusion matrix & comparison"
-  ]
- },
- {
-  "id": "idea-13",
-  "title": "Hover tooltip on matrix cells helps — extend it to the whole cell, not just the text",
-  "category": "feature_request",
-  "detail": "Once Andrei discovered the hover explanation on a “+1” cell he liked it (“super”), but wants the hover hit-area on the entire box, not only the number — he expected feedback when hovering anywhere on the cell and got none.",
-  "quote": "A, ok, super! Aș pune totuși ăsta pe tot box-ul, nu doar pe text… aici n-aveam niciun feedback.",
-  "speaker": "P",
-  "confidence": "high",
-  "needs": false,
-  "anchors": [
-   140,
-   139,
-   147
-  ],
-  "topics": [
-   "Confusion matrix & comparison"
-  ]
- },
- {
-  "id": "idea-14",
-  "title": "Expects candidate to auto-discard on exit — wants a warning modal",
-  "category": "feature_request",
-  "detail": "Andrei expects an un-promoted candidate to be discarded automatically when he leaves, rather than needing an explicit discard action. He'd prefer a warning modal (“the current candidate will be deleted”) over a manual discard step.",
-  "quote": "m-aș aștepta să se dea discard automat, dacă nu l-am promovat eu explicit… Ar fi util totuși un fel de modal de atenționare.",
-  "speaker": "P",
-  "confidence": "high",
-  "needs": false,
-  "anchors": [
-   153,
-   149,
-   150,
-   151,
-   152
-  ],
-  "topics": [
-   "Candidate vs promote"
-  ]
- },
- {
-  "id": "idea-15",
-  "title": "For a class that changes over time, create a new class — don't delete old data",
-  "category": "design_insight",
-  "detail": "On Bogdan's scenario (a National ID redesign), Andrei would create a new class for the new variant and keep the old data (he'll still receive old-format examples), adding new examples to the new model rather than wiping history.",
-  "quote": "N-aș șterge [datele vechi], că probabil tot aș primi la un moment dat exemple; dar mi-aș adăuga, pentru modelul nou, exemple din buletine noi.",
-  "speaker": "P",
-  "confidence": "high",
-  "needs": false,
-  "anchors": [
-   155,
-   154,
-   157,
-   159
-  ],
-  "topics": [
-   "Data lifecycle & re-labeling"
-  ]
- },
- {
-  "id": "idea-16",
-  "title": "Wants the option to delete a class he no longer cares about",
-  "category": "feature_request",
-  "detail": "Asked about dropping a class entirely (e.g. stop classifying residence permit), Andrei says he'd want a delete option available.",
-  "quote": "Ar fi bine să am și varianta de a-l șterge.",
-  "speaker": "P",
-  "confidence": "medium",
-  "needs": false,
-  "anchors": [
-   161,
-   160,
-   162
-  ],
-  "topics": [
-   "Data lifecycle & re-labeling"
-  ],
-  "conflictsWith": [
-   "idea-17"
-  ]
- },
- {
-  "id": "idea-17",
-  "title": "Skeptical of storing all training docs; would rather build a fresh classifier",
-  "category": "design_insight",
-  "detail": "Andrei doubts it's worth retaining every training document in a big table, and wouldn't delete a model that has run for a year. For a real reset he'd just build a new classifier from scratch rather than surgically managing stored data.",
-  "quote": "nu știu dacă ar avea sens să le reținem undeva… mai degrabă mi-aș face un clasificator nou de la zero… nu văd de ce ai vrea să ștergi un model pe care l-ai rulat un an încontinuu.",
-  "speaker": "P",
-  "confidence": "high",
-  "needs": false,
-  "anchors": [
-   167,
-   166
-  ],
-  "topics": [
-   "Data lifecycle & re-labeling"
-  ],
-  "conflictsWith": [
-   "idea-16"
-  ]
- },
- {
-  "id": "idea-18",
-  "title": "A re-label option for mislabeled data still collapses to manual correction",
-  "category": "design_insight",
-  "detail": "On the mislabeled-data scenario (passport vs National ID), Andrei floats a re-label/reassign action, then reasons it through: reassigning the bad label and re-reviewing just lands you back at manually correcting a list — only now it's filtered to the previously-wrong class. For a one-off bad train, he'd rather spend an hour fixing it.",
-  "quote": "Deci la final tot ajungi să corectezi manual o listă… Doar că e filtrată după ce era anterior National ID.",
-  "speaker": "P",
-  "confidence": "medium",
-  "needs": false,
-  "anchors": [
-   169,
-   168,
-   170,
-   171,
-   172,
-   173,
-   174,
-   176,
-   177
-  ],
-  "topics": [
-   "Data lifecycle & re-labeling"
-  ]
- },
- {
-  "id": "idea-19",
-  "title": "Suggest the class description automatically (from name or a sample doc)",
-  "category": "feature_request",
-  "detail": "Andrei likes the overall flow and asks for AI-suggested descriptions — like the chat prompt suggestions discussed before — tailored from the classifier name or a sample document, since the platform uses that description as context downstream.",
-  "quote": "ar merge o parte de sugestii… să-ți sugereze o descriere pe baza numelui clasificatorului, sau poți să-i dai și un document.",
-  "speaker": "P",
-  "confidence": "high",
-  "needs": false,
-  "anchors": [
-   179,
-   178,
-   180,
-   181,
-   184
-  ],
-  "topics": [
-   "AI assistance",
-   "Classifier setup & copy"
-  ]
- },
- {
-  "id": "idea-20",
-  "title": "Suggest new example keywords after training — with user approval, tied to promote",
-  "category": "feature_request",
-  "detail": "Andrei wants the tool to suggest example keywords after at least one training run, but with him approving them (not silent). He'd tie the approval step to promote: when promoting a candidate, approve the newly-found terms so the classifier self-improves.",
-  "quote": "după ce ai rulat cel puțin un training… când faci promote… să mai ai un pas de approve la termenii noi găsiți, ca să-și facă self-improve și clasificatorul.",
-  "speaker": "P",
-  "confidence": "high",
-  "needs": false,
-  "anchors": [
-   188,
-   185,
-   186,
-   187
-  ],
-  "topics": [
-   "AI assistance",
-   "Candidate vs promote"
-  ]
- }
+const TURNS = [
+ ["B", "00:00", "pe pasul new, dacă n-ai tu ceva aici."],
+ ["F", "00:03", "Nu cred că. Înainte de intro l-aș întreba pe el ce știe despre ML models, machine learning models versus LLM. Dacă dacă ai auzit, dacă știi cum"],
+ ["P", "00:16", "Ă, știu în mare, n-am lucrat niciodată cu ele. Știu că sunt cumva sunt un pas mai automatizat totuși al față de LLM-uri sunt tot ceva un pic mai determinist, în sensul în care sunt antrenate pe niște pași specifici, pe niște chestii specifice, mult mai restrâns decât un LLM și că se folosesc în cazuri din astea mult mai specifice."],
+ ["F", "00:43", "Ai prins ideea în cap."],
+ ["P", "00:44", "Ăăă predicție pe cum îi zice, indicator financiar la o firmă sau predicție pe producție, chestii de genul ăsta, în care se analizează, de obicei se analizează un set de date cu o formă structurată și se scoate un rezultat, de obicei o predicție sau ceva în funcție de cum a arătat până acuma."],
+ ["F", "01:09", "Bun. Mersi."],
+ ["B", "01:11", "Super. Păi, în aceeași zonă mergem și noi, doar că use case-ul sau primele tipuri de modele pe care vrem să le introducem pe platformă sunt modele de clasificare de documente. Pentru că se repetă pipeline-ul ăsta de clasificare, OCR-izare, extragere de date și așa mai departe."],
+ ["P", "01:31", "Ok. Pot să vă întrerup puțin? Mi-ați adus în vorbă subiectul ăsta și chiar aveam o discuție destul de urgentă legată de treaba asta. Noi vrem ca direcție în produs să introducem încet-încet zona asta de ML."],
+ ["B", "01:43", "Pentru zona de, momentan singurele tipuri de modele de ML pe care o să le suportăm sunt modele pentru clasificare de documente."],
+ ["P", "01:51", "Ok. Ok. Am înțeles."],
+ ["B", "01:52", "Nu m-aș avânta pe ceva pentru că este o zonă foarte mare"],
+ ["P", "01:56", "Da, știu."],
+ ["B", "01:57", "care poate să se ducă very high și în momentul ăsta, motivul pentru care introducem modelele de ML e ca să mai asigurăm groundedness și să mai scădem din probabilitatea de halucinare a unui LLM."],
+ ["P", "02:12", "Ok."],
+ ["B", "02:13", "Adică vine ca o soluție punctuală pentru o problemă specifică. Nu e luat încă în calcul să extindem pe modele care fac predicție sau alte lucruri de genul ăsta."],
+ ["P", "02:20", "Ok, ok."],
+ ["B", "02:24", "Ăăă, tocmai pentru că procesul în sine de antrenare și calibrare e destul de complicat."],
+ ["P", "02:32", "De ce întrebare? Ce use case aveți?"],
+ ["F", "02:34", "Chiar acum erau discuții de ceva că ne-am dat seama că pe unul din use case-urile de la un client nu cred că, nu credem că se poate face fără ML. Ce ziceam eu de producție."],
+ ["B", "02:48", "Ăă, ask, better ask Șerban about it, dar la momentul ăsta eu asta știu că e"],
+ ["P", "02:51", "Da. Asta știam și eu ultima oară tot de la Șerban, că ne ferim de genul ăsta de lucruri, dar"],
+ ["B", "03:00", "Da, probabil că o să, depinde și de dimensiunea clientului și da, vedem. Adică for sure we could at some point, dar depinde de condițiile în care va fi asta."],
+ ["P", "03:11", "Ok."],
+ ["F", "03:11", "Revenim la"],
+ ["B", "03:13", "Momentan ne uităm la zona de ăăă modele care clasifică documente. Ăă, și plecăm de la premiza că vrei să construiești un model de genul ăsta pe care mai apoi să-l folosești în workflow-uri. Și poți să intri în whatever project you want from here. O să ai niște date mock-uite. În ce zonă te-ai aștepta prima dată să vezi?"],
+ ["P", "03:42", "Ăăă, păi, zona de data sources pe acolo, adică ar trebui să fie pe lângă aia, oricum unde sunt și workflow-urile cumva și unde ar fi și un nod de ML sau ceva. Deci tot prin zona aia de data sources sau pe acolo pe la integrări."],
+ ["B", "04:02", "Ok. Din principii de proximitate sau ți se pare că au și"],
+ ["P", "04:08", "Sunt tot în legătură."],
+ ["B", "04:11", "Că nu e neapărat o integrare."],
+ ["P", "04:13", "Da, nu e neapărat o integrare, la fel cum nici nodurile de agenți nu sunt neapărat o integrare, dar tot în workflow stau pe acolo, dar da, sunt, fac parte din de obicei că rezolvi aceeași problemă. Când te apuci să folosești ceva dintr-un document sau ceva, trebuie să clasifici, lucrurile alea de obicei se întâmplă în zona aia, deci"],
+ ["B", "04:35", "Good. Păi, în principiu poți să navighezi în zona asta. O să ai niște exemple de"],
+ ["F", "04:44", "Să dai un refresh că a intrat un pop-up la voi."],
+ ["B", "04:47", "Thank you."],
+ ["F", "04:53", "Oh, a dispărut. L-ai găsit. Oh!"],
+ ["B", "04:59", "Știi butoanele alea care se mută când"],
+ ["P", "05:01", "Da, da, da."],
+ ["F", "05:04", "Am trecut la nivelul doi. Prima dată l-am găsit, acum nu l-am mai găsit. Ăă, ok. Uită-te, să zicem că știi că există ca feature și vrei să definești un vrei să treinezi un ML model, nu?"],
+ ["P", "05:22", "Ăăă... Acum a apărut în zona de reusable resources."],
+ ["F", "05:25", "Mai dă un refresh. Cum ți se pare în categoria asta versus în categoria integrations?"],
+ ["P", "05:43", "E greuț de zis. Ideea e că dacă e să ne uităm la mai multe chestii de aici, cumva cred că majoritatea pot fi trecute pe așa ca reusable resources. Și un data source, și un workflow, și o poză de media, la rigoare toate pot să fie reusable resources. Ăăă... Astea sunt, ce era până aici cumva sunt chestii specifice care țin de configurări din astea pe care până acum puteai să le faci doar în proces sau în UI flow, dar acum poți să le aduci de acolo aici. Ca ăsta să fie și el tot aici, mi se pare că nu e în temă cu celelalte din categoria asta, sincer."],
+ ["F", "06:29", "Deci ar avea sens mai mult la integrations, pentru"],
+ ["P", "06:31", "Cred că da. Da."],
+ ["F", "06:34", "Ok. Ăăă, hai să mergem mai departe. Înainte să intri în el, te-aș întreba foarte high level așa, dacă tu treinezi un model care să-ți recunoască documente, foarte high level, la ce te-ai aștepta de la training? Adică ce te-ai aștepta să presupună training-ul unui model de la zero?"],
+ ["P", "06:54", "Ăăă... În primul rând, exemple, clar. Aș și bineînțeles, definit pe categorii. Adică, în primul rând, să zic ce mai exact să îi specific un pic mai mult pe ce să ne uităm. Adică, ok, n-o să ne uităm pe toate documentele de pe planetă. O să ne uităm pe documente de mortgage. Un scop cumva principal sau ceva. După aia, categorisire. Băi, poate să fie acești 10 tipuri de documente, altceva n-are ce să fie, cam atât. Și apoi, ok, uite, pe fiecare document avem așa, exemplu de document, sau chiar mai multe, cu cât mai multe, cu atât mai bine. Ăăă... Mă gândesc că probabil niște termeni specifici care să se regăsească în documentele alea care să îi să aducă un grad de corectitudine mai mare ca ale documentului. Adică, dacă e un certificat energetic, o să scrie clar în titlu certificat energetic. Sau și o să regăsești litere cu majuscule de la A la F care să determine eficiența energetică, ca un exemplu. Și cam atât îmi vine în minte acum, nu știu dacă"],
+ ["F", "08:11", "Ok."],
+ ["B", "08:12", "Bun, nu, dar ca model mental, așa să vedem la ce te aștepți."],
+ ["F", "08:15", "Poți să verifici te rog că nu ești pe mute? Că nu văd să se miște nimic când vorbești."],
+ ["B", "08:20", "A, e ok, da?"],
+ ["F", "08:21", "Ok."],
+ ["B", "08:23", "Bine. Păi,"],
+ ["F", "08:26", "Mergem mai departe."],
+ ["P", "08:27", "A, dar nu am dat share screen."],
+ ["F", "08:29", "A, da."],
+ ["P", "08:30", "Ok."],
+ ["F", "08:36", "Ăăă... Ana, să pornim un ML de la zero, nu? Nu intrăm într-unul existing."],
+ ["B", "08:41", "Da, mai degrabă."],
+ ["F", "08:43", "Bun."],
+ ["P", "08:46", "Ok, avem aici deja. Create new template. Nu, hai să facem unul de la zero."],
+ ["F", "08:50", "Facem unul de la zero deocamdată."],
+ ["P", "08:52", "Ăăă... Aici văd că avem nume, labels."],
+ ["F", "08:57", "Ce crezi că sunt labels?"],
+ ["P", "08:58", "Astea, nu? Astea. Ăăă... Nu știu dacă sunt ce ziceam eu, cuvintele alea sau seturile alea de cuvinte care să determine mai bine tipul ăla de document, sau dacă fiecare grup din ăsta, în fiecare ML model să aibă niște label-uri în funcție de ce cu ce se ocupă ML-ul ăla specific, astfel încât când te duci în altă parte să-l selectezi, să-ți dai seama după label-uri ce ar fi mai potrivit, sau poate să se autoselecteze în funcție de label-urile alea."],
+ ["B", "09:38", "Ok."],
+ ["F", "09:40", "Mergem mai departe."],
+ ["P", "09:41", "Așa. ML model. Aici avem un caz în minte sau pot să merg pe ce ziceam eu?"],
+ ["F", "09:50", "Ceva care să implice clasificarea de documente sau"],
+ ["P", "09:56", "Ok. Ok, tot punem aici, văd că nu e nevoie să răspund nimic. Și document file here sau upload file. Asta văd că nu e obligatorie."],
+ ["B", "10:07", "Ok. Și la ce te face să te gândești?"],
+ ["P", "10:10", "Ăă, mă face să mă gândesc că dacă există ceva predefinit sau aveți deja ceva lucrat pe zona asta sau, mă rog, ceva open source ce poți să aduci aici, habar n-am, ăă, că poți să începi de acolo, de la ceva existent."],
+ ["B", "10:28", "Ok. Hai să presupunem că pornim de la zero."],
+ ["P", "10:33", "Așa."],
+ ["F", "10:36", "Ăă, nu, nu. Să presupunem că l-a creat pe ăla ultimul care are zero labels de jos, să zicem că ăsta e cel nou creat."],
+ ["P", "10:44", "Bun. Și avem așa. Zero pagini trained, zero test pages, zero classes, zero labels. Nu s-a aici nimic deocamdată. Training și testing."],
+ ["F", "10:58", "Ok. Deci tu ai, să zicem, care e use case-ul tău? Documente de mortgage, să zicem. Care diferă, nu? Sunt, vrei să le clasifici în funcție de niște categorii. Ok."],
+ ["B", "11:10", "Ce, what would you do în momentul ăsta?"],
+ ["P", "11:13", "Ăăă... Stai să văd și ce scrie aici. Ok. Classes. Add classes to prepare the model to classify documents. Ok. Și testing. Deci astea cumva sunt două ordini în care ar trebui să le faci. Și avem classes. Add list of classes that are required to train the model. Așa. Descriptions will be used by LLM in charge of classification. Be precise for the details to be efficient. Ok. Asta cred că o să fie cumva zona aia de care ziceam eu cu tipuri de documente. New class. Eu o să zicem, de exemplu, ce ziceam mai devreme, certificat. A, se pune automat. Da, ce tare. Energetic. Ăăă... A, am înțeles. Lower, da."],
+ ["F", "12:02", "Nu este"],
+ ["P", "12:03", "de la"],
+ ["F", "12:04", "<span class=\"unsure\" title=\"Phase-1 query: fragment de crosstalk neclar la denumirea clasei\">Cadou</span>."],
+ ["P", "12:07", "Așa. Și description... What is the difference between this class and similar classes? Ăăă... Certificat ce conține eficiența energetică a unui imobil. Habar n-am. Așa. Bun. E creat, vedem aici, cu numele și descrierea pe care i-am dat-o. Fără mai multe detalii."],
+ ["B", "12:41", "Ce detalii te-ai fi așteptat să mai ai aici?"],
+ ["P", "12:44", "Păi, gen exemplele pe care le-am menționat anterior, de Da, gen poate să mai să l-ajut cu ceva, gen niște termeni sau cu niște keyword-uri, exemple, habar n-am. Adică, uite, să-ți zic, bă, cam așa arată un certificat energetic. Uite aici trei exemple. Așa. O să mai adăugăm unul, nu? Ca să ca să facem altceva. Ce să mai zic? Ăăă... Contract de vânzare cumpărare. Ăăă... Contract ce atestă vânzarea unui imobil. Așa. Bun. În afară de clase aici, în afară de ce am creat deja, o să zicem pe aici trei. Ok."],
+ ["B", "13:41", "Care ar fi următorul pas pe care l-ai"],
+ ["P", "13:43", "Training. Ok. Avem așa: auto-label and review, labeled upload. The model labels each page for you. Review and correct its prediction, then add the batch to the training data. Sau labeled upload. Ok."],
+ ["B", "14:00", "Care-i, care-i diferența între astea două?"],
+ ["F", "14:02", "Stai să văd. Upload pages into each class. The class of pages that are uploaded are known. The model trains with the documents that are uploaded. Ok. Distinctiv așa, care ți se pare că e diferența între ele?"],
+ ["P", "14:22", "Diferența e că dacă eu pot să uploadez fie să arunc ceva aici și să-și dea el seama pe care din clase se pupă mai bine, sau știu eu din prima, o să uploadez un certificat energetic, deci o să-l uploadez direct aici, ca să nu mai fie confuzii."],
+ ["B", "14:40", "Dacă ai avea un document care ar conține și un certificat energetic și un contract de vânzare-cumpărare?"],
+ ["P", "14:45", "Asta e, că din faptul că citesc aici că sunt clasificate pe pagini, nu pe document, pare că aici, de exemplu, dacă l-aș avea, cum ziceai tu, un document concatenat, n-ar fi o idee bună să-l uploadez pe unul sau pe altul, ci ar trebui să-l auto-label and review și să-l despartă el pe categoriile alea pe care le are, decât să fac asta, pentru că probabil ar fi label-uite greșit anumite pagini."],
+ ["F", "15:17", "Hai să mergem pe fix pe path-ul ăsta. Să zicem că tu ai o serie de documente, dar sunt amestecate între ele. Unele documente conțin și o pagină cu un certificat energetic și unul cu vânzare-cumpărare. Cum și vrei să treinezi pe"],
+ ["P", "15:32", "Deci am merge pe ăsta. Aici văd că avem ceva deja făcut."],
+ ["B", "15:38", "E un, da, e un batch care conține"],
+ ["F", "15:41", "Da, da, da. 47 de... 16 documente cu 47 de pagini."],
+ ["P", "15:45", "Ok."],
+ ["F", "15:46", "Și câte, câte chestii te-ai aștepta să trebuiască să uploadezi ca să fie ok training-ul sau cum ai, cum te-ai aștepta să îți dai seama dacă e suficient sau nu?"],
+ ["P", "15:58", "Așa, ca și feeling, probabil ar trebui, adică mă gândesc că ar trebui gen, nu știu, cel puțin 10 pagini pe fiecare clasă sau ceva, cam, cam pe aproape, cam minim, ca să ai un level of confidence bun. Ăăă... Așa ca să și știu dacă e îndeajuns sau nu, asta o să vină în zona de testing, să văd după aia dacă e îndeajuns."],
+ ["F", "16:25", "Cool. Și view predictions."],
+ ["B", "16:30", "Cât a durat asta?"],
+ ["F", "16:31", "Minute cred."],
+ ["B", "16:34", "Around minutes."],
+ ["F", "16:36", "La câte pagini ca aici, puțin."],
+ ["B", "16:40", "Și în stadiul ăsta, mai"],
+ ["F", "16:42", "Da, în zona de minutes."],
+ ["B", "16:44", "M-hm."],
+ ["F", "16:45", "Ok. Ce vezi aici?"],
+ ["P", "16:50", "Și avem așa. Mi s-a împărțit pe câte documente. În primul rând scrie aici: review the model's per page predictions. Documents with low confidence, semnalate cu ăsta, under 60%, are listed first. Ok. Click on a page to review its content. Then you can change the label, then flip the reviewed switch to mark it reviewed. Corrected pages are marked reviewed automatically. Ok. Deci vedem documentele, cele care au confidence mai mic sunt arătate primele. Și vedem documentul, apoi împărțit pe pagini. Pot să dau reviewed per pagini separate sau pe tot documentul din prima. Și îmi arată label-ul care a fost pus de el automat și confidence-ul."],
+ ["B", "17:35", "Unde ai vedea și content-ul?"],
+ ["P", "17:36", "Content-ul, ăăă, dacă dăm aici, să deschidem, vedem cred că un prima, a, ba nu, document, doar o mică descriere, cred că."],
+ ["B", "17:48", "Asta ar trebui să fie content-ul"],
+ ["P", "17:50", "content-ul paginii."],
+ ["B", "17:52", "Ok."],
+ ["P", "17:53", "E scoasă, scos din document."],
+ ["B", "17:56", "Și dacă"],
+ ["P", "17:57", "a, ok."],
+ ["F", "17:58", "E full."],
+ ["P", "17:58", "M-am gândit că poate aici e doar o sumarizare la analiză și aici intri și vezi chiar tot content-ul, dar ok. Așa. Și intru pe ăsta și zic că e contract de vânzare-cumpărare, deci nu e bine, ar trebui să-l sting pe ăsta. Și în momentul în care l-am schimbat s-a mutat automat pe reviewed, că eu am luat o decizie."],
+ ["F", "18:23", "Ți se pare naturală chestia asta sau"],
+ ["P", "18:26", "o să mai dau să modific înapoi? Dar dacă schimb la loc pe ăsta, presupun... L-am lăsat disabled. Oare ce l-am schimbat?"],
+ ["F", "18:36", "Cum ți se pare comportamentul ăsta? Te, ți-ar părea mai natural să rămână manual sau ți se pare ok că face el asta, presupunerea asta când schimbi ceva?"],
+ ["P", "18:49", "Ăăă... Teoretic, tu ar trebui să te uiți aici. Deci, în primul rând, dacă el a făcut corect, eu doar vin și bifez, pentru că deja el scrie aici ce trebuia aici și doar eu doar vin și bifez. Dacă mi se pare că a greșit și de fapt e alt tip de pagină, eu vin, dau așa și ar trebui să dau și după aia click pe reviewed. Cred că sunt șansele foarte mici ca eu să fac o greșeală în selecția asta, astfel încât să nu aibă sens să se și comute sau automat, deci cred că e ok. Ar fi o automatizare bună."],
+ ["F", "19:26", "Ok."],
+ ["P", "19:27", "Și în contextul în care, nu știu, îmi dau seama că de fapt mai era a treia opțiune aici și de fapt aia era, dau pe ăla și o să fie același lucru. Deci, în any way e reviewed, adică are logică că cineva s-a uitat pe el și a făcut decizia asta, deci are sens să fie. Da."],
+ ["F", "19:48", "Ok. Păi, să zicem că tu, doar ca să clarific, să fiu sigur că suntem on the same page, tu în momentul ăsta în ce punct al training-ului ești? S-a, a fost treinat modelul? Ăăă... cu documentele pe care le-ai uploadat?"],
+ ["P", "20:06", "Nu cred. Eu am uploadat un exemplu cu mai multe documente. El a încercat să le clasifice bazat pe niște informații foarte succinte pe care le are deocamdată acuma despre documentele astea. Eu îi zic dacă a avut dreptate sau nu la fiecare în parte și atunci o să se întâmple training-ul de fapt."],
+ ["F", "20:30", "Ok. Ok. Păi, putem cred să continuăm, dacă nu ai vreo întrebare aici."],
+ ["P", "20:36", "Ăăă, nu cred. Văd că sunt toate din ce în ce mai confident, sau nu neapărat, dar"],
+ ["F", "20:50", "Aici în prototip e mock data."],
+ ["P", "20:52", "Da, da, da, da."],
+ ["F", "20:53", "Dar e o, pot fi cu confidence mai mare, mai mic."],
+ ["P", "20:56", "Mhm. O pagină poate avea, alta poate avea foarte mici. Ăăă... Confidence score-ul e pe pagină, ceea ce are sens. Ok, și văd că tot avem câte din câte am reviewed. Dacă vrem să le trecem pe toate din prima reviewed. Cancel sau save to training. Ok. Să zicem că facem asta, ca să nu stăm să trecem prin toate, deși ar trebui. Și save to training data."],
+ ["F", "21:31", "Cum crezi că s- da. Ăă, nu, doar doar te întreb o chestie. Cum crezi că s-ar întâmpla de fapt review-ul ăsta dacă ar fi în real life? Cum te-ai asigura că-s corecte fiecare pagină? Te-ai uita la content sau ar fi ele denumite în vreun fel poate sau cum crezi că sau te-ai uita doar la alea cu confidence mic? Îți dai seama sigur că nu..."],
+ ["P", "21:55", "Păi cred că ar funcționa în felul următor. Numele documentului în sine nu m-aștept să aibă, poate să ajute, dar nu este un factor foarte decisiv. Apoi ar trebui să fie o persoană care știe cum arată documentele astea, care să facă review-ul ăsta. Ăăă... la, m-aștept ca la început, oricine folosește asta prima oară, să aibă un mic dubiu și să se să treacă prin toate de câteva ori, la mai multe batch-uri din astea. Odată ce persoana aia se convinge că alea care sunt cu confidence mare chiar sunt corecte, ninety-nine percent of the time, dacă nu chiar tot timpul, s-ar uita doar pe cele cu confidence mic. M-aștept. După ce a încercat chestia asta de câteva ori și a văzut că funcționează."],
+ ["F", "22:40", "Care sunt șansele să dai bifa de review la fiecare pagină în parte?"],
+ ["P", "22:48", "Eu personal aș trece în contextul în care, cum ziceam, am am încredere acuma că am făcut asta de câteva ori, m-aș duce doar la cele cu confidence mic, aș da fie bifă, sau aș schimba label-ul în funcție de care e decizia, și apoi le-aș, după ce am trecut doar prin cele cu confidence mic, m-aș duce să dau mark all reviewed ca să le marcheze și pe cele cu confidence mare."],
+ ["B", "23:10", "Și dacă ar fi prima sau a doua oară când ai face asta?"],
+ ["P", "23:13", "Cred că aș trece prin toate. Dacă n-am uploadat un batch extraordinar de mare, dar chiar și atunci tot ar trebui să trec prin tot, chiar dacă ar fi obositor."],
+ ["F", "23:23", "Și le-ai bifa pe fiecare sau tot ai trece prin fiecare, dar la final ai da mark all?"],
+ ["P", "23:30", "Ăăă, aș... A, da, asta e, acum înțeleg. Pentru că oricum dacă tu schimbi label-ul se bifează automat. Dacă tu vezi că label-ul e corect, poate nu trebuie să te duci la fiecare să dai review și poți să dai la final. Aș face asta, sincer."],
+ ["F", "23:52", "La final."],
+ ["P", "23:52", "Da."],
+ ["F", "23:54", "Ok."],
+ ["P", "23:55", "Pe undeva-s ~50 de click-uri în minus. Probabil."],
+ ["B", "24:02", "Ok. E important să faci asta over multiple sessions? Adică o vezi ca ceva ce, nu știu, stai două ore și revaluești documente sau e ceva ce, nu știu, stai 30 de minute, ceva, mai stai 15 minute..."],
+ ["P", "24:19", "Ăăă, poate să fie ceva ce să se facă în mai multe sesiuni, pentru că poate am uploadat un batch foarte mare, pentru că vreau să fac o dată și bine training-ul ăsta, să scap de el. E un task la mine. Acest task l-am estimat că o să dureze trei ore. Fac o oră la el, după aia, nu știu, m-a rugat cineva să fac altceva urgent, mă întorc la el peste două ore."],
+ ["F", "24:39", "Și dacă te întorci peste două ore, cum știi ce ai văzut deja și ce nu dintre documentele, cum te gândești să..."],
+ ["P", "24:47", "Aici... În primul rând, aș spera că tab-ul rămâne la fel cum l-am lăsat, că nu l-aș fi închis. Dar și dacă s-ar întâmpla ceva și aș închide tab-ul, ăăă... probabil m-aș lua după ultima bifă pe care am pus-o. În contextul în care, cum ziceam mai devreme, că alea pe care mi se par ok nu le-aș bifa, că le-aș bifa la final, e posibil ca aia să nu fie ultima bifă. Știi? Să trebuiască poate să trec din nou prin ultimele câteva sau ceva."],
+ ["F", "25:27", "A, și te uiți unde ai făcut ultima modificare, să zicem."],
+ ["P", "25:30", "Da, da, da, da."],
+ ["F", "25:31", "Și continui de acolo."],
+ ["P", "25:31", "Adică văd, nu știu, din am ajuns până la ăsta, ăsta l-am schimbat, deci s-a bifat și îl văd că e și s-a și făcut o schimbare aici așa. Aș continua de aici. Chiar poate eu să zicem că de fapt am ajuns până pe aici."],
+ ["F", "25:44", "Da."],
+ ["P", "25:46", "Dar nu știu dacă nu știu cum aș vedea altfel să să-mi dau seama."],
+ ["F", "25:50", "Ok. Ăăă, mergem mai departe?"],
+ ["B", "25:54", "Da."],
+ ["F", "25:55", "Să zicem că le-ai verificat pe toate și all is good."],
+ ["P", "25:59", "Save to training data. Bun. Și ne-am dus automat în zona de testing."],
+ ["F", "26:05", "Arată ciudat. Am, dacă dai refresh o să se șteargă totul. Ce am putea să facem, am putea să intrăm pe un alt model care e deja populat, doar că o să aibă alte clase. Dar poți să presupui că, da. Tocmai ai trainat, poți să intri pe unul din ăla cu mai puține, cu cinci. Ăăă, stai să intru aici la unul cu cinci, da."],
+ ["P", "26:37", "Ok."],
+ ["F", "26:37", "Și aici uite, ai utility bill, bank statement, la la la. Să zicem că tocmai ai testat, tocmai ai trainat și te-a dus pe testing și arată așa."],
+ ["P", "26:46", "Bun."],
+ ["F", "26:47", "Uită-te un pic și zi-ne cum citești și dacă vezi utilitatea informației."],
+ ["P", "26:53", "Avem așa, confusion matrix. The rows are the true class. The columns are the predicted class. This is held out for testing data below. Și avem așa. Deci the rows are the true class, utility bill, și apoi câte a prezis el că sunt utility bill."],
+ ["B", "27:19", "Dar ar fi, dacă ar fi să citești primul rând, ce ai înțelege?"],
+ ["P", "27:28", "Imediat. Aici nu-mi dau seama, deci noi datele astea sunt output la ce am făcut eu în zona de training, nu?"],
+ ["F", "27:45", "Da."],
+ ["P", "27:46", "Ok. A, ok. Atunci are sens. Ăăă... doar că aici nu-mi dau seama la... Ok, deci ce the rows are sunt clasele finale pe care fie le-am ales eu, sau fie doar le-am confirmat că sunt corecte în zona de training. Și columns e ce a crezut modelul că era în zona aia. Și asta s-ar citi că din tot ce a fost bifat ca și utility bill într-un final, fie de mine, sau de model, ăăă... șase din ele au fost puse corect de model ca fiind utility bill, dar două au fost puse bank statement și trei au fost puse tax document. Pe care eu după aia le-am schimbat, când am făcut review, le-am schimbat și le-am pus să fie de fapt utility bill."],
+ ["B", "28:49", "Ok, deci ăăă, rezultatele pe care le vezi aici sunt rezultate în urma a ce? Sunt rezultatele în urma a ce ai labeluit tu? Adică acest confusion matrix reiese din schimbările pe care tu le-ai făcut în zona de training? În când ai schimbat categoria acolo?"],
+ ["P", "29:20", "Da. Adică și din ce am făcut eu, dar și din ce a scos modelul."],
+ ["B", "29:24", "Și cum, asta voiam să înțeleg. Cum ar arăta diferența asta? Adică cum ți-ai da seama ce e de la tine și ce e de la model?"],
+ ["P", "29:34", "Păi cele care sunt pe diagonala matricei aici ar trebui să fie ce a scos modelul care a fost și corect. Și apoi tot ce e în afară de diagonală înseamnă că am făcut eu o modificare."],
+ ["B", "29:55", "Peste el. Ăăă..."],
+ ["F", "30:00", "Deci, dacă e să facem un pas în spate pe zona de training, tu ai aruncat datele alea unlabeled acolo. Ți s-au scos niște predicții. Și în baza acelor predicții pe care tu le-ai corectat, deci ai avut un set cu valorile corecte, ce s-a întâmplat?"],
+ ["P", "30:21", "S-a comparat ce a scos modelul prima oară cu ce am confirmat eu după aia că e bine sau nu."],
+ ["B", "30:27", "Ok. Ăăă..."],
+ ["F", "30:33", "Putem, hai să punem un pic pauză la punctul ăsta și să revenim un pic după ce ne uităm pe toată pagina."],
+ ["P", "30:40", "Ok."],
+ ["F", "30:40", "Ca să nu îi dăm spoilere. Și în același timp să..."],
+ ["B", "30:46", "Ok."],
+ ["P", "30:48", "Ăăă..."],
+ ["F", "30:48", "Poți să te uiți și la, da."],
+ ["P", "30:50", "Ce mai văd aici e că avem zona asta de most confused, adică unde s-au făcut numărul cel mai mare de pagini care au fost confused cu altceva. Și astea sunt el de fapt era utility bill, dar a crezut că e tax document sau etc. Apoi, training distribution, presupun că e numărul de pagini din total la fiecare tip. Astea again, presupun că sunt cele confirmate de mine, nu ce a crezut el în primă fază."],
+ ["B", "31:28", "Și ce-ți spune, adică ți se pare relevant acest training distribution?"],
+ ["P", "31:35", "Ăăă, da, pentru că dacă văd că nu știu, să zicem că tenancy agreement are o performanță foarte proastă și că nu prea ghicește bine care e ce tip de pagină e, mă uit și aici și văd că are foarte puțin training data, înseamnă că trebuie să-i mai adaug exemple, că probabil de asta nu are o performanță bună în zona aia."],
+ ["B", "31:57", "Deci da, are."],
+ ["P", "31:59", "Așa. Și apoi testing data. Aici vedem, presupun că sunt documentele pe care le-am avut noi mai devreme."],
+ ["F", "32:06", "Să zicem că tu ai uploadat..."],
+ ["P", "32:08", "tipului."],
+ ["F", "32:11", "Câte documente ai uploadat? Să zicem că ai uploadat, nu știu, 200 de pagini când ai făcut testarea. Tu știi asta. Erau 200."],
+ ["P", "32:20", "Așa."],
+ ["F", "32:21", "E bine atent."],
+ ["P", "32:22", "Ok. Și avem așa. A held out pool of 20% of each batch that is scored on every training run. 16 misclassified. Mhm."],
+ ["F", "32:46", "Cum interpretezi?"],
+ ["P", "32:53", "Deci ce înțeleg e că din fiecare batch de testing a held out pool reprezintă 20%. Și este păstrat și ăăă... rerulat de fiecare dată când se face un training run. Ce înțeleg prin asta e că dacă, de exemplu, de-a lungul timpului fac 10 batch-uri din astea, de la fiecare se păstrează câte 20%. Și la al 10-lea test o să, dacă de fiecare dată am uploadat câte 100 de pagini, de fiecare dată am păstrat câte 20, la al 10-lea test o să am 200 care se rerulează, pe lângă"],
+ ["F", "33:38", "Da."],
+ ["P", "33:39", "ce am făcut eu atunci. Ok. În cazul ăsta noi vedem acele 20% care se rerulează de fiecare dată în lista asta? Așa cred. Adică vă întreb."],
+ ["F", "33:59", "Adică asta pare că ai zis și tu."],
+ ["P", "34:01", "Da, da, da."],
+ ["F", "34:03", "Cum ți se pare ideea asta? Ți se pare e ce te așteptai sau ai avea o altă așteptare despre cum se testează training-ul?"],
+ ["P", "34:15", "Mhm. Ideea e că clar are sens să te uiți pe past data și să vezi dacă inclusiv pe celelalte batch-uri ai început să ai un scor mai mare. But... Nu, cred că e o idee foarte bună chestia asta. Singura teamă mi-e că poate să fie ever-growing zona asta și să faci 100 de teste și să fie 1000 de pagini aici într-un final."],
+ ["F", "34:43", "Ok, deci după ce ai zis asta, ai vrea niște control, mai scoți unele, mai dai disable la unele?"],
+ ["P", "34:47", "Maybe, da, exact."],
+ ["B", "34:50", "Să controlezi testing pool-ul sau să controlezi cum vezi informația asta aici? Adică inclusiv să scoți documente din testing pool sau să zici vreau să văd doar ultimul batch, vreau să văd batch-ul trei, vreau să văd batch-ul cinci."],
+ ["P", "35:07", "Aici sunt mai multe. Deci, în primul rând, cred că ar fi bine să poți să controlezi testing pool-ul, pentru că dacă dar nici nu știu aici. Să zicem că poate cu o nouă lege sau ceva se schimbă structura unui document de genul ăsta. Nu-mi dau seama aici dacă ar trebui să faci un ML complet, dar nu ar avea sens, că dacă doar un tip de document din tot batch-ul ăsta de mortgage document se schimbă, nu prea ar trebui. Dar în același timp n-ar trebui să mai fie relevant nici în test pe care l-am mai făcut până acuma pe tipul ăla de certificat energetic, să zicem. Deci ar trebui să pot să șterg toate certificatele energetice și să pot să adaug altele dacă s-a schimbat sau ceva. Asta ca un exemplu. Și apoi cealaltă chestie e că doar e pana mea de legată de performanță sau crăparea platformei. Că-s prea multe."],
+ ["F", "36:07", "Da, cine știe cine pune, face 1000 de teste aici și o să fie 100.000 de pagini în acest pool."],
+ ["B", "36:13", "Ok. Ok."],
+ ["F", "36:16", "Ok. Poți să te întorci un pic la confusion matrix?"],
+ ["P", "36:20", "Da."],
+ ["F", "36:20", "Sincer, pare clickable?"],
+ ["P", "36:24", "Nu."],
+ ["F", "36:24", "Ok."],
+ ["P", "36:25", "Nu."],
+ ["F", "36:25", "Să zicem că știi că e."],
+ ["P", "36:26", "Asta să facem."],
+ ["F", "36:27", "Am am citit pe el. Nu mai știu unde am citit, dar am citit că e. Poți să dai click tu să... Poți să încerci unele celule, să vezi ce se întâmplă."],
+ ["P", "36:35", "Ok, să zicem că vreau să văd această confuzie cu tax document la utility bill. Și o să-mi apară dedesubt, o să văd și aici că asta am selectat ca și filtru. Și aici. Held out pages, true class utility bill, true class fiind ce am confirmat eu și predicted fiind ce a zis modelul."],
+ ["F", "36:57", "Ce ai confirmat tu când?"],
+ ["B", "37:04", "Ce ai confirmat tu când, în ce moment?"],
+ ["P", "37:09", "Interesant. Că eu mă gândeam la când am confirmat când am pus training data, dar dacă dacă să zicem paginile astea au fost rerulate, nu cred că am mai... Dar că, a, dar nu, chiar și atunci, că dacă eu am băgat un batch prima oară și de atunci am zis că bă, ăsta e utility bill, nu e altceva, el a zis că e tax document. Poate nici data viitoare n-a înțeles că e utility bill și tot tax document a zis. Deci ar fi la fel true class și predicted. Și poate într-un final, după nu știu câte training-uri, el s-ar raporta în continuare la prima mea review, gen primul meu review, pentru că eu am definit ăla ca fiind true class."],
+ ["F", "37:59", "Mhm."],
+ ["P", "38:00", "Și el în continuare o să se o să compare ce a scos modelul cu ce am zis eu prima oară. Asta m-aștept. Să fie logica."],
+ ["B", "38:09", "Ok."],
+ ["F", "38:10", "Ca omul să fie single source of truth în chestia asta. Nu știu care e adevărul."],
+ ["B", "38:17", "Dacă plecăm de la premiza că odată ce ai antrenat un model pe un document, odată ce i-ai zis unui model de machine learning documentul ăsta e"],
+ ["P", "38:30", "pagina numărul..."],
+ ["B", "38:31", "E, da, pagina asta e utility bill."],
+ ["P", "38:34", "Da."],
+ ["B", "38:35", "El o să știe că pagina aia e utility bill. Adică nu o să mai aibă confuzie."],
+ ["P", "38:38", "Eu m-aștept în continuare ca el poate să greșească, gen la al doilea test, la al treilea test, la al patrulea test, poate cu un confidence un pic mai bun sau ceva."],
+ ["F", "38:47", "Pe o pagină pe care a fost antrenat deja?"],
+ ["P", "38:51", "Inclusiv."],
+ ["F", "38:52", "Ok, it can happen. Adică odată ce i-ai dat pagina aia și i-ai zis ăsta e un utility bill și s-a făcut antrenarea, el când o să vadă pagina aia, fix aceeași pagină, o să știe că e utility bill. Adică nu există șansă să..."],
+ ["P", "39:07", "Ok, ok, ok."],
+ ["F", "39:08", "misclassify."],
+ ["P", "39:09", "Ok."],
+ ["F", "39:09", "Cu informația asta in mind, cum se schimbă..."],
+ ["P", "39:16", "Păi atunci deci eu i-am pus ceva, el a zis că e tax document, deși de fapt e utility bill. Tu zici că de acuma încolo el n-o să mai greșească pagina aia."],
+ ["F", "39:30", "Nu, nu o să mai greșească."],
+ ["P", "39:32", "Ok. Deci el la al doilea run, să zicem că fix ăla pe care i-am i-am atras eu atenția, o să fie unul din aceste held out pages și o să-l retesteze. Și-l retestează și teoretic n-ar mai avea de ce să apară în această confusion matrix, pentru că n-ar avea de ce să mai greșească după ce i-ai zis tu. Deci aici ar... ar trebui să apară doar cele din ultimul run, teoretic, că"],
+ ["F", "40:07", "Aș mai propune încă o dată să parcăm acest subiect și să zicem că mai faci un training."],
+ ["B", "40:12", "Mai ai un set de documente, stai să testăm și cealaltă parte acuma. Să zicem că ai un set de documente și sunt toate utility bills. Ai un o arhivă cu un utility bill. Da? Și vrei să zici hai că-l train-uiesc și pe asta."],
+ ["P", "40:24", "Îl level? Oricum, oricum."],
+ ["F", "40:27", "Sure. Hai să încercăm."],
+ ["P", "40:28", "Hai să vedem. Da, ok. Să mergem la training. Ăla-i egal, ca să zic așa, în cazul ăsta. Da. Pentru că știu că"],
+ ["B", "40:35", "Că toate sunt."],
+ ["P", "40:36", "Da."],
+ ["F", "40:36", "Toate paginile din toate documentele pe care le încarci sunt utility bills."],
+ ["P", "40:40", "Da. Și dau upload. Ok. Și noi știm că Ok. Deci 80% sunt, uitasem chestia asta. 80% sunt training, 20% sunt test. Acele held out pages pe care vorbeam mai devreme, pe 20% sunt. Așa. Deci asta înseamnă că acele pagini nu s-a făcut training pe ele. Acele held out pages. Și ele cumva rămân rămân ca un o chestie complet obiectivă din punct de vedere al ML-ului. El nu are de unde să știe legat de alea care e rezultatul adevărat."],
+ ["F", "41:34", "Măi, stai."],
+ ["P", "41:34", "Nu."],
+ ["F", "41:35", "Ce ce ce?"],
+ ["P", "41:35", "Eu te dau. Da. Deci asta înseamnă că el la acele held out pages nu știe niciodată care e răspunsul corect, de fapt."],
+ ["B", "41:49", "Dar atunci"],
+ ["P", "41:50", "Dar le"],
+ ["B", "41:50", "ține și le evaluează de fiecare dată."],
+ ["P", "41:52", "Da, le evaluează de fiecare dată. Dar atunci ce e acel true class? De la paginile alea? De unde știe el care e true class?"],
+ ["F", "42:02", "Ălea sunt pe care tu le-ai label-uit. Pentru că tu o să trebuiască să închizi de-o."],
+ ["P", "42:06", "Păi da, nu, că m-am prins că faptul că le-am uploadat aici, ăsta e true class-ul, să zicem."],
+ ["F", "42:12", "Ideea e că și atunci când faci de unde cred că a venit momentul ăsta de confuzie, o să-ți și din nou la un moment dat."],
+ ["P", "42:17", "A, am înțeles acuma. Am înțeles, gata."],
+ ["F", "42:19", "Zi-ne ce"],
+ ["P", "42:20", "Deci, în lista aia mare de pagini așa, eu, chiar dacă am label-uit unul din alea care erau greșite, el nu a fost train-uit."],
+ ["F", "42:31", "Când s-a întâmplat training-ul?"],
+ ["P", "42:34", "Păi training-ul s-a întâmplat, dar poate nu s-a eu am din 10 pe care eu le-am corectat, două dintre ele nu au nu s-a întâmplat training pe ele."],
+ ["F", "42:42", "Da, asta e corect. Dar când s-a întâmplat training-ul? În tot flow-ul ăsta pe care l-ai parcurs tu, când s-a întâmplat? Când a fost momentul în care modelul a fost antrenat?"],
+ ["P", "42:50", "După ce eu am trecut prin toate și am zis că ăsta e corect, ăsta nu e corect."],
+ ["F", "42:55", "Și ai apăsat butonul ăla care se numea"],
+ ["P", "42:57", "Save and"],
+ ["F", "42:58", "Send to training data."],
+ ["P", "42:59", "Da."],
+ ["F", "43:00", "Da. Deci a fost clar în momentul ăla că s-a antrenat modelul. Adică că a fost o bucată de timp în care modelul s-a antrenat și apoi ai văzut rezultatele în testing."],
+ ["P", "43:09", "Da. Eu cu asta minte m-am dus mai departe, da."],
+ ["F", "43:13", "Ok."],
+ ["P", "43:14", "Doar că nu nu prinsesem chestia asta că din alea 10 pe care eu le-am corectat, două de fapt niciodată nu s-a antrenat pe ele, ele au fost ignorate complet în training și doar s-au dus în zona aia de held out pages, care o să fie o zonă care întotdeauna o să încerce să"],
+ ["F", "43:33", "Ruleze pe ea."],
+ ["P", "43:34", "Da, să ajungă la rezultatul corect, fără să fie train-uit fix pe pagina aia. Ceea ce are foarte mult sens, că altfel"],
+ ["F", "43:41", "De asta ți-am de asta am dat bucata aia de informații. Ok. Dacă e să te gândești acum la știind what is happening actually, care e momentul în care ai fi avut nevoie de mai mult ajutor sau care e momentul în care ai fi vrut, băi, aș fi vrut ca platforma să-mi zică asta punctual ca să înțeleg din prima?"],
+ ["P", "44:02", "Ăă, scria și pe undeva pe aici, mi se pare. Nu mai știu sigur. Stai să vedem. Deci, ok. Scrie asta aici în primul rând. Dar nu-ți descrie nimic aici de 80 20. Nici pe aici. Doar aici începem să aflăm cred că de conceptul ăla de 80 20, nu? Citindu-l aici, să zicem, sau ceva."],
+ ["B", "44:31", "Deci ar trebui un pic mai clar. Ăsta e un loc unde ar trebui să fie mai clar, nu?"],
+ ["P", "44:34", "Da, cred că un un info point aici sub toate chestiile astea sau ceva, că dintre toate corecturile pe care le faci tu aici, sau nici neapărat corecturi, din tot ce trimiți tu aici, 20% nu o să fie antrenat, o să fie complet ignorat de către ML și n-o să fie antrenat și o să fie păstrat ca un benchmark pe care să se tot retesteze. Ceva de genul."],
+ ["F", "44:57", "Ok. Dar atunci când ai apăsat pe butonul ăla se numește Save to training data. Tu ai înțeles că de pe butonul ăsta se întâmplă asta face startul antrenării modelului. De asta"],
+ ["P", "45:14", "Da."],
+ ["F", "45:18", "Dar de fapt"],
+ ["P", "45:19", "Dar ai înțeles."],
+ ["F", "45:19", "Da, nu, da, asta am înțeles."],
+ ["P", "45:20", "Da."],
+ ["F", "45:21", "Ok. Hai că e good. Perfect."],
+ ["P", "45:24", "Cool. Aici era un compare."],
+ ["B", "45:26", "Poate dacă ai tu timp la un moment dat să treci și prin zona asta. Deci la zona asta ajungi după ce faci un training și mai faci un training. Dacă poți să ne lași, dacă nu mai avem timp acuma, poți să ne lași niște feedback când ai timp."],
+ ["P", "45:38", "Da, cred că pot să trec și repede un minut prin ele. Deci, vedem old. Old înseamnă tot ce am făcut până acuma sau doar ultimul run înainte de, gen penultimul run?"],
+ ["B", "45:53", "Ce crezi că înseamnă?"],
+ ["P", "45:54", "Eu să zic, mă aștept să fie all previous."],
+ ["B", "45:58", "Ok. Și candidate?"],
+ ["P", "46:01", "Candidate e ce am uploadat acuma, teoretic, da. Comparison-ul e Deci, în primul rând ne arată câte s-au adăugat la fiecare, ca training distribution. Apoi aici, candidate, old. Presupun că dacă ar fi fost în continuare una greșită pe aici sau ceva, ar fi fost un plus unu la cu roșu, că n-ar fi fost pe zona corectă și ne arată că în cazul ăsta le-a nimerit pe toate corect. Avem plusuri la fiecare."],
+ ["B", "46:45", "Zero ce ce înseamnă zero când te uiți la o celulă?"],
+ ["P", "46:48", "Mă aștept ca zero să însemne că nu n-a fost nimic greșit."],
+ ["B", "46:53", "Dar tu având la celulă"],
+ ["F", "46:56", "Și plus nouă ce înseamnă?"],
+ ["P", "46:58", "Că din din tot rândul înseamnă că din cele nouă pagini adăugate de tip text document, toate au fost categorisite corect ca fiind text document."],
+ ["B", "47:14", "Ok. Și dacă te duci la tu zici pe candidat s-a întâmplat asta, nu?"],
+ ["P", "47:18", "Da."],
+ ["B", "47:20", "Dacă te duci pe candidat, vezi asta."],
+ ["P", "47:21", "Dar văd asta aici."],
+ ["B", "47:27", "Și dacă asta vezi pe candidat, pe comparison ce te-ai aștepta să vezi? Dacă ajută, uită-te și la"],
+ ["P", "47:44", "Sau să zic old?"],
+ ["B", "47:45", "Da. Sau și să te uiți și la tabelul de testing data."],
+ ["P", "47:48", "Testing data. Testing data. Deci true class era ăsta. Old a zis corect, ăsta a zis corect, în cazul ăsta. De exemplu, pe tenancy agreement. Nu pot să dau click ca să și vin acolo. Sau de fapt hai să-l dau pe wrong. A, și vedem și still wrong, still right. Dacă a greșit, deși de prima oară mai înainte a zis că e corect."],
+ ["B", "48:28", "Ok."],
+ ["P", "48:29", "Și fixed nu știu ce e."],
+ ["F", "48:39", "Ai o 15 minute azi pe parcursul zilei?"],
+ ["P", "48:42", "Da, da, da. Mai târziu un pic."],
+ ["F", "48:45", "Ăă"],
+ ["P", "48:48", "Ok."],
+ ["F", "48:49", "Doar 10 minute, că nu e nevoie de mai mult."],
+ ["P", "48:52", "Poți și mai mult, dar să parcăm acuma."],
+ ["F", "48:56", "Ok. Da, că știu că te așteaptă Cătălin."],
+ ["P", "48:58", "Da. Da."],
+ ["F", "48:59", "Da."],
+ ["P", "49:00", "Doar să opresc."],
+ ["B", "②·00:20", "▶ Continuation (Sync · 16:00) — Zic că rămăsesem la zona asta de comparare, de"],
+ ["P", "②·00:22", "Da."],
+ ["B", "②·00:23", "Da. și gen <span class=\"unsure\" title=\"Phase-1 confirm: „mai adresasem scenariul”\">mai adresasem scenariul</span> în care ai"],
+ ["P", "②·00:26", "Poți."],
+ ["B", "②·00:27", "na, dai refresh?"],
+ ["F", "②·00:28", "Da, am făcut niște modificări aici e mai clean. Doar doar că o să pierzi chestia asta, dacă poți să faci o experiență, să faci un training și o să ajungi tu."],
+ ["P", "②·00:35", "Da, da, da. Așa. Ok, avem niște chestii aici noi."],
+ ["F", "②·00:42", "Poți să te uiți un pic la asta înainte să"],
+ ["P", "②·00:44", "Ok."],
+ ["F", "②·00:44", "faci un training."],
+ ["P", "②·00:45", "Deci pe aici nu s-a schimbat nimic. Văd astea două. Two classes have too few pages. Ok, deci te anunță și el că bă, ăsta are foarte puține, deci n-o să aibă performanță bună, which is nice. Și ăsta la fel, ne anunță că e nu e balansată training data-ul, which again is nice. Nu văd altceva pe aici, cred. Așa. Și zona de training. Ok. Nu cred că e nimic diferit pe aici. Train. Și hai să vedem. Deci, în primul rând, aici nu se schimbă nimic. Apoi, pe ăsta, ce am înțeles eu e că ce vedem aici e basically training de deci training data-ul precedent plus ce s-a adăugat acuma. Asta am observat că e. Ăă, asta însemnând că, de exemplu, s-au adăugat trei utility bill care au fost găsite corect. Ăă, nu n-au mai fost găsite altele care să fie găsite ca utility bill fiind de fapt tenancy agreement. Dar au mai fost găsite două miscellaneous și un bank statement care au fost crezute că-s utility bill. Așa aș citi diferența între ele. Apoi jos ăă la comparison, vreau să încep de jos de aici. Ce înțeleg? Ăsta era fixed înainte, nu? Și acu e improved. Ăă, ăsta înseamnă că înainte a fost găsit greșit și acu e găsit corect. Ăsta înainte era greșit, acu e tot greșit. Ăă, degraded era dacă înainte era corect și brusc a devenit greșit dintr-un motiv sau altul. Era corect și e în continuare corect și astea sunt toate. Aici e clar. Ăă, și apoi la zona asta de sus, ce înțeleg eu e că au apărut, deci, la training data s-au adăugat trei exemple de utility bill care au fost găsite ca utility bill. Adică trei exemple cumva corecte."],
+ ["F", "②·03:25", "Și la plus unu acolo?"],
+ ["P", "②·03:26", "La bank statement, deci au fost găsite trei bank statement care sunt corecte, însă a s-a adăugat la training data și un ăă document de utility bill care a fost găsit greșit ca fiind bank statement. Dar în total s-au adăugat ăă patru exemple de utility bill. Trei corecte și unul greșit. Ok."],
+ ["F", "②·03:55", "Și odată ce ești în state-ul ăsta, să zicem că tu folosești modelul ăsta undeva pe un workflow."],
+ ["P", "②·04:00", "Da."],
+ ["F", "②·04:01", "Ce crezi? Ce opțiuni crezi că ai și în legătură cu workflow-ul ăla și variantele astea de model?"],
+ ["P", "②·04:09", "Hm."],
+ ["F", "②·04:10", "Adică în momentul ăsta, workflow-ul acela care rulează undeva pe config, nu în runtime deocamdată."],
+ ["P", "②·04:18", "Da."],
+ ["F", "②·04:19", "În dev. Tu ai aici un old și un candidate."],
+ ["P", "②·04:21", "Da."],
+ ["F", "②·04:22", "Ce crezi că rulează dacă te duci pe workflow-ul ăla și"],
+ ["P", "②·04:25", "Old. Candidate-ul nu mă aștept să fie încă în funcțiune până nu îl promovez eu."],
+ ["F", "②·04:29", "Ok."],
+ ["B", "②·04:31", "Ce cum ai lua decizia asta de promote? Adică te uiți la te uiți la combinația asta de date. Ce e un indicativ pentru tine că modelul s-a îmbunătățit și ce ți-ar da confidence să faci promote?"],
+ ["P", "②·04:49", "Mă gândesc că dacă îmi adaugă exemple corecte la training, înseamnă că trebuie să crească performanța modelului, deci îmi spune că fac un lucru bun dacă mai adaug și acest training data pe lângă ce aveam și înainte."],
+ ["B", "②·05:12", "Deci să ai plusuri pe diagonală."],
+ ["P", "②·05:14", "Da."],
+ ["B", "②·05:15", "Să ai verde pe diagonală."],
+ ["P", "②·05:16", "Da."],
+ ["B", "②·05:16", "Ok. Și ăă, referitor la outliers, gen, ok, e verde pe diagonală, dar ăla e acel utility bill, unul dintre ele a fost categorisit, unul în plus,"],
+ ["P", "②·05:32", "Da."],
+ ["B", "②·05:32", "a fost categorisit ca fiind bank statement. Cum cum compari improvement-ul versus riscul pe care ți-l introduce un model nou?"],
+ ["P", "②·05:42", "În capul meu nu sunt egale, sincer. Adică mi se pare mai nașpa să introduci chiar și unul greșit decât să introduci, să zicem, două corecte. Dar cumva e un balance din ăsta în care, uite, dacă în cazul ăsta cred că 3 la 1 sau 4 la 1 mi s-ar părea minimul că e ok. Adică nu, înseamnă că nu nu-l stric mai rău decât îi fac bine. Deci ar trebui să fie ok. Dacă ar fi gen 1 + 1, dar plus 3 aici, aș zice că, adică probabil cresc performanța la astelalte, dar la asta e chiar posibil s-o scad sau habar n-am. Deci, Da."],
+ ["B", "②·06:27", "Ok. Și e vreo, nu știu, metrică care simți că te-ar ajuta mai high level? Adică simți nevoia de mai multe metrici aici sau ți se pare că sunt chestii care pe care ai vrea să le știi înainte să faci acest promote?"],
+ ["P", "②·06:48", "Na, aici până la urmă cred că e foarte important și zona asta de jos, că una e să vezi ce s-a întâmplat aici, dar alta e să vezi, ok, cum a impactat asta scenariile mele de test. Știi? Astea mi se par că până la urmă sunt cele mai importante și dacă în astea găsești orice fel de improvement, super ok. Ăă, atâta timp cât să nu existe degradation. Și cred că dacă există orice fel de degradation, nu cred că e o idee bună să continui cu batch-ul ăla. Ăă, așa nu știu ce să zic mai mult. Poate doar pentru na, nu știu dacă e cazul, pentru oameni care poate înțeleg mai prost ce înseamnă acest metric sau ceva, un AI explanation sau habar n-am."],
+ ["B", "②·07:50", "Da."],
+ ["P", "②·07:50", "Da."],
+ ["B", "②·07:51", "Care ar arăta cum? Adică cum ți se pare că ar putea să arate ceva?"],
+ ["P", "②·07:57", "Ăă, cumva să te ajute să citești chestia asta, că poate pentru unii e greu de citit, în care să-ți zică acest nou batch de test îți aduce improvement-uri la confusion matrix, adică felul în care clasifică documentele. Ăă, pe zona de utility bill, pe bank statement, pe nu știu ce, e posibil să aducă și un mic ăă, o mică confuzie pe zona de utility bill, dar n-ar trebui să fie ceva care să afecteze foarte mult performanța în mod negativ. Ăă, tot așa, și poate un mic sumar și pe datele astea de test. Vedem că au fost pe testing data a fost improved five, niciun degradation, deci clar e un batch pozitiv. Recomandarea e că poți să-l promovezi."],
+ ["F", "②·08:50", "Ok. Dacă, să zicem că ai ajuns în punctul ăsta și tocmai ai primit de la cineva o un batch de tenancy agreement, că din astea aveai training prea puțin și primești un batch de uite niște exemple de tenancy agreement. Și te hotărăști să le incluzi pe alea în testing."],
+ ["P", "②·09:13", "Aici o să recunosc că știu ce urmează, că m-am jucat cu el mai devreme și am încercat să fac asta."],
+ ["F", "②·09:18", "Nu mă interesează ce"],
+ ["P", "②·09:20", "Da. Ăă, eu vin aici, dau așa și o să-mi zică că"],
+ ["F", "②·09:26", "Dacă știi că-s toate, puteai să folosești, adică ai vreun motiv pentru care folosești auto label?"],
+ ["P", "②·09:33", "A, n-am"],
+ ["F", "②·09:34", "Am văzut că te-ai grăbit."],
+ ["P", "②·09:35", "Da, da, da, că m-am grăbit. Da. N-am n-am"],
+ ["F", "②·09:38", "Nu contează pe ce cale o iei."],
+ ["P", "②·09:39", "Da, da, da. N-a fost neapărat așa și o să-mi zic aici că vezi că ai deja ceva in progress, ce vrei să faci. Și cum vezi? Cum cum vezi scenariul ăsta? Ce crezi că e likely să folosești sau ai avea nevoie de mai multă libertate? Nu nu mi s-ar părea că adică cred că la libertate te referi, gen să pot să salvez ce făceam înainte ca un draft și să promovez mai întâi ce am pus acuma și după aia să mă întorc la celălalt."],
+ ["F", "②·10:08", "În contextul ăsta să fie versionarea pe"],
+ ["P", "②·10:09", "Da, da, da. Părerea mea e că nu ar trebui nu văd să ne ducem chiar așa de mult în direcția asta în care să îl salvez pe ăla ca un draft, să mă întorc la el după aia, nu cred că e cazul. Ar trebui să iei o decizie legată de ce făceai acuma, mai ales că deja ai ajuns în zona în care doar vezi rezultatele și ar trebui să iei o decizie destul de repede, nu cred că e prea complex. Odată ce ai făcut deja training-ul. Deci, promote candidate first și presupun că train anyway ar șterge"],
+ ["F", "②·10:47", "Ar șterge."],
+ ["P", "②·10:50", "Adică m-aș m-aș m-aștept să dea discard la"],
+ ["F", "②·10:53", "La candidat."],
+ ["P", "②·10:54", "Da."],
+ ["F", "②·10:55", "Ok."],
+ ["P", "②·10:56", "Nu știu care e comportamentul de fapt, dar la asta mă gândesc."],
+ ["F", "②·11:02", "E ar construi pe peste, l-ar adăuga peste candidat."],
+ ["P", "②·11:06", "Mhm. Și ar deveni old, cum ar veni. Adică ce ce pun eu acuma, al doilea batch,"],
+ ["F", "②·11:14", "Da."],
+ ["P", "②·11:15", "în momentul în care eu zic train anyway,"],
+ ["F", "②·11:16", "Da."],
+ ["P", "②·11:17", "Pot să-i dau?"],
+ ["F", "②·11:19", "Poți să-i dai, dar înainte zi, înainte zi raționamentul."],
+ ["P", "②·11:21", "Odată ce dau train anyway, când mă duc înapoi în testing, o să văd tot batch 1 ca fiind in promotion, dar old-ul devine ce aveam inițial plus batch 2."],
+ ["F", "②·11:37", "Și dacă dai promote first?"],
+ ["P", "②·11:40", "Promote first o să-l promoveze batch 1, ăla o să devină old-ul, în momentul în care"],
+ ["F", "②·11:48", "N-ar fi fost același lucru?"],
+ ["P", "②·11:50", "Nu."],
+ ["F", "②·11:50", "Ok. Am înțeles ce zici."],
+ ["B", "②·11:53", "Deci, pentru aia, tu în momentul ăsta ești la un old, care e ce rulează pe workflow."],
+ ["P", "②·12:00", "Da."],
+ ["B", "②·12:01", "Și mai ai un candidat."],
+ ["P", "②·12:02", "Da."],
+ ["B", "②·12:03", "Să zicem batch 1."],
+ ["P", "②·12:04", "Da."],
+ ["B", "②·12:04", "Și tu acum vii cu un alt set de training."],
+ ["P", "②·12:07", "Da."],
+ ["B", "②·12:08", "Ăă, dacă apeși train anyway, pe ce fundament pui batch 2? Pe old sau pe batch 1?"],
+ ["P", "②·12:16", "Eu zic că batch 2 vine pe old."],
+ ["B", "②·12:19", "Pe old."],
+ ["P", "②·12:20", "Și apoi"],
+ ["B", "②·12:20", "Și ai trei versiuni."],
+ ["P", "②·12:21", "Da. Și eu brusc o să compar batch 1 cu old plus batch 2."],
+ ["B", "②·12:27", "Și workflow-ul pe ce rulează?"],
+ ["P", "②·12:31", "Bună întrebare."],
+ ["B", "②·12:36", "Ok."],
+ ["P", "②·12:37", "Da."],
+ ["B", "②·12:39", "Asta asta înseamnă că ai trei versiuni."],
+ ["P", "②·12:40", "Da, da, da."],
+ ["B", "②·12:41", "Da, da, da. Și nu merge."],
+ ["P", "②·12:44", "Atunci ăă nu văd cum altfel decât să facă discard."],
+ ["B", "②·12:55", "Și dacă ai vrea să construiești pe old, adică pe ce rulează workflow-urile, plus batch 2, ce ai face? Deci train anyway, train anyway pune pe batch 1, pune datele noi și îl compară tot cu old-ul, care rulează workflow-ul."],
+ ["P", "②·13:12", "Deci batch 1 plus batch 2 comparat cu old."],
+ ["B", "②·13:15", "Da. Promote candidate first îți pune batch 1, ți-l promovează"],
+ ["P", "②·13:22", "Și apoi compari batch 2 cu"],
+ ["B", "②·13:24", "batch 1 cu batch 2."],
+ ["P", "②·13:25", "Da."],
+ ["B", "②·13:28", "Dacă dacă ai vrea să pui batch 2 direct peste old,"],
+ ["P", "②·13:37", "Nu e bine, nu e bine."],
+ ["B", "②·13:39", "Când poți, cum?"],
+ ["P", "②·13:41", "Înțeleg, dar nu nu mi se pare ok, că trebuie să verifici și pe ăla totuși în testing, să vezi că nu-ți aduce mai rău, mai mult rău decât bine."],
+ ["B", "②·13:49", "Mhm."],
+ ["F", "②·13:50", "Dar să zicem că ai îți dai seama că vrei să scapi de primul candidat, de batch 1."],
+ ["P", "②·13:55", "De batch 1?"],
+ ["F", "②·13:56", "Da."],
+ ["P", "②·13:58", "Aș da cancel aici, m-aș duce să în testing din nou, fie să-i dau promote, sau discard lui ăla, m-aș întoarce aici să-i dau start training again."],
+ ["B", "②·14:11", "Ok. Ăă,"],
+ ["P", "②·14:20", "Deci în momentul de față, dacă-i dau train anyway, combină batch 1 cu batch 2 versus old?"],
+ ["B", "②·14:28", "Ok."],
+ ["F", "②·14:29", "Da. Poate am putea să clarificăm aici, nu? Sau cum ți s-ar părea mai clar comunicat?"],
+ ["P", "②·14:35", "Hm. Nu știu dacă are cum să fie mai clar comunicat. Deci, <span class=\"unsure\" title=\"Phase-1 query: George citește textul modalului train-anyway de pe ecran; ASR garbled\">[citire UI garbled]</span> Promote first to lock in the current results or train anyway to keep building on it. Poate să zică ceva super clar că your current batch that is a candidate is going to be merged with this one."],
+ ["B", "②·15:15", "You lose batch one basically."],
+ ["P", "②·15:16", "Not merged."],
+ ["B", "②·15:18", "Nu se pierde."],
+ ["P", "②·15:19", "Nu-l pierzi complet. Îl amesteci."],
+ ["B", "②·15:22", "Da, dar dacă vrei să ajungi la batch one pur, you cannot."],
+ ["P", "②·15:25", "Da."],
+ ["B", "②·15:26", "Da, da. E"],
+ ["P", "②·15:27", "Da."],
+ ["B", "②·15:28", "Pierzi prin crearea batch-ului 2."],
+ ["P", "②·15:35", "Da."],
+ ["B", "②·15:38", "Ce acum, mă rog, după ce a mai trecut ceva timp de la prima interacțiune cu zona asta, după ce te-ai mai jucat cu ea, care parte în continuare ți se pare că ar trebui, nu știu, explicată mai bine, care a fost vreun moment din ăsta de what the fuck is happening here?"],
+ ["P", "②·16:06", "Nu știu dacă what the fuck. Ăă, zona asta de jos chiar mi se pare clară, nu știu dacă e ceva dubios aici, mai ales pe comparison, dar și în mod normal nu e nimic. Ăă, deci cum am zis și mai devreme, foarte clar chestia asta că 20% se duc în training și pardon, în acest held out pool. Ăă, pe zona de candidate, teoretic e același lucru. Ăă, aici candidate e doar batch e doar batch-ul singur, nu? Fără să ne uităm și la sau e cum ar arăta tot training data-ul cu batch 2 peste?"],
+ ["F", "②·16:50", "Da."],
+ ["P", "②·16:51", "Ok. Ok. Ok, atunci are sens."],
+ ["F", "②·16:55", "Vezi și el, da?"],
+ ["P", "②·16:56", "Că mă"],
+ ["F", "②·16:56", "Vezi și el separat?"],
+ ["P", "②·16:58", "Ăă, nu neapărat, dar doar voiam să fiu sigur, pentru că văzusem eroarea asta și mă gândeam că dacă e doar pentru batch-ul ăla n-are sens."],
+ ["F", "②·17:09", "Apare doar aici, e posibil să fie un bug în prototip."],
+ ["P", "②·17:12", "Da, mă rog, nu nu"],
+ ["F", "②·17:14", "Da, nu era neapărat de asta, dar mă gândeam așa în general."],
+ ["P", "②·17:16", "Dacă așa are rost eroarea asta aici. În cazul ăsta așa are, dar da. Deci asta așa. Ăă, zona de comparison, mai ales înainte, nu știu dacă poate pentru că era și prototipul puțin greșit, ca și numere așa, pentru că încercam să-mi dau seama care e logica și stăteam și calculam, gen, ok, 3 cu 3 cu 1 cu nu dă cât trebuie. Păi și atunci ce înseamnă numerele astea?"],
+ ["B", "②·17:46", "Ți s-ar părea helpful, de exemplu, dacă ai face hover dacă ai face hover pe plus 1 aici, să-ți zică one document that is actually an utility bill but was classified as bank statement."],
+ ["P", "②·18:02", "Mhm."],
+ ["B", "②·18:03", "Adică ar ajuta asta în vreun fel să structureze un pic modelul mental de cum se citește"],
+ ["P", "②·18:11", "Da. Părerea mea, da. Că"],
+ ["B", "②·18:14", "Dacă e CSS, putem să punem un tooltip. Adică actually e atât, ca să"],
+ ["P", "②·18:24", "Și la fel și la astea cu plus. Adică la toate mi s-ar părea să dai hover și să îți explice. Ăsta înseamnă că se adaugă trei care au fost clasificate corect pe utility bill. Ăsta înseamnă că se adaugă unul pe utility bill care a fost clasificat greșit ca fiind bank statement, etc. Da."],
+ ["B", "②·18:45", "Cool."],
+ ["F", "②·18:47", "Anything else?"],
+ ["P", "②·18:49", "Nici din partea mea nu cred. N-avem nimic pe zona de workflow încă, nu?"],
+ ["F", "②·19:01", "Poți să intri un pic."],
+ ["P", "②·19:02", "A. Așa. Fac ceva nou sau?"],
+ ["F", "②·19:11", "Anything works."],
+ ["P", "②·19:15", "Așa. Ăă, păi m-aștept să fie pe la documents. Document classifier. Modelele pe care le am eu. Add a key or a path for the document. Ok. Classes, presupun că sunt hai. Output."],
+ ["F", "②·19:41", "E o problemă din nu poți să încerci alt"],
+ ["P", "②·19:43", "A."],
+ ["F", "②·19:44", "classifier."],
+ ["P", "②·19:45", "Ok, ok, ok. Deci îmi aduce toate clasele pe classifier-ul ăla."],
+ ["F", "②·19:50", "Clasele pe care știe să le clasifice modelul respectiv."],
+ ["P", "②·19:52", "Da, da, da, da. Așa. Reroute low confidence. Aha. Deci dacă găsește vreo pagină care confidence mic, să facă altceva. Ce-ar putea să facă? Să te întoarcă la proces, să zică că"],
+ ["F", "②·20:20", "Să dea să dea un mesaj, da, să te scoată din workflow pe un scenariu de error sau pe un de lucru, gen you tell me."],
+ ["P", "②·20:28", "Mhm."],
+ ["F", "②·20:29", "See this page and it was like."],
+ ["P", "②·20:32", "Ok. Hm. Adică și după aia să fie implementată asta în proces. Ceva care să să-ți aducă documentul într-un UI, să-l vezi, să zică: „Bă, la pagina asta așa, nu știu ce”. Păi și după aia ce ce răspuns trimiți înapoi?"],
+ ["F", "②·20:53", "Înapoi o să trimiți adică nu mai treci prin clasificare."],
+ ["P", "②·20:59", "Mhm."],
+ ["F", "②·20:59", "Tu deja ai clasificarea făcută."],
+ ["P", "②·21:04", "A, ok, ok, ok. Pornești workflow de unde ai rămas, cum ar veni. Ok. Interesant."],
+ ["F", "②·21:10", "asta și era."],
+ ["P", "②·21:12", "Da. Interesant, ok."],
+ ["F", "②·21:14", "Mă rog, ai asta este varianta foarte brută și grosieră."],
+ ["P", "②·21:18", "Da, da, da."],
+ ["F", "②·21:21", "O să ai un nod de human in the loop sau ceva similar care ar trebui să cheme o bucată de UI care să fie specializată pe zona asta."],
+ ["P", "②·21:32", "Mhm."],
+ ["F", "②·21:34", "Și să nu trebuiască s-o construiești tu from scratch."],
+ ["P", "②·21:37", "Da, da, da. Dar mă gândeam și care ar fi experiența, știi? Că dacă ai un proces din ăsta de mortgage, tu arunci acolo 10 documente, le râșnește pe toate. Cum cum prezentăm noi demo-urile? Acuma e că se întâmplă tot în spate, tu n-ai nicio treabă, vezi de-abia la final că unul dintre ele a fost low confidence și datele din ele sunt din documentul ăla sunt low confidence."],
+ ["F", "②·22:00", "Poți să faci asta în continuare, adică dacă pui acel confidence threshold la 1% sau la 10%."],
+ ["P", "②·22:07", "Da, sau nu bifezi reroute și atât."],
+ ["F", "②·22:10", "Da. Ideea e dacă ai use case-uri în care peste o sub un anumit confidence, nu vrei să mai faci nimic automat, pentru că depinde foarte mult în funcție de tipul în funcție de pagina documentului sau de tipul documentului, depinde foarte mult branching-ul procesului și atunci chiar nu știi unde să te duci."],
+ ["P", "②·22:30", "Da."],
+ ["F", "②·22:30", "decât să te duci pe un branch incorect și să pierzi putere de calcul, mai bine ai o mică interacțiune."],
+ ["P", "②·22:36", "Da, da, da."],
+ ["F", "②·22:37", "zi-mi și mie ce-i ăsta."],
+ ["P", "②·22:38", "Până să te apuci de restul."],
+ ["F", "②·22:39", "Și apoi continui."],
+ ["P", "②·22:42", "Decât poate să vezi că un document a fost low confidence, îl înlocuiești cu altul și după aia să rerulezi toată analiza din nou, da."],
+ ["F", "②·22:50", "Cam ăsta, adică idealul ăsta ar fi, asta ar fi interacțiunea. Îmi pare că n-am ceva, dă-mi ceva și apoi îi dau înainte."],
+ ["P", "②·22:53", "Mhm. Ok. Interesant. Deci putem să băgăm chestia asta în demo-uri?"],
+ ["F", "②·23:05", "Da, chestia asta."],
+ ["P", "②·23:08", "Vă dau un mediu dacă vreți."],
+ ["F", "②·23:09", "Păi nu, nu."],
+ ["P", "②·23:11", "Nu, dar gen, ok."],
+ ["F", "②·23:12", "2127 arăta altfel."],
+ ["P", "②·23:14", "Da, nu mă refer exact la asta, da, dar la genul ăsta de interacțiune în timpul procesului în care arunci documentele alea și la un moment dat se oprește analiza brusc, error, hands up. Vezi că unul din documente are foarte proastă, foarte prost confidence de clasificare. Mă ajuți să-l clasificăm manual? Și zici tu acolo: „Da, de fapt documentul ăsta e nu știu ce”."],
+ ["F", "②·23:42", "Da, e posibil să înțelegi."],
+ ["P", "②·23:42", "Și după aia să continue procesul."],
+ ["F", "②·23:45", "Da, poți să continui, adică poți să continui doar cu documentul ăla care e low confidence, nu trebuie să tot în spate."],
+ ["P", "②·23:50", "Mhm. Mhm."],
+ ["F", "②·23:52", "Pentru că de fapt din nodul ăsta, mă rog, el oricum ia doar un o pagină, adică el primește mai multe pagini dintr-un document sau, mă rog, de fapt mai multe texte, că nu-l interesează să fie același document. Poate să fie mai multe documente, nu te obligă nimeni să fie un singur document, dar să zicem că doar unul dintre ele are o problemă. Tu în workflow dacă ai branching pe celelalte documente și n-ai o problemă, ăla poate să continue și o să-ți pună rezultatele undeva, că probabil ți le pui într-un persistence de unde le afișezi și le răsfrumuți."],
+ ["P", "②·24:01", "Da."],
+ ["F", "②·24:23", "Și pe ăla mai ai nevoie de o chestie și atunci tu îl scoți pe error,"],
+ ["P", "②·24:28", "Mhm."],
+ ["F", "②·24:29", "îl redirecționezi într-un modal or something, o acțiune de modală. Aștepți input-ul de la user și apelezi sub workflow, îți faci un sub workflow care procesează și nu mai aștepți clasificarea. Ăla primește direct label-ul pe care ți l-a dat user-ul."],
+ ["P", "②·24:44", "Da, da, da. Da, da, da."],
+ ["F", "②·24:47", "Și ți-ai modelat cumva human in the loop."],
+ ["P", "②·24:51", "Mhm. Da, da, da."],
+ ["F", "②·24:54", "Dar da, ar trebui să poți să ai genul ăsta de."],
+ ["P", "②·24:56", "Și întrebare dacă, cum vorbeam noi pe scenariul de mai devreme în care îți pui ai un document care conține și certificat energetic și contractul de vânzare-cumpărare în același PDF. Dacă îl trec pe ăla din proces să vină prin classifier-ul nostru, el ce o să-mi zică la output?"],
+ ["F", "②·25:14", "O să-ți dea output-ul per pagină."],
+ ["P", "②·25:16", "Per pagină. Mhm."],
+ ["F", "②·25:18", "Adică tu la un moment dat ce o să poți să faci e că o să-i dai, o să-ți vină un document care are toate cele cinci clase și o să-ți zică pe pagină, după care tu o să ai niște noduri în în workflow de combine și split. Și o să poți să-ți aduci paginile pe un pe o categorie împreună și dacă vrei poți să le afișezi pe alea către user."],
+ ["P", "②·25:24", "Și să poți să le Da. Da, da, da. Ok. Make sense."],
+ ["F", "②·25:44", "Dar clasificarea momentan o să se facă pe pagină. Ne uităm și la clasificare pe un document întreg și dar aia probabil o să fie o combinație din ce e pe pagină."],
+ ["P", "②·25:54", "De ce e, da, da, da. Exact. Ok. Make sense."],
+ ["F", "②·26:01", "Good."],
+ ["P", "②·26:02", "Bine."],
+ ["F", "②·26:03", "Bine. Păi, îți mulțumesc."],
+ ["P", "②·26:04", "Mersi. Mersi și eu."]
 ];
 
-const REPAIRS = {"auto": [["…către Doc Parser sau Doc Parser, care avea modelul…", "Doc Parser  (repetiție ASR eliminată)"], ["clasificatorul / classifier-ul / classifier-le", "classifier / clasificator (normalizat, code-switching păstrat)"], ["driving license · driver's licenses", "driver's license (clasă de documente, păstrată EN)"], ["passport-uri · residence permit-uri · National ID · refugee travel doc", "passport / residence permit / National ID / refugee travel doc (clase de documente, păstrate EN)"], ["[00:13:41] „Ok” (la începutul sesiunii, timestamp aberant din diarizare)", "__DROP__"], ["Ăă · Mhm · Da, da, da (backchannels / filler izolat)", "__DROP__"]], "confirm": [["am donat astăzi  (00:00, replica de deschidere)", "am dat record/start astăzi  (facilitatorul confirmă că a pornit înregistrarea)"], ["plăcerea de la Price Horizon", "partea / use case-ul de la Price Horizon"], ["să le băriști de mână  (15:00)", "să le bifezi de mână"], ["le beciuiai mai întâi și după îți luai una de test  (22:59)", "le batch-uiai / le împărțeai în batch-uri (apoi luai una pentru test)"], ["fișierele pe care le-ai evoluat tu  (22:31)", "fișierele pe care le-ai uploadat / încărcat tu"], ["this is the LLM judge's glossary  (07:22)", "this is the LLM judge's description/guidance — P parafrazează scopul câmpului descriere"], ["Zici că e cu poșta  (13:48)", "posibil „pare că e o corespondență” — P deduce tipul documentului din text"], ["se rețin toate eval-urile  (35:14)", "se rețin toate evaluările / run-urile de antrenare"]], "query": [["„meniurile alea de pe Theta 1.9”  (04:25)", "Ce este „Theta 1.9”? O versiune/release FlowX sau o secțiune de meniu? Andrei compară plasarea ML Models cu meniurile de acolo."]]};
+const IDEAS = [
+ {"id": "idea-01", "title": "ML model belongs near data sources / integrations, not under “reusable resources”", "category": "design_insight", "topics": ["Navigation & IA"], "detail": "George first looked for ML model creation near data sources / workflows / integrations. Shown it under “reusable resources”, he felt it didn’t fit that category and agreed it sits better under integrations.", "quote": "Ca ăsta să fie și el tot aici, mi se pare că nu e în temă cu celelalte din categoria asta, sincer.", "speaker": "P", "confidence": "high", "needs": false, "anchors": [39, 25, 41]},
+ {"id": "idea-02", "title": "Mental model of training from scratch: examples + categories + scope + distinctive terms", "category": "design_insight", "topics": ["Mental models & expectations", "Class definition"], "detail": "Asked what training a classifier from zero would involve, George expected: examples first, defined categories, a bounded scope (e.g. mortgage docs), and distinctive terms/markers that raise per-class accuracy.", "quote": "În primul rând, exemple, clar… definit pe categorii… niște termeni specifici care să aducă un grad de corectitudine mai mare.", "speaker": "P", "confidence": "high", "needs": false, "anchors": [43]},
+ {"id": "idea-03", "title": "“Labels” field meaning is unclear", "category": "open_question", "topics": ["Class definition", "Guidance & transparency"], "detail": "George wasn’t sure what “labels” meant — either the distinctive keywords he’d mentioned, or per-model tags used to auto-select the right model later. The term didn’t resolve from the UI.", "quote": "Nu știu dacă sunt ce ziceam eu, cuvintele alea… sau dacă fiecare ML model să aibă niște label-uri… poate să se autoselecteze în funcție de label-urile alea.", "speaker": "P", "confidence": "high", "needs": false, "anchors": [61, 59, 60]},
+ {"id": "idea-04", "title": "Expected to add examples/keywords per class — not just name + description", "category": "feature_request", "topics": ["Class definition"], "detail": "After creating a class with only a name and description, George expected to also feed it example documents and keywords/terms to anchor the class.", "quote": "gen exemplele pe care le-am menționat anterior… niște termeni sau niște keyword-uri, exemple… uite aici trei exemple.", "speaker": "P", "confidence": "high", "needs": false, "anchors": [81, 79, 80]},
+ {"id": "idea-05", "title": "Correctly reasons auto-label&review vs labeled upload; picks auto-label for mixed docs", "category": "design_insight", "topics": ["Training & upload"], "detail": "George grasped the difference (labeled upload = you know the class; auto-label = let the model split) and reasoned that a concatenated/mixed document should go through auto-label & review rather than be force-uploaded into one class.", "quote": "dacă l-aș avea un document concatenat, n-ar fi o idee bună să-l uploadez pe unul sau pe altul, ci ar trebui să-l auto-label and review și să-l despartă el pe categoriile alea.", "speaker": "P", "confidence": "high", "needs": false, "anchors": [88, 86, 87]},
+ {"id": "idea-06", "title": "Expected training-data volume: ~10 pages per class minimum, confirmed via testing", "category": "design_insight", "topics": ["Training & upload", "Mental models & expectations"], "detail": "As a feel, George expected at least ~10 pages per class for good confidence, and said he’d confirm whether it’s enough later in the testing area.", "quote": "cel puțin 10 pagini pe fiecare clasă… ca să ai un level of confidence bun… dacă e îndeajuns sau nu, asta o să vină în zona de testing.", "speaker": "P", "confidence": "medium", "needs": false, "anchors": [95]},
+ {"id": "idea-07", "title": "Auto-marking a page “reviewed” when its label changes feels like good automation", "category": "design_insight", "topics": ["Review workflow"], "detail": "When George changed a page’s label it auto-flipped to “reviewed”. He found this natural — the chance of a mistaken selection is low, so a human clearly decided, and it saves a step.", "quote": "Cred că sunt șansele foarte mici ca eu să fac o greșeală în selecția asta… deci cred că e ok. Ar fi o automatizare bună.", "speaker": "P", "confidence": "high", "needs": false, "anchors": [119, 115, 116]},
+ {"id": "idea-08", "title": "Per-page content view: expected a summary, got full extracted text", "category": "design_insight", "topics": ["Review workflow"], "detail": "Opening a page, George initially assumed the shown text was a summary and that drilling in would reveal the full content — but it already was the full extracted page content.", "quote": "M-am gândit că poate aici e doar o sumarizare la analiză și aici intri și vezi chiar tot content-ul, dar ok.", "speaker": "P", "confidence": "medium", "needs": false, "anchors": [115, 107]},
+ {"id": "idea-09", "title": "Real-life review strategy: trust high-confidence once proven, focus low-confidence, mark-all at the end", "category": "design_insight", "topics": ["Review workflow"], "detail": "George described how he’d review for real: the doc name isn’t decisive; a person who knows the docs reviews; early on go through everything, but once high-confidence pages prove ~99% right, only review the low-confidence ones and “mark all reviewed” at the end to save clicks.", "quote": "m-aș duce doar la cele cu confidence mic… și apoi m-aș duce să dau mark all reviewed ca să le marcheze și pe cele cu confidence mare.", "speaker": "P", "confidence": "high", "needs": false, "anchors": [133, 131, 137, 141]},
+ {"id": "idea-10", "title": "No reliable way to resume review across sessions — “where did I leave off?”", "category": "pain_point", "topics": ["Review workflow"], "detail": "For big batches done over multiple sittings, George has no dependable way to know what he already reviewed. He’d rely on the last checkmark — but since he checks the obvious-correct ones only at the end, the last check isn’t the true stopping point, forcing him to re-traverse.", "quote": "probabil m-aș lua după ultima bifă pe care am pus-o… e posibil ca aia să nu fie ultima bifă. Să trebuiască poate să trec din nou prin ultimele câteva.", "speaker": "P", "confidence": "high", "needs": false, "anchors": [145, 142, 144]},
+ {"id": "idea-11", "title": "Confusion matrix is readable but takes effort to interpret", "category": "design_insight", "topics": ["Testing & metrics"], "detail": "George worked out the matrix only after some back-and-forth: rows = true class, columns = predicted; the diagonal is where the model was correct, off-diagonal is where he corrected it.", "quote": "cele care sunt pe diagonala matricei ar trebui să fie ce a scos modelul care a fost și corect. Și tot ce e în afară de diagonală înseamnă că am făcut eu o modificare.", "speaker": "P", "confidence": "medium", "needs": false, "anchors": [169, 161, 162]},
+ {"id": "idea-12", "title": "Training distribution is useful: low data explains a weak class → add examples", "category": "design_insight", "topics": ["Testing & metrics"], "detail": "George found training distribution relevant: if a class performs poorly he’d check whether it has little training data and, if so, add more examples for it.", "quote": "dacă văd că tenancy agreement are o performanță foarte proastă… văd că are foarte puțin training data, înseamnă că trebuie să-i mai adaug exemple.", "speaker": "P", "confidence": "high", "needs": false, "anchors": [182, 180, 181]},
+ {"id": "idea-13", "title": "Held-out test pool is a good idea, but fears it grows unbounded — wants control", "category": "feature_request", "topics": ["Held-out pool & 80/20", "Testing & metrics"], "detail": "George liked re-scoring against past held-out data, but worried the pool is ever-growing (100 tests → thousands of pages — performance risk). He wants control: remove/disable pages, prune outdated doc types when rules change, or view a single batch.", "quote": "Singura teamă mi-e că poate să fie ever-growing zona asta și să faci 100 de teste și să fie 1000 de pagini aici într-un final.", "speaker": "P", "confidence": "high", "needs": false, "anchors": [198, 201, 199]},
+ {"id": "idea-14", "title": "Confusion-matrix cells don’t look clickable, but the drill-down filter is useful", "category": "design_insight", "topics": ["Testing & metrics"], "detail": "Asked if the matrix looked clickable, George said no. Once told it is, clicking a cell (e.g. tax document → utility bill) filtered the held-out pages below — which he found useful. Discoverability is the gap, not the feature.", "quote": "să zicem că vreau să văd această confuzie cu tax document la utility bill… o să-mi apară dedesubt… Held out pages, true class utility bill.", "speaker": "P", "confidence": "medium", "needs": false, "anchors": [214, 207, 209]},
+ {"id": "idea-15", "title": "Misconception: thinks the model can still misclassify a page it was trained on", "category": "open_question", "topics": ["Held-out pool & 80/20", "Mental models & expectations"], "detail": "George expected the model could still get a page wrong on later runs even after being trained on it (just with better confidence). The facilitator corrected this: once trained on that exact page, it won’t misclassify it — a mental-model gap that drove later confusion.", "quote": "Eu m-aștept în continuare ca el poate să greșească, gen la al doilea test, la al treilea test, poate cu un confidence un pic mai bun.", "speaker": "P", "confidence": "high", "needs": false, "anchors": [227, 226, 229, 230]},
+ {"id": "idea-16", "title": "Didn’t realize 20% of corrected pages are held out and never trained on", "category": "pain_point", "topics": ["Held-out pool & 80/20"], "detail": "The core confusion: George hadn’t grasped that of the pages he corrected, ~20% are held out, never trained on, and kept as an objective benchmark. Once explained, it clicked — but it was the moment he most needed help.", "quote": "din alea 10 pe care le-am corectat, două de fapt niciodată nu s-a antrenat pe ele, ele au fost ignorate complet în training și doar s-au dus în zona aia de held out pages.", "speaker": "P", "confidence": "high", "needs": false, "anchors": [272, 259, 262, 273]},
+ {"id": "idea-17", "title": "The 80/20 split is never explained in the UI — wants an info point", "category": "feature_request", "topics": ["Held-out pool & 80/20", "Guidance & transparency"], "detail": "George looked for where the 80/20 held-out concept is explained and couldn’t find it before the testing screen. He recommends an info point near the training controls stating that 20% of what you submit is ignored for training and kept as a re-tested benchmark.", "quote": "cred că un info point aici sub toate chestiile astea… din tot ce trimiți tu aici, 20% nu o să fie antrenat, o să fie complet ignorat… păstrat ca un benchmark pe care să se tot retesteze.", "speaker": "P", "confidence": "high", "needs": false, "anchors": [278, 276, 277]},
+ {"id": "idea-18", "title": "Initial ML scope is document classification only — to improve groundedness, not prediction", "category": "context", "topics": ["Mental models & expectations"], "detail": "Stated by the team: the only ML models supported initially are document-classification models, introduced to improve groundedness and reduce LLM hallucination — not prediction/forecasting use cases (those are deliberately avoided for now).", "quote": "motivul pentru care introducem modelele de ML e ca să mai asigurăm groundedness și să mai scădem din probabilitatea de halucinare a unui LLM.", "speaker": "B", "confidence": "high", "needs": false, "anchors": [12, 8, 9]},
+ {"id": "idea-19", "title": "Compare view (old vs candidate) read quickly at the end; old/candidate semantics guessed", "category": "design_insight", "topics": ["Testing & metrics"], "detail": "Rushed for time, George skimmed the run-comparison view, guessing “old” = all previous runs and “candidate” = the latest upload, and read the +N deltas — but old/candidate and the still-wrong/fixed labels weren’t fully settled. (Revisited and resolved in the continuation call — see idea-20.)", "quote": "Old înseamnă tot ce am făcut până acuma… mă aștept să fie all previous. Candidate e ce am uploadat acuma, teoretic.", "speaker": "P", "confidence": "low", "needs": false, "anchors": [286, 290, 292]},
+ {"id": "idea-20", "title": "Now reads the comparison view confidently — fixed / improved / degraded + per-class deltas", "category": "design_insight", "topics": ["Testing & metrics"], "detail": "Picking up where call 1 left off, George read the run-comparison fluently: the bottom labels (fixed→improved, still-wrong, degraded, correct-and-still-correct) and the per-class +N additions. A clear step up from the rushed read in the first call (idea-19).", "quote": "Ăsta era fixed înainte, nu? Și acu e improved… înainte a fost găsit greșit și acu e găsit corect.", "speaker": "P", "confidence": "high", "needs": false, "anchors": [328, 330]},
+ {"id": "idea-21", "title": "Pre-train warnings (too few pages / unbalanced data) are appreciated", "category": "design_insight", "topics": ["Training & upload", "Guidance & transparency"], "detail": "Before training, George noticed the warnings that two classes have too few pages and that the training data is unbalanced, and liked being told up front — he reads it as a signal those classes won’t perform well.", "quote": "ne anunță că e nu e balansată training data-ul, which again is nice.", "speaker": "P", "confidence": "high", "needs": false, "anchors": [328]},
+ {"id": "idea-22", "title": "Promote criteria: correct additions + positive test-scenario impact, and zero degradation", "category": "design_insight", "topics": ["Testing & metrics", "Promote & versioning"], "detail": "George would promote when correct examples were added (raising performance) and, above all, when the test-scenario section shows improvement — but any degradation is a stop signal: he wouldn’t continue with that batch.", "quote": "dacă există orice fel de degradation, nu cred că e o idee bună să continui cu batch-ul ăla.", "speaker": "P", "confidence": "high", "needs": false, "anchors": [353, 343]},
+ {"id": "idea-23", "title": "One wrong addition outweighs a couple correct ones — wants a ~3:1/4:1 ratio", "category": "design_insight", "topics": ["Testing & metrics"], "detail": "George weights a wrongly-added example more heavily than correct ones; he’d want roughly a 3:1 or 4:1 ratio of correct-to-wrong additions as the minimum before he’s comfortable a batch doesn’t harm the model.", "quote": "mi se pare mai nașpa să introduci chiar și unul greșit decât să introduci două corecte… 3 la 1 sau 4 la 1 mi s-ar părea minimul.", "speaker": "P", "confidence": "high", "needs": false, "anchors": [351, 350]},
+ {"id": "idea-24", "title": "Wants an “AI explanation” / plain-language summary of the comparison for less-technical users", "category": "feature_request", "topics": ["Guidance & transparency", "Testing & metrics"], "detail": "George suggested an AI-written summary that reads the confusion-matrix/comparison for people who find it hard to parse — stating in words what the new batch improves, where it adds minor confusion, and whether it’s net-positive.", "quote": "cumva să te ajute să citești chestia asta, că poate pentru unii e greu de citit… acest nou batch de test îți aduce improvement-uri.", "speaker": "P", "confidence": "high", "needs": false, "anchors": [357, 353]},
+ {"id": "idea-25", "title": "Hover tooltips on each matrix/comparison cell explaining the number", "category": "feature_request", "topics": ["Testing & metrics", "Guidance & transparency"], "detail": "George strongly endorsed (and elaborated on) hovering a cell to explain it — e.g. “+1 = one page that is actually a utility bill but was classified as bank statement” — for every cell, to scaffold the mental model of how to read it.", "quote": "la toate mi s-ar părea să dai hover și să îți explice. Ăsta înseamnă că se adaugă trei care au fost clasificate corect pe utility bill.", "speaker": "P", "confidence": "high", "needs": false, "anchors": [458, 455]},
+ {"id": "idea-26", "title": "Mental model of old vs candidate: only “old” runs in the workflow until you promote", "category": "design_insight", "topics": ["Promote & versioning", "Workflow integration"], "detail": "Asked what a workflow using the model would run, George correctly said the “old” version runs; the “candidate” isn’t live until he promotes it himself.", "quote": "Candidate-ul nu mă aștept să fie încă în funcțiune până nu îl promovez eu.", "speaker": "P", "confidence": "high", "needs": false, "anchors": [340, 339]},
+ {"id": "idea-27", "title": "train-anyway vs promote-first versioning is confusing — “what does the workflow run on?”", "category": "pain_point", "topics": ["Promote & versioning"], "detail": "George worked out that train-anyway stacks batch 2 on “old”, producing three versions (old, batch 1, batch 2) — and couldn’t answer which one the workflow then runs on (“good question”). He doesn’t want heavy draft/versioning; he’d rather decide quickly on the current candidate, but the branching outcomes aren’t clear.", "quote": "Eu zic că batch 2 vine pe old… și eu brusc o să compar batch 1 cu old plus batch 2.", "speaker": "P", "confidence": "high", "needs": false, "anchors": [402, 369, 383, 411]},
+ {"id": "idea-28", "title": "The train-anyway modal copy is unclear — state plainly that the candidate gets merged", "category": "naming_copy", "topics": ["Promote & versioning", "Guidance & transparency"], "detail": "George found the train-anyway modal text hard to parse and wants it to say plainly that the current candidate batch will be merged with the new one — and that you can’t get back to a pure batch 1 afterwards.", "quote": "Poate să zică ceva super clar că your current batch that is a candidate is going to be merged with this one.", "speaker": "P", "confidence": "high", "needs": false, "anchors": [430, 429, 432]},
+ {"id": "idea-29", "title": "The 80/20 held-out split is now clear to him", "category": "design_insight", "topics": ["Held-out pool & 80/20"], "detail": "The big confusion from call 1 (idea-16/idea-17) is resolved: George now states plainly that 20% goes to the held-out pool, and that area reads clearly to him.", "quote": "foarte clar chestia asta că 20% se duc în… pardon, în acest held out pool.", "speaker": "P", "confidence": "high", "needs": false, "anchors": [442]},
+ {"id": "idea-30", "title": "Comparison numbers were confusing earlier — partly prototype math errors", "category": "pain_point", "topics": ["Testing & metrics"], "detail": "George recalls the comparison numbers not adding up earlier (he sat computing 3/3/1 and it didn’t total what it should), which made the logic hard to infer — partly attributable to the prototype’s numbers being off.", "quote": "stăteam și calculam, gen, ok, 3 cu 3 cu 1 nu dă cât trebuie. Păi și atunci ce înseamnă numerele astea?", "speaker": "P", "confidence": "medium", "needs": false, "anchors": [452]},
+ {"id": "idea-31", "title": "Reroute low-confidence to a human-in-the-loop step that resumes the workflow (and show it in demos)", "category": "feature_request", "topics": ["Workflow integration"], "detail": "George grasped the reroute-low-confidence node and envisioned a human-in-the-loop step: low-confidence pages surface in a UI for manual classification, then the workflow resumes from there. He specifically wants this visible interaction in demos rather than everything happening silently in the background.", "quote": "Cum prezentăm noi demo-urile? Acuma se întâmplă tot în spate, tu n-ai nicio treabă, vezi de-abia la final că unul a fost low confidence.", "speaker": "P", "confidence": "high", "needs": false, "anchors": [487, 475, 505]},
+ {"id": "idea-32", "title": "Classifier output is per-page; multi-class PDFs handled via combine/split nodes", "category": "design_decision", "topics": ["Workflow integration", "Class definition"], "detail": "Team-stated behaviour: when a single PDF mixes classes, the classifier outputs per page, and workflow combine/split nodes regroup pages by class for display. Document-level classification is planned later, likely derived from the per-page result. (Answers George’s question about mixed PDFs.)", "quote": "o să-ți vină un document care are toate cele cinci clase și o să-ți zică pe pagină, după care tu o să ai niște noduri de combine și split.", "speaker": "F", "confidence": "high", "needs": false, "anchors": [522, 519, 520]}
+];
+
+const REPAIRS = {
+  "auto": [
+    [
+      "groundness",
+      "groundedness"
+    ],
+    [
+      "date mocuite",
+      "date mock-uite  (mocked data)"
+    ],
+    [
+      "ochirizare (clasificare, ___, extragere de date)",
+      "OCR-izare  (OCR as a pipeline step) — confirmed"
+    ],
+    [
+      "Pe un sunt 50 de click-uri (23:55)",
+      "Pe undeva-s ~50 de click-uri în minus — confirmed"
+    ],
+    [
+      "[neinteligibil] (S1 45:09)",
+      "__DROP__"
+    ],
+    [
+      "Promoted first… (②14:55, citire UI)",
+      "Promote first to lock in the current results"
+    ],
+    [
+      "②~19 min de dead air la început (waiting room) + [neinteligibil]",
+      "__DROP__"
+    ],
+    [
+      "„2127” (②~23:12)",
+      "2127 = alt mediu cu alt prototip — confirmat (nu e garble)"
+    ]
+  ],
+  "confirm": [
+    [
+      "mai adresei la scenariul (②00:23)",
+      "mai adresasem scenariul  (we'd addressed the scenario)"
+    ]
+  ],
+  "query": [
+    [
+      "„Cadou” (S1 12:04) — fragment lângă denumirea clasei „certificat energetic”",
+      "ce a spus facilitatorul aici?"
+    ],
+    [
+      "citire UI garbled (②~14:48): „training against X1… We have to drag its course down”",
+      "ce scrie de fapt în modalul train-anyway de pe ecran?"
+    ]
+  ]
+};
 
 const turnToIdeas={};
 IDEAS.forEach(it=>it.anchors.forEach(a=>{(turnToIdeas[a]=turnToIdeas[a]||[]).push(it.id);}));
 const ORIG={};IDEAS.forEach(it=>{ORIG[it.id]=it;});
 const REVIEW={edits:{},notes:{},repairComments:{},repairSectionNote:"",turnComments:{},reportNote:""};
 function effective(it){return Object.assign({},it,REVIEW.edits[it.id]||{});}
-const SPK={"P": "Andrei", "F": "Ana", "B": "Bogdan", "O": "Obs."};
+const SPK={"P": "George", "F": "Bogdan", "B": "Ana", "O": "Obs."};
 
 // Session provenance — flattened onto every exported insight so each one is
 // self-describing in a cross-session pool. `id` (slug <feature>-<date>) is the namespace.
-const SESSION={"id": "ml-doc-classification-2026-06-25", "feature": "ML Models — document classification training", "date": "2026-06-25", "participant": "Andrei"};
+const SESSION={"id": "ml-doc-classification-2026-06-25", "feature": "ML document classification — model training & testing", "date": "2026-06-25", "participant": "George"};
 
 const scriptEl=document.getElementById('script');
 TURNS.forEach((t,i)=>{
