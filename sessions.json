@@ -1,0 +1,24 @@
+[
+ {
+  "id": "ml-doc-classification-2026-06-25",
+  "title": "ML document classification — training & testing",
+  "feature": "ML document classification — model training & testing",
+  "date": "2026-06-25",
+  "participant": "George",
+  "file": "sessions/ml-doc-classification-2026-06-25.html",
+  "topics": [
+   "Class definition",
+   "Guidance & transparency",
+   "Held-out pool & 80/20",
+   "Mental models & expectations",
+   "Navigation & IA",
+   "Promote & versioning",
+   "Review workflow",
+   "Testing & metrics",
+   "Training & upload",
+   "Workflow integration"
+  ],
+  "insights": 32,
+  "published": "2026-06-26"
+ }
+]

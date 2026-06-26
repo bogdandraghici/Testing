@@ -1,0 +1,1470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,400;0,600;0,700;1,400;1,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<title>Session Review — KB Export/Import (full)</title>
+<style>
+  :root{
+    --paper:#FBF8F1; --paper-2:#F3EEE2; --ink:#211F1B; --ink-soft:#5A554C;
+    --rule:#D8D1C0; --mark:#B23A2E; --amber:#9C7A1E; --green:#2E6F5E;
+    --blue:#3A5A78; --plum:#6E4A6B; --hl:#FBF1D9; --shadow:rgba(33,31,27,.08);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--paper);color:var(--ink);
+    font-family:"Open Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+    font-size:14px;-webkit-font-smoothing:antialiased;line-height:1.5}
+  .mono{font-family:"JetBrains Mono",ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+  .wrap{max-width:1200px;margin:0 auto;padding:0 24px}
+
+  header.mast{border-bottom:1px solid var(--rule);margin-top:36px;margin-bottom:16px}
+  .eyebrow{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--ink-soft);font-weight:700}
+  h1{font-size:24px;line-height:1.2;margin:8px 0 6px;font-weight:700;letter-spacing:-.01em}
+  .sub{color:var(--ink-soft);font-size:14px;margin-bottom:6px}
+  .legend{display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--ink-soft);margin-bottom:8px}
+  .legend i{font-style:normal;display:inline-flex;align-items:center;gap:5px}
+  .sw{width:9px;height:9px;border-radius:50%;display:inline-block}
+  .mast-row{display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap;border-top:1px solid var(--rule);margin-top:10px;padding:12px 0}
+  .meta{display:flex;gap:26px;flex-wrap:wrap;font-size:13px}
+  .meta b{font-size:18px;font-weight:600;display:block;line-height:1}
+  .meta span{color:var(--ink-soft);font-size:11px;letter-spacing:.12em;text-transform:uppercase}
+
+  nav.tabs{display:flex;gap:4px;margin:0;flex-wrap:wrap}
+  .tab{background:none;border:1px solid var(--rule);border-radius:999px;padding:7px 16px;font:inherit;font-size:13px;cursor:pointer;color:var(--ink-soft)}
+  .tab[aria-selected="true"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+
+  /* How this works — two-lane handoff (You ⇄ Claude across a central spine) */
+  .how{max-width:1040px}
+  .lane-row{display:grid;grid-template-columns:1fr 56px 1fr;align-items:center}
+  .lane-row .l{display:flex;justify-content:flex-end}
+  .lane-row .r{display:flex;justify-content:flex-start}
+  .next-rule{display:flex;align-items:center;gap:14px;margin:10px 0 6px}
+  .next-rule .line{flex:1;border-top:1px dashed var(--rule)}
+  .next-rule .lbl{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-soft);font-weight:700}
+  .spine{align-self:stretch;position:relative;display:flex;align-items:center;justify-content:center}
+  .spine .seg{position:absolute;left:50%;width:2px;background:var(--rule);transform:translateX(-1px)}
+  .spine .seg.top{top:0;bottom:50%} .spine .seg.bot{top:50%;bottom:0}
+  .lane-row.future .spine .seg{background:none;border-left:2px dashed var(--rule)}
+  .avatar{position:relative;z-index:1;width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;box-shadow:0 2px 4px rgba(31,27,22,.18)}
+  .avatar svg{width:22px;height:22px;fill:currentColor;display:block}
+  .avatar.you{background:var(--blue)} .avatar.claude{background:#C75B38}
+  .lane-row.future .avatar{background:var(--paper);border:2px dashed var(--rule);color:var(--ink-soft);box-shadow:none}
+  .lane-row.future .avatar svg{width:20px;height:20px}
+  .lane-card{max-width:480px;width:100%;margin-bottom:20px;background:#fff;border:1px solid var(--rule);border-radius:14px;padding:16px 20px;box-shadow:0 1px 2px rgba(31,27,22,.05),0 10px 22px -16px rgba(31,27,22,.25)}
+  .lane-row.future .lane-card{background:rgba(255,253,247,.5);border-style:dashed;box-shadow:none}
+  .lane-card .ch{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-bottom:7px}
+  .lane-card h4{margin:0;font-size:17px;font-weight:600;line-height:1.25;color:var(--ink)}
+  .lane-row.future .lane-card h4{color:#5C544A}
+  .lane-card p{margin:0;font-size:14px;line-height:1.55;color:#5A534B}
+  .lane-row.future .lane-card p{color:#857D72}
+  .phase-tag{font-size:10px;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-soft);border:1px solid var(--rule);border-radius:999px;padding:2px 8px;font-weight:600}
+  .here{font-size:10px;letter-spacing:.07em;text-transform:uppercase;background:var(--green);color:#fff;border-radius:999px;padding:3px 9px;font-weight:700}
+  .actor{display:inline-flex;align-items:center;gap:5px;font-size:11px;letter-spacing:.09em;text-transform:uppercase;font-weight:700;border-radius:7px;padding:4px 9px}
+  .actor svg{width:11px;height:11px;fill:currentColor;display:block}
+  .actor.human{background:#E7ECF1;color:#3C5871} .actor.claude{background:#F6E1D7;color:#B4542F}
+  @media (max-width:640px){
+    .lane-row{display:flex;align-items:stretch;gap:14px}
+    .lane-row .spine{order:0;flex:none;width:44px}
+    .lane-row .l,.lane-row .r{order:1;flex:1;min-width:0;justify-content:flex-start}
+    .lane-row .l:not(:has(.lane-card)),.lane-row .r:not(:has(.lane-card)){display:none}
+    .lane-card{max-width:none;padding:13px 16px}
+    .lane-card h4{font-size:15px} .lane-card p{font-size:13.5px}
+  }
+
+  .panes{display:grid;grid-template-columns:1fr minmax(300px,40%);gap:24px;align-items:start}
+  .scriptcol{order:2;position:sticky;top:0;max-height:100vh;display:flex;flex-direction:column;background:var(--paper-2);border:1px solid var(--rule);border-radius:12px;overflow:hidden}
+  .scripthead{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-soft);display:flex;align-items:center;gap:8px;min-height:48px;padding:0 14px;border-bottom:1px solid var(--rule);flex:none}
+  .scripthead button{margin-left:auto;background:none;border:1px solid var(--rule);border-radius:7px;font:inherit;font-size:12px;padding:4px 10px;cursor:pointer;color:var(--ink-soft)}
+  .scriptwrap{position:relative;flex:1;min-height:0;display:flex;flex-direction:column}
+  .script{overflow:auto;flex:1;min-height:0;border:none;background:transparent;padding:4px 6px;box-shadow:none}
+  .edgehint{position:absolute;left:50%;transform:translateX(-50%);z-index:6;display:none;align-items:center;gap:5px;
+    font:inherit;font-size:11px;font-weight:600;letter-spacing:.04em;color:var(--ink);cursor:pointer;
+    background:#fff;border:1px solid var(--rule);border-radius:999px;padding:5px 11px;box-shadow:0 2px 8px var(--shadow)}
+  .edgehint:hover{border-color:var(--green);color:var(--green)}
+  .edgehint .arrow{color:var(--green);font-weight:700}
+  .edgehint.show{display:inline-flex}
+  .edgehint.top{top:8px} .edgehint.bot{bottom:8px}
+  .turn{padding:8px 13px;border-radius:8px;cursor:pointer;scroll-margin:14px;transition:background .15s}
+  .turn + .turn{border-top:1px dotted var(--rule)}
+  .turn .meta-r{display:flex;gap:8px;align-items:baseline;margin-bottom:1px}
+  .turn .spk{font-size:10px;letter-spacing:.1em;text-transform:uppercase;font-weight:700}
+  .turn .ts{font-size:10px;color:var(--ink-soft)}
+  .turn.P .spk{color:var(--blue)} .turn.F .spk{color:var(--ink-soft)}
+  .turn.B .spk{color:var(--plum)} .turn.O .spk{color:#9a948a}
+  .turn .txt{font-size:12.5px;line-height:1.45}
+  .turn:hover{background:#fff}
+  .turn.hl{background:var(--hl);box-shadow:inset 3px 0 0 var(--green)}
+  .turn.hl-primary{background:var(--hl);box-shadow:inset 3px 0 0 var(--mark)}
+  .turn.anchored .spk::after{content:"•";color:var(--green);margin-left:6px}
+  .unsure{background:#F4E6C4;border-bottom:1px dashed var(--amber);padding:0 2px;border-radius:2px;cursor:help}
+
+  .toolbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;min-height:56px;padding:8px 2px;background:var(--paper);border-bottom:1px solid var(--rule);margin-bottom:14px;position:sticky;top:0;z-index:5}
+  .toolbar .count{font-weight:600} .toolbar .count em{color:var(--green);font-style:normal}
+  .tb-break{flex-basis:100%;height:0;margin:0}
+  .spacer{flex:1}
+  button.act{background:var(--ink);color:var(--paper);border:none;border-radius:8px;padding:8px 13px;font:inherit;font-size:13px;cursor:pointer}
+  button.ghost{background:none;color:var(--ink);border:1px solid var(--rule)} button.ghost:hover{border-color:var(--ink)}
+  select.filter{font:inherit;font-size:13px;border:1px solid var(--rule);border-radius:8px;padding:7px 10px;background:#fff;max-width:150px}
+
+  .card{border:1px solid var(--rule);border-radius:12px;background:#fff;padding:16px 16px 14px;margin-bottom:13px;display:grid;grid-template-columns:30px 1fr;gap:13px;box-shadow:0 1px 2px rgba(33,31,27,.05),0 10px 24px -16px rgba(33,31,27,.22);transition:border-color .15s,box-shadow .15s,transform .15s;cursor:pointer}
+  .card:hover{border-color:var(--ink-soft);transform:translateY(-1px);box-shadow:0 2px 5px rgba(33,31,27,.06),0 16px 32px -18px rgba(33,31,27,.30)}
+  .card.active{border-color:var(--mark);box-shadow:0 0 0 2px var(--mark),0 10px 24px -16px rgba(33,31,27,.22)}
+  .keep{appearance:none;width:23px;height:23px;border:1.5px solid var(--ink-soft);border-radius:6px;cursor:pointer;position:relative;margin-top:2px;background:#fff;flex:none}
+  .keep:checked{background:var(--green);border-color:var(--green)}
+  .keep:checked::after{content:"✓";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;font-weight:700}
+  .card h3{margin:0 0 6px;font-size:18px;font-weight:600;line-height:1.3;letter-spacing:-.01em}
+  .tagrow{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:7px}
+  .tag{font-size:10px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;padding:0;background:none;color:var(--ink-soft);display:inline-flex;align-items:center;gap:6px}
+  .tag::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor;flex:none}
+  .tag.pain_point{color:#9A352A}
+  .tag.feature_request{color:#33536F}
+  .tag.naming_copy{color:#7A6320}
+  .tag.design_decision,.tag.design_insight{color:#246253}
+  .tag.open_question{color:#856516}
+  .tag.context{color:#55514a}
+  .conf{font-size:10px;letter-spacing:.05em;text-transform:uppercase;font-weight:600;display:inline-flex;align-items:center;gap:5px;color:var(--ink-soft)}
+  .dot{width:8px;height:8px;border-radius:50%;display:inline-block}
+  .conf .dot{display:none}
+  .src{margin-left:auto;font-size:11px;color:var(--ink-soft);font-weight:600;white-space:nowrap;transition:opacity .12s}
+  .card:hover .src,.card.editing .src{opacity:0}
+  .src .srcn{color:var(--ink-soft);font-weight:600}
+  .detail{margin:0 0 10px;font-size:14px;color:var(--ink-soft)}
+  .quote{border-left:3px solid var(--rule);padding:7px 0 7px 13px;margin:0 0 4px;font-style:italic;color:#3a372f;font-size:14px;line-height:1.5}
+  .topics{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+  .topic{font-size:10.5px;color:var(--ink-soft);border:1px solid var(--rule);border-radius:999px;padding:2px 9px;white-space:nowrap}
+  .who{font-size:11px;color:var(--ink-soft);margin-top:7px;letter-spacing:.04em}
+  .tension{display:flex;flex-wrap:wrap;align-items:center;gap:7px;margin-top:9px;padding-top:9px;border-top:1px dashed var(--rule)}
+  .tension .tlabel{font-size:11px;font-weight:700;letter-spacing:.04em;color:var(--mark);white-space:nowrap}
+  .tension .tlink{font:inherit;font-size:12px;text-align:left;color:var(--ink);background:#fbecea;border:1px solid #e3b9b2;border-radius:7px;padding:3px 9px;cursor:pointer;line-height:1.3}
+  .tension .tlink:hover{border-color:var(--mark);color:var(--mark)}
+  .conflict-toggle[aria-pressed="true"]{background:var(--mark);color:#fff;border-color:var(--mark)}
+  .query{display:flex;gap:8px;align-items:flex-start;margin-top:11px;padding:9px 11px;background:#FBF1D9;border:1px dashed var(--amber);border-radius:8px;font-size:12.5px;color:#6f560f}
+  .query b{color:var(--amber)}
+
+  .repsec{margin-bottom:24px}
+  .repsec h2{font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-soft);border-bottom:1px solid var(--rule);padding-bottom:6px;margin:0 0 10px}
+  .note{background:#E3EEE9;border:1px solid #Bcd7cd;border-left:3px solid var(--green);border-radius:8px;padding:12px 14px;margin-bottom:18px;font-size:13.5px}
+  .note b{color:var(--green)}
+  .rep{display:flex;gap:12px;align-items:baseline;padding:7px 0;border-bottom:1px dotted var(--rule);font-size:14px}
+  .rep .b{flex:0 0 64px;font-size:10px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;padding-top:2px}
+  .b.auto{color:var(--green)} .b.confirm{color:var(--amber)} .b.query{color:var(--mark)}
+  .orig{text-decoration:line-through;text-decoration-color:var(--mark);color:var(--ink-soft)}
+  .arrow{color:var(--mark);font-weight:700;padding:0 4px} .fix{color:var(--ink);font-weight:500}
+  .fix.drop{color:var(--ink-soft);font-style:italic;font-weight:400} .qtext{color:#6f560f}
+  .hint{font-size:13px;color:var(--ink-soft);margin:0 0 14px}
+
+  .export{display:none;border:1px solid var(--rule);border-radius:12px;background:#fff;padding:16px;margin:0 0 20px}
+  .export.show{display:block}
+  .export .row{display:flex;gap:8px;align-items:center;margin-bottom:10px}
+  .export textarea{width:100%;height:200px;border:1px solid var(--rule);border-radius:8px;padding:12px;font-family:"JetBrains Mono",ui-monospace,Menlo,monospace;font-size:12px;background:var(--paper);resize:vertical}
+  /* review round-trip */
+  .review{display:none;border:1px solid var(--mark);border-radius:12px;background:#fff;padding:16px;margin:0 0 20px}
+  .review.show{display:block}
+  .review .row{display:flex;gap:8px;align-items:center;margin-bottom:10px}
+  .review .lead{font-size:13px;color:var(--ink-soft);margin:0 0 10px}
+  .review textarea{width:100%;height:220px;border:1px solid var(--rule);border-radius:8px;padding:12px;font-family:"JetBrains Mono",ui-monospace,Menlo,monospace;font-size:12px;background:var(--paper);resize:vertical}
+  .review-tally{font-size:12px;color:var(--ink-soft)}
+  .review-tally em{color:var(--mark);font-style:normal;font-weight:700}
+  button.send{background:var(--ink);color:var(--paper);border:none;border-radius:8px;padding:8px 13px;font:inherit;font-size:13px;cursor:pointer}
+  button.send[disabled]{opacity:.45;cursor:default}
+  .seg{display:inline-flex;border:1px solid var(--rule);border-radius:8px;overflow:hidden}
+  .seg button{background:#fff;border:none;padding:7px 14px;font:inherit;font-size:13px;cursor:pointer}
+  .seg button[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
+  /* card tools + edit mode */
+  .card{position:relative}
+  .cardtools{position:absolute;top:8px;right:8px;display:flex;gap:4px;z-index:3;
+    background:var(--paper);border:1px solid var(--rule);border-radius:8px;padding:3px;
+    opacity:0;transition:opacity .12s;box-shadow:0 2px 8px var(--shadow)}
+  .card:hover .cardtools{opacity:1}
+  .cardtools button{font:inherit;font-size:11px;line-height:1;border:none;background:none;
+    color:var(--ink-soft);border-radius:5px;padding:5px 7px;cursor:pointer;white-space:nowrap}
+  .cardtools button:hover{background:var(--paper-2);color:var(--ink)}
+  .cardtools button.on{background:var(--mark);color:#fff}
+  .card.editing{box-shadow:0 0 0 2px var(--blue),0 1px 0 var(--shadow)}
+  .card.editing .cardtools{opacity:1}
+  .flags{display:flex;gap:6px;margin-top:9px}
+  .flag{font:inherit;font-size:10px;letter-spacing:.07em;text-transform:uppercase;font-weight:700;
+    border:none;border-radius:5px;padding:2px 7px;cursor:pointer;display:inline-flex;align-items:center;gap:5px}
+  .flag .flag-x{font-size:11px;line-height:1;opacity:.5}
+  .flag:hover .flag-x{opacity:1}
+  .flag.edit{background:#E2EBF1;color:#33536F}
+  .flag.note{background:#EDE6D6;color:#7A6320}
+  .card.excluded{opacity:.5}
+  .card.excluded h3,.card.excluded .detail,.card.excluded .quote{text-decoration:line-through;
+    text-decoration-color:var(--mark)}
+  .cmt{margin-top:10px}
+  .cmt-rm{margin-top:6px;font:inherit;font-size:11px;color:var(--ink-soft);background:none;border:none;
+    cursor:pointer;padding:2px 0;text-decoration:underline;text-underline-offset:2px}
+  .cmt-rm:hover{color:var(--mark)}
+  .cmt-in{width:100%;min-height:54px;border:1px solid var(--amber);border-radius:8px;
+    padding:8px 10px;font:inherit;font-size:13px;background:#FBF7EC;resize:vertical;color:var(--ink)}
+  .cmt-in::placeholder{color:var(--ink-soft)}
+  .mast-cmt{margin:10px 0 0}
+  .mast-note-btn{background:none;border:1px solid var(--rule);border-radius:7px;
+    font:inherit;font-size:12px;padding:4px 10px;cursor:pointer;color:var(--ink-soft)}
+  .mast-note-btn:hover{border-color:var(--ink);color:var(--ink)}
+  .mast-note-btn.on{background:var(--mark);color:#fff;border-color:var(--mark)}
+  .rep{position:relative} .turn{position:relative}
+  .rowtool{position:absolute;top:4px;right:4px;opacity:0;transition:opacity .12s;
+    background:var(--paper);border:1px solid var(--rule);border-radius:6px;
+    font:inherit;font-size:10.5px;color:var(--ink-soft);padding:3px 7px;cursor:pointer;z-index:2}
+  .rep:hover .rowtool,.turn:hover .rowtool{opacity:1}
+  .rowtool.on{background:var(--mark);color:#fff;border-color:var(--mark);opacity:1}
+  .repsec h2{position:relative}
+  .sectool{margin-left:10px;font:inherit;font-size:11px;border:1px solid var(--rule);
+    border-radius:6px;color:var(--ink-soft);padding:2px 8px;cursor:pointer;text-transform:none;letter-spacing:0}
+  .sectool.on{background:var(--mark);color:#fff;border-color:var(--mark)}
+  .cmt.inline{margin:6px 0 2px}
+  .efield[contenteditable="true"]{outline:none;border-bottom:1px dashed var(--blue);
+    background:#F7FAFD;border-radius:3px;padding:0 2px}
+  .card.editing .quote.efield[contenteditable="true"]{background:#F7FAFD}
+  .esel{font:inherit;font-size:12px;border:1px solid var(--rule);border-radius:6px;padding:3px 6px;background:#fff}
+  .echip{display:inline-flex;align-items:center;gap:5px}
+  .echip button{border:none;background:none;color:var(--mark);cursor:pointer;font-size:12px;padding:0 2px}
+  .topic-add{font:inherit;font-size:10.5px;border:1px dashed var(--rule);border-radius:999px;
+    padding:2px 8px;width:120px}
+  footer{color:var(--ink-soft);font-size:12px;border-top:1px solid var(--rule);padding:18px 0 50px;margin-top:24px}
+  .hidden{display:none!important}
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:10px 18px;border-radius:999px;font-size:13px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:20}
+  .toast.show{opacity:1}
+  @media (max-width:880px){
+    .panes{grid-template-columns:1fr}
+    .scriptcol{position:static;max-height:none;order:-1}
+    .script{max-height:300px}.toolbar{position:static}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="mast">
+    <div class="eyebrow">User testing · 2026-06-25 · 2 recordings (call + continuation) · transcripts repaired</div>
+    <h1>ML document classification — training &amp; testing</h1>
+    <div class="sub">49 min + 26 min (②) · 3 speakers (diarized, reconciled) · RO-primary with EN terms</div>
+    <div class="legend">
+      <i><span class="sw" style="background:var(--blue)"></span>George — participant</i>
+      <i><span class="sw" style="background:var(--ink-soft)"></span>Bogdan — interviewer</i>
+      <i><span class="sw" style="background:var(--plum)"></span>Ana — product / facilitator</i>
+    </div>
+    <div class="mast-cmt">
+      <button class="mast-note-btn" data-act="report-note" onclick="toggleReportNote(this)">💬 Comment on the whole report</button>
+    </div>
+    <div class="mast-row">
+      <div class="meta">
+        <div><b id="m-ideas">0</b><span>ideas</span></div>
+        <div><b id="m-kept">0</b><span>kept</span></div>
+        <div><b id="m-rep">0</b><span>repairs</span></div>
+        <div><b id="m-query" style="color:var(--mark)">0</b><span>open queries</span></div>
+      </div>
+      <nav class="tabs">
+        <button class="tab" id="tab-ideas" aria-selected="true" onclick="showTab('ideas')">Ideas + transcript</button>
+        <button class="tab" id="tab-rep" aria-selected="false" onclick="showTab('rep')">Repair log</button>
+        <button class="tab" id="tab-how" aria-selected="false" onclick="showTab('how')">How this works</button>
+      </nav>
+    </div>
+  </header>
+
+  <section id="view-ideas">
+    <div class="panes">
+      <div class="scriptcol">
+        <div class="scripthead">Repaired transcript</div>
+        <div class="scriptwrap">
+          <button class="edgehint top" id="edge-up" onclick="jumpEdge(-1)" aria-label="Jump to highlighted lines above"><span class="arrow">▲</span> <span id="edge-up-n"></span> above</button>
+          <div class="script" id="script"></div>
+          <button class="edgehint bot" id="edge-dn" onclick="jumpEdge(1)" aria-label="Jump to highlighted lines below"><span class="arrow">▼</span> <span id="edge-dn-n"></span> below</button>
+        </div>
+      </div>
+      <div class="ideacol">
+        <div class="toolbar">
+          <select class="filter" id="catFilter" onchange="applyFilter()"></select>
+          <select class="filter" id="topicFilter" onchange="applyFilter()"></select>
+          <button class="ghost act" onclick="selectAll(true)">All</button>
+          <button class="ghost act" onclick="selectAll(false)">Clear</button>
+          <span class="spacer"></span>
+          <button class="ghost act conflict-toggle" id="conflictToggle" aria-pressed="false" onclick="toggleConflicts()" title="Show only insights that are in tension with another">⚡ Conflicts</button>
+          <span class="tb-break"></span>
+          <span class="review-tally" id="review-tally" data-tip=""></span>
+          <span class="spacer"></span>
+          <button class="send" data-act="send-review" id="sendReview" onclick="openReview()" disabled>Send to Claude ↑</button>
+        </div>
+        <div class="export" id="exportPanel">
+          <div class="row">
+            <div class="seg">
+              <button id="fmt-md" aria-pressed="true" onclick="setFmt('md')">Markdown</button>
+              <button id="fmt-json" aria-pressed="false" onclick="setFmt('json')">JSON</button>
+            </div>
+            <span class="spacer"></span>
+            <button class="ghost act" onclick="copyOut()">Copy</button>
+            <button class="act" onclick="downloadOut()">Download</button>
+            <button class="ghost act" onclick="closeExport()">Close</button>
+          </div>
+          <textarea id="outBox" readonly></textarea>
+        </div>
+        <div class="review" id="reviewPanel">
+          <p class="lead">Your edits, comments, and exclusions — paste this back into Claude to rebuild the report. Untouched items are omitted.</p>
+          <div class="row">
+            <div class="seg">
+              <button id="rfmt-json" aria-pressed="true" onclick="setReviewFmt('json')">JSON</button>
+              <button id="rfmt-md" aria-pressed="false" onclick="setReviewFmt('md')">Markdown</button>
+            </div>
+            <span class="spacer"></span>
+            <button class="ghost act" onclick="copyReview()">Copy</button>
+            <button class="act" onclick="downloadReview()">Download</button>
+            <button class="ghost act" onclick="closeReview()">Close</button>
+          </div>
+          <textarea id="reviewBox" readonly></textarea>
+        </div>
+        <div id="ideas"></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="view-rep" class="hidden">
+    <div class="note"><b>Two recordings, diarization reconciled.</b> This report merges the original
+      call (49 min) with its continuation (the <b>Sync · 16:00</b> recording, 26 min — turns marked
+      <b>②·</b>). In call 1 the transcriber reset its labels at every ~20-min boundary, so the same three
+      voices were relabeled each chunk (e.g. “Speaker 2” is <b>George</b> in minutes 20–40 but a
+      facilitator before and after); every turn was re-attributed. Call 2’s labels were stable, but its
+      first ~19 min were waiting-room dead air (dropped) and the opening recap was mis-timed (re-aligned).
+      Speakers throughout: <b>George</b> (participant), <b>Bogdan</b> (interviewer), <b>Ana</b>
+      (product/facilitator). Romanian was clean; a few English terms were restored (e.g. <b>OCR-izare</b>,
+      <b>groundedness</b>) and George’s on-screen modal readings remain flagged where the ASR garbled them.</div>
+    <p class="hint">Phase-1 repairs. <span style="color:var(--green)">Green</span> = applied ·
+      <span style="color:var(--amber)">amber</span> = confirm · <span style="color:var(--mark)">red</span> = needs you.</p>
+    <div id="repairs"></div>
+  </section>
+
+  <section id="view-how" class="hidden">
+    <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+      <symbol id="ic-human" viewBox="0 0 24 24"><path fill="currentColor" d="M12 12.6a4.3 4.3 0 1 0 0-8.6 4.3 4.3 0 0 0 0 8.6Zm7 7.4c0-3.3-3.4-5.4-7-5.4s-7 2.1-7 5.4V21h14v-1Z"/></symbol>
+      <symbol id="ic-claude" viewBox="0 0 24 24"><path fill="currentColor" fill-rule="evenodd" clip-rule="evenodd" d="M20.998 10.949H24v3.102h-3v3.028h-1.487V20H18v-2.921h-1.487V20H15v-2.921H9V20H7.488v-2.921H6V20H4.487v-2.921H3V14.05H0V10.95h3V5h17.998v5.949zM6 10.949h1.488V8.102H6v2.847zm10.51 0H18V8.102h-1.49v2.847z"/></symbol>
+    </svg>
+    <div class="how">
+      <div class="lane-row">
+        <div class="l">
+          <div class="lane-card">
+            <div class="ch"><span class="actor human"><svg><use href="#ic-human"/></svg> You</span><h4>Hand over the session</h4></div>
+            <p>Drop in the transcript, the recording, and a line on what was tested — all Claude needs to start.</p>
+          </div>
+        </div>
+        <div class="spine"><div class="seg bot"></div><div class="avatar you"><svg><use href="#ic-human"/></svg></div></div>
+        <div class="r"></div>
+      </div>
+
+      <div class="lane-row">
+        <div class="l"></div>
+        <div class="spine"><div class="seg top"></div><div class="seg bot"></div><div class="avatar claude"><svg><use href="#ic-claude"/></svg></div></div>
+        <div class="r">
+          <div class="lane-card">
+            <div class="ch"><span class="actor claude"><svg><use href="#ic-claude"/></svg> Claude</span><h4>Repairs the transcript</h4><span class="phase-tag">Phase 1</span></div>
+            <p>Fixes the ASR garble and restores the English domain terms — every fix logged in the Repair log.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="lane-row">
+        <div class="l"></div>
+        <div class="spine"><div class="seg top"></div><div class="avatar claude"><svg><use href="#ic-claude"/></svg></div></div>
+        <div class="r">
+          <div class="lane-card">
+            <div class="ch"><span class="actor claude"><svg><use href="#ic-claude"/></svg> Claude</span><h4>Extracts the insights</h4><span class="phase-tag">Phase 2</span><span class="here">you are here</span></div>
+            <p>Pulls insight cards — category, quote, confidence — each anchored to its exact transcript lines.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="lane-row">
+        <div class="l">
+          <div class="lane-card">
+            <div class="ch"><span class="actor human"><svg><use href="#ic-human"/></svg> You</span><h4>Review, edit &amp; classify</h4></div>
+            <p>Keep or drop cards, tweak the wording, answer the open queries, and sort them by destination database.</p>
+          </div>
+        </div>
+        <div class="spine"><div class="seg bot"></div><div class="avatar you"><svg><use href="#ic-human"/></svg></div></div>
+        <div class="r"></div>
+      </div>
+
+      <div class="lane-row">
+        <div class="l"></div>
+        <div class="spine"><div class="seg top"></div><div class="seg bot"></div><div class="avatar claude"><svg><use href="#ic-claude"/></svg></div></div>
+        <div class="r">
+          <div class="lane-card">
+            <div class="ch"><span class="actor claude"><svg><use href="#ic-claude"/></svg> Claude</span><h4>Folds in your changes</h4></div>
+            <p>Reads your edits, comments, and exclusions, then rebuilds the report with them folded in.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="next-rule"><div class="line"></div><span class="lbl">Next · planned, not yet built</span><div class="line"></div></div>
+
+      <div class="lane-row future">
+        <div class="l"></div>
+        <div class="spine"><div class="seg top"></div><div class="avatar claude"><svg><use href="#ic-claude"/></svg></div></div>
+        <div class="r">
+          <div class="lane-card">
+            <div class="ch"><span class="actor claude"><svg><use href="#ic-claude"/></svg> Claude</span><h4>Publishes to Notion</h4></div>
+            <p>Pushes the final insights to Notion via the Notion MCP — each into the right database.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer>Generated by the <b>meetinginsights</b> skill · Phase 1 repair → Phase 2 extract. Quotes are the repaired Romanian.</footer>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+// [speaker, timestamp, text]
+const TURNS = [
+ ["B", "00:00", "pe pasul new, dacă n-ai tu ceva aici."],
+ ["F", "00:03", "Nu cred că. Înainte de intro l-aș întreba pe el ce știe despre ML models, machine learning models versus LLM. Dacă dacă ai auzit, dacă știi cum"],
+ ["P", "00:16", "Ă, știu în mare, n-am lucrat niciodată cu ele. Știu că sunt cumva sunt un pas mai automatizat totuși al față de LLM-uri sunt tot ceva un pic mai determinist, în sensul în care sunt antrenate pe niște pași specifici, pe niște chestii specifice, mult mai restrâns decât un LLM și că se folosesc în cazuri din astea mult mai specifice."],
+ ["F", "00:43", "Ai prins ideea în cap."],
+ ["P", "00:44", "Ăăă predicție pe cum îi zice, indicator financiar la o firmă sau predicție pe producție, chestii de genul ăsta, în care se analizează, de obicei se analizează un set de date cu o formă structurată și se scoate un rezultat, de obicei o predicție sau ceva în funcție de cum a arătat până acuma."],
+ ["F", "01:09", "Bun. Mersi."],
+ ["B", "01:11", "Super. Păi, în aceeași zonă mergem și noi, doar că use case-ul sau primele tipuri de modele pe care vrem să le introducem pe platformă sunt modele de clasificare de documente. Pentru că se repetă pipeline-ul ăsta de clasificare, OCR-izare, extragere de date și așa mai departe."],
+ ["P", "01:31", "Ok. Pot să vă întrerup puțin? Mi-ați adus în vorbă subiectul ăsta și chiar aveam o discuție destul de urgentă legată de treaba asta. Noi vrem ca direcție în produs să introducem încet-încet zona asta de ML."],
+ ["B", "01:43", "Pentru zona de, momentan singurele tipuri de modele de ML pe care o să le suportăm sunt modele pentru clasificare de documente."],
+ ["P", "01:51", "Ok. Ok. Am înțeles."],
+ ["B", "01:52", "Nu m-aș avânta pe ceva pentru că este o zonă foarte mare"],
+ ["P", "01:56", "Da, știu."],
+ ["B", "01:57", "care poate să se ducă very high și în momentul ăsta, motivul pentru care introducem modelele de ML e ca să mai asigurăm groundedness și să mai scădem din probabilitatea de halucinare a unui LLM."],
+ ["P", "02:12", "Ok."],
+ ["B", "02:13", "Adică vine ca o soluție punctuală pentru o problemă specifică. Nu e luat încă în calcul să extindem pe modele care fac predicție sau alte lucruri de genul ăsta."],
+ ["P", "02:20", "Ok, ok."],
+ ["B", "02:24", "Ăăă, tocmai pentru că procesul în sine de antrenare și calibrare e destul de complicat."],
+ ["P", "02:32", "De ce întrebare? Ce use case aveți?"],
+ ["F", "02:34", "Chiar acum erau discuții de ceva că ne-am dat seama că pe unul din use case-urile de la un client nu cred că, nu credem că se poate face fără ML. Ce ziceam eu de producție."],
+ ["B", "02:48", "Ăă, ask, better ask Șerban about it, dar la momentul ăsta eu asta știu că e"],
+ ["P", "02:51", "Da. Asta știam și eu ultima oară tot de la Șerban, că ne ferim de genul ăsta de lucruri, dar"],
+ ["B", "03:00", "Da, probabil că o să, depinde și de dimensiunea clientului și da, vedem. Adică for sure we could at some point, dar depinde de condițiile în care va fi asta."],
+ ["P", "03:11", "Ok."],
+ ["F", "03:11", "Revenim la"],
+ ["B", "03:13", "Momentan ne uităm la zona de ăăă modele care clasifică documente. Ăă, și plecăm de la premiza că vrei să construiești un model de genul ăsta pe care mai apoi să-l folosești în workflow-uri. Și poți să intri în whatever project you want from here. O să ai niște date mock-uite. În ce zonă te-ai aștepta prima dată să vezi?"],
+ ["P", "03:42", "Ăăă, păi, zona de data sources pe acolo, adică ar trebui să fie pe lângă aia, oricum unde sunt și workflow-urile cumva și unde ar fi și un nod de ML sau ceva. Deci tot prin zona aia de data sources sau pe acolo pe la integrări."],
+ ["B", "04:02", "Ok. Din principii de proximitate sau ți se pare că au și"],
+ ["P", "04:08", "Sunt tot în legătură."],
+ ["B", "04:11", "Că nu e neapărat o integrare."],
+ ["P", "04:13", "Da, nu e neapărat o integrare, la fel cum nici nodurile de agenți nu sunt neapărat o integrare, dar tot în workflow stau pe acolo, dar da, sunt, fac parte din de obicei că rezolvi aceeași problemă. Când te apuci să folosești ceva dintr-un document sau ceva, trebuie să clasifici, lucrurile alea de obicei se întâmplă în zona aia, deci"],
+ ["B", "04:35", "Good. Păi, în principiu poți să navighezi în zona asta. O să ai niște exemple de"],
+ ["F", "04:44", "Să dai un refresh că a intrat un pop-up la voi."],
+ ["B", "04:47", "Thank you."],
+ ["F", "04:53", "Oh, a dispărut. L-ai găsit. Oh!"],
+ ["B", "04:59", "Știi butoanele alea care se mută când"],
+ ["P", "05:01", "Da, da, da."],
+ ["F", "05:04", "Am trecut la nivelul doi. Prima dată l-am găsit, acum nu l-am mai găsit. Ăă, ok. Uită-te, să zicem că știi că există ca feature și vrei să definești un vrei să treinezi un ML model, nu?"],
+ ["P", "05:22", "Ăăă... Acum a apărut în zona de reusable resources."],
+ ["F", "05:25", "Mai dă un refresh. Cum ți se pare în categoria asta versus în categoria integrations?"],
+ ["P", "05:43", "E greuț de zis. Ideea e că dacă e să ne uităm la mai multe chestii de aici, cumva cred că majoritatea pot fi trecute pe așa ca reusable resources. Și un data source, și un workflow, și o poză de media, la rigoare toate pot să fie reusable resources. Ăăă... Astea sunt, ce era până aici cumva sunt chestii specifice care țin de configurări din astea pe care până acum puteai să le faci doar în proces sau în UI flow, dar acum poți să le aduci de acolo aici. Ca ăsta să fie și el tot aici, mi se pare că nu e în temă cu celelalte din categoria asta, sincer."],
+ ["F", "06:29", "Deci ar avea sens mai mult la integrations, pentru"],
+ ["P", "06:31", "Cred că da. Da."],
+ ["F", "06:34", "Ok. Ăăă, hai să mergem mai departe. Înainte să intri în el, te-aș întreba foarte high level așa, dacă tu treinezi un model care să-ți recunoască documente, foarte high level, la ce te-ai aștepta de la training? Adică ce te-ai aștepta să presupună training-ul unui model de la zero?"],
+ ["P", "06:54", "Ăăă... În primul rând, exemple, clar. Aș și bineînțeles, definit pe categorii. Adică, în primul rând, să zic ce mai exact să îi specific un pic mai mult pe ce să ne uităm. Adică, ok, n-o să ne uităm pe toate documentele de pe planetă. O să ne uităm pe documente de mortgage. Un scop cumva principal sau ceva. După aia, categorisire. Băi, poate să fie acești 10 tipuri de documente, altceva n-are ce să fie, cam atât. Și apoi, ok, uite, pe fiecare document avem așa, exemplu de document, sau chiar mai multe, cu cât mai multe, cu atât mai bine. Ăăă... Mă gândesc că probabil niște termeni specifici care să se regăsească în documentele alea care să îi să aducă un grad de corectitudine mai mare ca ale documentului. Adică, dacă e un certificat energetic, o să scrie clar în titlu certificat energetic. Sau și o să regăsești litere cu majuscule de la A la F care să determine eficiența energetică, ca un exemplu. Și cam atât îmi vine în minte acum, nu știu dacă"],
+ ["F", "08:11", "Ok."],
+ ["B", "08:12", "Bun, nu, dar ca model mental, așa să vedem la ce te aștepți."],
+ ["F", "08:15", "Poți să verifici te rog că nu ești pe mute? Că nu văd să se miște nimic când vorbești."],
+ ["B", "08:20", "A, e ok, da?"],
+ ["F", "08:21", "Ok."],
+ ["B", "08:23", "Bine. Păi,"],
+ ["F", "08:26", "Mergem mai departe."],
+ ["P", "08:27", "A, dar nu am dat share screen."],
+ ["F", "08:29", "A, da."],
+ ["P", "08:30", "Ok."],
+ ["F", "08:36", "Ăăă... Ana, să pornim un ML de la zero, nu? Nu intrăm într-unul existing."],
+ ["B", "08:41", "Da, mai degrabă."],
+ ["F", "08:43", "Bun."],
+ ["P", "08:46", "Ok, avem aici deja. Create new template. Nu, hai să facem unul de la zero."],
+ ["F", "08:50", "Facem unul de la zero deocamdată."],
+ ["P", "08:52", "Ăăă... Aici văd că avem nume, labels."],
+ ["F", "08:57", "Ce crezi că sunt labels?"],
+ ["P", "08:58", "Astea, nu? Astea. Ăăă... Nu știu dacă sunt ce ziceam eu, cuvintele alea sau seturile alea de cuvinte care să determine mai bine tipul ăla de document, sau dacă fiecare grup din ăsta, în fiecare ML model să aibă niște label-uri în funcție de ce cu ce se ocupă ML-ul ăla specific, astfel încât când te duci în altă parte să-l selectezi, să-ți dai seama după label-uri ce ar fi mai potrivit, sau poate să se autoselecteze în funcție de label-urile alea."],
+ ["B", "09:38", "Ok."],
+ ["F", "09:40", "Mergem mai departe."],
+ ["P", "09:41", "Așa. ML model. Aici avem un caz în minte sau pot să merg pe ce ziceam eu?"],
+ ["F", "09:50", "Ceva care să implice clasificarea de documente sau"],
+ ["P", "09:56", "Ok. Ok, tot punem aici, văd că nu e nevoie să răspund nimic. Și document file here sau upload file. Asta văd că nu e obligatorie."],
+ ["B", "10:07", "Ok. Și la ce te face să te gândești?"],
+ ["P", "10:10", "Ăă, mă face să mă gândesc că dacă există ceva predefinit sau aveți deja ceva lucrat pe zona asta sau, mă rog, ceva open source ce poți să aduci aici, habar n-am, ăă, că poți să începi de acolo, de la ceva existent."],
+ ["B", "10:28", "Ok. Hai să presupunem că pornim de la zero."],
+ ["P", "10:33", "Așa."],
+ ["F", "10:36", "Ăă, nu, nu. Să presupunem că l-a creat pe ăla ultimul care are zero labels de jos, să zicem că ăsta e cel nou creat."],
+ ["P", "10:44", "Bun. Și avem așa. Zero pagini trained, zero test pages, zero classes, zero labels. Nu s-a aici nimic deocamdată. Training și testing."],
+ ["F", "10:58", "Ok. Deci tu ai, să zicem, care e use case-ul tău? Documente de mortgage, să zicem. Care diferă, nu? Sunt, vrei să le clasifici în funcție de niște categorii. Ok."],
+ ["B", "11:10", "Ce, what would you do în momentul ăsta?"],
+ ["P", "11:13", "Ăăă... Stai să văd și ce scrie aici. Ok. Classes. Add classes to prepare the model to classify documents. Ok. Și testing. Deci astea cumva sunt două ordini în care ar trebui să le faci. Și avem classes. Add list of classes that are required to train the model. Așa. Descriptions will be used by LLM in charge of classification. Be precise for the details to be efficient. Ok. Asta cred că o să fie cumva zona aia de care ziceam eu cu tipuri de documente. New class. Eu o să zicem, de exemplu, ce ziceam mai devreme, certificat. A, se pune automat. Da, ce tare. Energetic. Ăăă... A, am înțeles. Lower, da."],
+ ["F", "12:02", "Nu este"],
+ ["P", "12:03", "de la"],
+ ["F", "12:04", "<span class=\"unsure\" title=\"Phase-1 query: fragment de crosstalk neclar la denumirea clasei\">Cadou</span>."],
+ ["P", "12:07", "Așa. Și description... What is the difference between this class and similar classes? Ăăă... Certificat ce conține eficiența energetică a unui imobil. Habar n-am. Așa. Bun. E creat, vedem aici, cu numele și descrierea pe care i-am dat-o. Fără mai multe detalii."],
+ ["B", "12:41", "Ce detalii te-ai fi așteptat să mai ai aici?"],
+ ["P", "12:44", "Păi, gen exemplele pe care le-am menționat anterior, de Da, gen poate să mai să l-ajut cu ceva, gen niște termeni sau cu niște keyword-uri, exemple, habar n-am. Adică, uite, să-ți zic, bă, cam așa arată un certificat energetic. Uite aici trei exemple. Așa. O să mai adăugăm unul, nu? Ca să ca să facem altceva. Ce să mai zic? Ăăă... Contract de vânzare cumpărare. Ăăă... Contract ce atestă vânzarea unui imobil. Așa. Bun. În afară de clase aici, în afară de ce am creat deja, o să zicem pe aici trei. Ok."],
+ ["B", "13:41", "Care ar fi următorul pas pe care l-ai"],
+ ["P", "13:43", "Training. Ok. Avem așa: auto-label and review, labeled upload. The model labels each page for you. Review and correct its prediction, then add the batch to the training data. Sau labeled upload. Ok."],
+ ["B", "14:00", "Care-i, care-i diferența între astea două?"],
+ ["F", "14:02", "Stai să văd. Upload pages into each class. The class of pages that are uploaded are known. The model trains with the documents that are uploaded. Ok. Distinctiv așa, care ți se pare că e diferența între ele?"],
+ ["P", "14:22", "Diferența e că dacă eu pot să uploadez fie să arunc ceva aici și să-și dea el seama pe care din clase se pupă mai bine, sau știu eu din prima, o să uploadez un certificat energetic, deci o să-l uploadez direct aici, ca să nu mai fie confuzii."],
+ ["B", "14:40", "Dacă ai avea un document care ar conține și un certificat energetic și un contract de vânzare-cumpărare?"],
+ ["P", "14:45", "Asta e, că din faptul că citesc aici că sunt clasificate pe pagini, nu pe document, pare că aici, de exemplu, dacă l-aș avea, cum ziceai tu, un document concatenat, n-ar fi o idee bună să-l uploadez pe unul sau pe altul, ci ar trebui să-l auto-label and review și să-l despartă el pe categoriile alea pe care le are, decât să fac asta, pentru că probabil ar fi label-uite greșit anumite pagini."],
+ ["F", "15:17", "Hai să mergem pe fix pe path-ul ăsta. Să zicem că tu ai o serie de documente, dar sunt amestecate între ele. Unele documente conțin și o pagină cu un certificat energetic și unul cu vânzare-cumpărare. Cum și vrei să treinezi pe"],
+ ["P", "15:32", "Deci am merge pe ăsta. Aici văd că avem ceva deja făcut."],
+ ["B", "15:38", "E un, da, e un batch care conține"],
+ ["F", "15:41", "Da, da, da. 47 de... 16 documente cu 47 de pagini."],
+ ["P", "15:45", "Ok."],
+ ["F", "15:46", "Și câte, câte chestii te-ai aștepta să trebuiască să uploadezi ca să fie ok training-ul sau cum ai, cum te-ai aștepta să îți dai seama dacă e suficient sau nu?"],
+ ["P", "15:58", "Așa, ca și feeling, probabil ar trebui, adică mă gândesc că ar trebui gen, nu știu, cel puțin 10 pagini pe fiecare clasă sau ceva, cam, cam pe aproape, cam minim, ca să ai un level of confidence bun. Ăăă... Așa ca să și știu dacă e îndeajuns sau nu, asta o să vină în zona de testing, să văd după aia dacă e îndeajuns."],
+ ["F", "16:25", "Cool. Și view predictions."],
+ ["B", "16:30", "Cât a durat asta?"],
+ ["F", "16:31", "Minute cred."],
+ ["B", "16:34", "Around minutes."],
+ ["F", "16:36", "La câte pagini ca aici, puțin."],
+ ["B", "16:40", "Și în stadiul ăsta, mai"],
+ ["F", "16:42", "Da, în zona de minutes."],
+ ["B", "16:44", "M-hm."],
+ ["F", "16:45", "Ok. Ce vezi aici?"],
+ ["P", "16:50", "Și avem așa. Mi s-a împărțit pe câte documente. În primul rând scrie aici: review the model's per page predictions. Documents with low confidence, semnalate cu ăsta, under 60%, are listed first. Ok. Click on a page to review its content. Then you can change the label, then flip the reviewed switch to mark it reviewed. Corrected pages are marked reviewed automatically. Ok. Deci vedem documentele, cele care au confidence mai mic sunt arătate primele. Și vedem documentul, apoi împărțit pe pagini. Pot să dau reviewed per pagini separate sau pe tot documentul din prima. Și îmi arată label-ul care a fost pus de el automat și confidence-ul."],
+ ["B", "17:35", "Unde ai vedea și content-ul?"],
+ ["P", "17:36", "Content-ul, ăăă, dacă dăm aici, să deschidem, vedem cred că un prima, a, ba nu, document, doar o mică descriere, cred că."],
+ ["B", "17:48", "Asta ar trebui să fie content-ul"],
+ ["P", "17:50", "content-ul paginii."],
+ ["B", "17:52", "Ok."],
+ ["P", "17:53", "E scoasă, scos din document."],
+ ["B", "17:56", "Și dacă"],
+ ["P", "17:57", "a, ok."],
+ ["F", "17:58", "E full."],
+ ["P", "17:58", "M-am gândit că poate aici e doar o sumarizare la analiză și aici intri și vezi chiar tot content-ul, dar ok. Așa. Și intru pe ăsta și zic că e contract de vânzare-cumpărare, deci nu e bine, ar trebui să-l sting pe ăsta. Și în momentul în care l-am schimbat s-a mutat automat pe reviewed, că eu am luat o decizie."],
+ ["F", "18:23", "Ți se pare naturală chestia asta sau"],
+ ["P", "18:26", "o să mai dau să modific înapoi? Dar dacă schimb la loc pe ăsta, presupun... L-am lăsat disabled. Oare ce l-am schimbat?"],
+ ["F", "18:36", "Cum ți se pare comportamentul ăsta? Te, ți-ar părea mai natural să rămână manual sau ți se pare ok că face el asta, presupunerea asta când schimbi ceva?"],
+ ["P", "18:49", "Ăăă... Teoretic, tu ar trebui să te uiți aici. Deci, în primul rând, dacă el a făcut corect, eu doar vin și bifez, pentru că deja el scrie aici ce trebuia aici și doar eu doar vin și bifez. Dacă mi se pare că a greșit și de fapt e alt tip de pagină, eu vin, dau așa și ar trebui să dau și după aia click pe reviewed. Cred că sunt șansele foarte mici ca eu să fac o greșeală în selecția asta, astfel încât să nu aibă sens să se și comute sau automat, deci cred că e ok. Ar fi o automatizare bună."],
+ ["F", "19:26", "Ok."],
+ ["P", "19:27", "Și în contextul în care, nu știu, îmi dau seama că de fapt mai era a treia opțiune aici și de fapt aia era, dau pe ăla și o să fie același lucru. Deci, în any way e reviewed, adică are logică că cineva s-a uitat pe el și a făcut decizia asta, deci are sens să fie. Da."],
+ ["F", "19:48", "Ok. Păi, să zicem că tu, doar ca să clarific, să fiu sigur că suntem on the same page, tu în momentul ăsta în ce punct al training-ului ești? S-a, a fost treinat modelul? Ăăă... cu documentele pe care le-ai uploadat?"],
+ ["P", "20:06", "Nu cred. Eu am uploadat un exemplu cu mai multe documente. El a încercat să le clasifice bazat pe niște informații foarte succinte pe care le are deocamdată acuma despre documentele astea. Eu îi zic dacă a avut dreptate sau nu la fiecare în parte și atunci o să se întâmple training-ul de fapt."],
+ ["F", "20:30", "Ok. Ok. Păi, putem cred să continuăm, dacă nu ai vreo întrebare aici."],
+ ["P", "20:36", "Ăăă, nu cred. Văd că sunt toate din ce în ce mai confident, sau nu neapărat, dar"],
+ ["F", "20:50", "Aici în prototip e mock data."],
+ ["P", "20:52", "Da, da, da, da."],
+ ["F", "20:53", "Dar e o, pot fi cu confidence mai mare, mai mic."],
+ ["P", "20:56", "Mhm. O pagină poate avea, alta poate avea foarte mici. Ăăă... Confidence score-ul e pe pagină, ceea ce are sens. Ok, și văd că tot avem câte din câte am reviewed. Dacă vrem să le trecem pe toate din prima reviewed. Cancel sau save to training. Ok. Să zicem că facem asta, ca să nu stăm să trecem prin toate, deși ar trebui. Și save to training data."],
+ ["F", "21:31", "Cum crezi că s- da. Ăă, nu, doar doar te întreb o chestie. Cum crezi că s-ar întâmpla de fapt review-ul ăsta dacă ar fi în real life? Cum te-ai asigura că-s corecte fiecare pagină? Te-ai uita la content sau ar fi ele denumite în vreun fel poate sau cum crezi că sau te-ai uita doar la alea cu confidence mic? Îți dai seama sigur că nu..."],
+ ["P", "21:55", "Păi cred că ar funcționa în felul următor. Numele documentului în sine nu m-aștept să aibă, poate să ajute, dar nu este un factor foarte decisiv. Apoi ar trebui să fie o persoană care știe cum arată documentele astea, care să facă review-ul ăsta. Ăăă... la, m-aștept ca la început, oricine folosește asta prima oară, să aibă un mic dubiu și să se să treacă prin toate de câteva ori, la mai multe batch-uri din astea. Odată ce persoana aia se convinge că alea care sunt cu confidence mare chiar sunt corecte, ninety-nine percent of the time, dacă nu chiar tot timpul, s-ar uita doar pe cele cu confidence mic. M-aștept. După ce a încercat chestia asta de câteva ori și a văzut că funcționează."],
+ ["F", "22:40", "Care sunt șansele să dai bifa de review la fiecare pagină în parte?"],
+ ["P", "22:48", "Eu personal aș trece în contextul în care, cum ziceam, am am încredere acuma că am făcut asta de câteva ori, m-aș duce doar la cele cu confidence mic, aș da fie bifă, sau aș schimba label-ul în funcție de care e decizia, și apoi le-aș, după ce am trecut doar prin cele cu confidence mic, m-aș duce să dau mark all reviewed ca să le marcheze și pe cele cu confidence mare."],
+ ["B", "23:10", "Și dacă ar fi prima sau a doua oară când ai face asta?"],
+ ["P", "23:13", "Cred că aș trece prin toate. Dacă n-am uploadat un batch extraordinar de mare, dar chiar și atunci tot ar trebui să trec prin tot, chiar dacă ar fi obositor."],
+ ["F", "23:23", "Și le-ai bifa pe fiecare sau tot ai trece prin fiecare, dar la final ai da mark all?"],
+ ["P", "23:30", "Ăăă, aș... A, da, asta e, acum înțeleg. Pentru că oricum dacă tu schimbi label-ul se bifează automat. Dacă tu vezi că label-ul e corect, poate nu trebuie să te duci la fiecare să dai review și poți să dai la final. Aș face asta, sincer."],
+ ["F", "23:52", "La final."],
+ ["P", "23:52", "Da."],
+ ["F", "23:54", "Ok."],
+ ["P", "23:55", "Pe undeva-s ~50 de click-uri în minus. Probabil."],
+ ["B", "24:02", "Ok. E important să faci asta over multiple sessions? Adică o vezi ca ceva ce, nu știu, stai două ore și revaluești documente sau e ceva ce, nu știu, stai 30 de minute, ceva, mai stai 15 minute..."],
+ ["P", "24:19", "Ăăă, poate să fie ceva ce să se facă în mai multe sesiuni, pentru că poate am uploadat un batch foarte mare, pentru că vreau să fac o dată și bine training-ul ăsta, să scap de el. E un task la mine. Acest task l-am estimat că o să dureze trei ore. Fac o oră la el, după aia, nu știu, m-a rugat cineva să fac altceva urgent, mă întorc la el peste două ore."],
+ ["F", "24:39", "Și dacă te întorci peste două ore, cum știi ce ai văzut deja și ce nu dintre documentele, cum te gândești să..."],
+ ["P", "24:47", "Aici... În primul rând, aș spera că tab-ul rămâne la fel cum l-am lăsat, că nu l-aș fi închis. Dar și dacă s-ar întâmpla ceva și aș închide tab-ul, ăăă... probabil m-aș lua după ultima bifă pe care am pus-o. În contextul în care, cum ziceam mai devreme, că alea pe care mi se par ok nu le-aș bifa, că le-aș bifa la final, e posibil ca aia să nu fie ultima bifă. Știi? Să trebuiască poate să trec din nou prin ultimele câteva sau ceva."],
+ ["F", "25:27", "A, și te uiți unde ai făcut ultima modificare, să zicem."],
+ ["P", "25:30", "Da, da, da, da."],
+ ["F", "25:31", "Și continui de acolo."],
+ ["P", "25:31", "Adică văd, nu știu, din am ajuns până la ăsta, ăsta l-am schimbat, deci s-a bifat și îl văd că e și s-a și făcut o schimbare aici așa. Aș continua de aici. Chiar poate eu să zicem că de fapt am ajuns până pe aici."],
+ ["F", "25:44", "Da."],
+ ["P", "25:46", "Dar nu știu dacă nu știu cum aș vedea altfel să să-mi dau seama."],
+ ["F", "25:50", "Ok. Ăăă, mergem mai departe?"],
+ ["B", "25:54", "Da."],
+ ["F", "25:55", "Să zicem că le-ai verificat pe toate și all is good."],
+ ["P", "25:59", "Save to training data. Bun. Și ne-am dus automat în zona de testing."],
+ ["F", "26:05", "Arată ciudat. Am, dacă dai refresh o să se șteargă totul. Ce am putea să facem, am putea să intrăm pe un alt model care e deja populat, doar că o să aibă alte clase. Dar poți să presupui că, da. Tocmai ai trainat, poți să intri pe unul din ăla cu mai puține, cu cinci. Ăăă, stai să intru aici la unul cu cinci, da."],
+ ["P", "26:37", "Ok."],
+ ["F", "26:37", "Și aici uite, ai utility bill, bank statement, la la la. Să zicem că tocmai ai testat, tocmai ai trainat și te-a dus pe testing și arată așa."],
+ ["P", "26:46", "Bun."],
+ ["F", "26:47", "Uită-te un pic și zi-ne cum citești și dacă vezi utilitatea informației."],
+ ["P", "26:53", "Avem așa, confusion matrix. The rows are the true class. The columns are the predicted class. This is held out for testing data below. Și avem așa. Deci the rows are the true class, utility bill, și apoi câte a prezis el că sunt utility bill."],
+ ["B", "27:19", "Dar ar fi, dacă ar fi să citești primul rând, ce ai înțelege?"],
+ ["P", "27:28", "Imediat. Aici nu-mi dau seama, deci noi datele astea sunt output la ce am făcut eu în zona de training, nu?"],
+ ["F", "27:45", "Da."],
+ ["P", "27:46", "Ok. A, ok. Atunci are sens. Ăăă... doar că aici nu-mi dau seama la... Ok, deci ce the rows are sunt clasele finale pe care fie le-am ales eu, sau fie doar le-am confirmat că sunt corecte în zona de training. Și columns e ce a crezut modelul că era în zona aia. Și asta s-ar citi că din tot ce a fost bifat ca și utility bill într-un final, fie de mine, sau de model, ăăă... șase din ele au fost puse corect de model ca fiind utility bill, dar două au fost puse bank statement și trei au fost puse tax document. Pe care eu după aia le-am schimbat, când am făcut review, le-am schimbat și le-am pus să fie de fapt utility bill."],
+ ["B", "28:49", "Ok, deci ăăă, rezultatele pe care le vezi aici sunt rezultate în urma a ce? Sunt rezultatele în urma a ce ai labeluit tu? Adică acest confusion matrix reiese din schimbările pe care tu le-ai făcut în zona de training? În când ai schimbat categoria acolo?"],
+ ["P", "29:20", "Da. Adică și din ce am făcut eu, dar și din ce a scos modelul."],
+ ["B", "29:24", "Și cum, asta voiam să înțeleg. Cum ar arăta diferența asta? Adică cum ți-ai da seama ce e de la tine și ce e de la model?"],
+ ["P", "29:34", "Păi cele care sunt pe diagonala matricei aici ar trebui să fie ce a scos modelul care a fost și corect. Și apoi tot ce e în afară de diagonală înseamnă că am făcut eu o modificare."],
+ ["B", "29:55", "Peste el. Ăăă..."],
+ ["F", "30:00", "Deci, dacă e să facem un pas în spate pe zona de training, tu ai aruncat datele alea unlabeled acolo. Ți s-au scos niște predicții. Și în baza acelor predicții pe care tu le-ai corectat, deci ai avut un set cu valorile corecte, ce s-a întâmplat?"],
+ ["P", "30:21", "S-a comparat ce a scos modelul prima oară cu ce am confirmat eu după aia că e bine sau nu."],
+ ["B", "30:27", "Ok. Ăăă..."],
+ ["F", "30:33", "Putem, hai să punem un pic pauză la punctul ăsta și să revenim un pic după ce ne uităm pe toată pagina."],
+ ["P", "30:40", "Ok."],
+ ["F", "30:40", "Ca să nu îi dăm spoilere. Și în același timp să..."],
+ ["B", "30:46", "Ok."],
+ ["P", "30:48", "Ăăă..."],
+ ["F", "30:48", "Poți să te uiți și la, da."],
+ ["P", "30:50", "Ce mai văd aici e că avem zona asta de most confused, adică unde s-au făcut numărul cel mai mare de pagini care au fost confused cu altceva. Și astea sunt el de fapt era utility bill, dar a crezut că e tax document sau etc. Apoi, training distribution, presupun că e numărul de pagini din total la fiecare tip. Astea again, presupun că sunt cele confirmate de mine, nu ce a crezut el în primă fază."],
+ ["B", "31:28", "Și ce-ți spune, adică ți se pare relevant acest training distribution?"],
+ ["P", "31:35", "Ăăă, da, pentru că dacă văd că nu știu, să zicem că tenancy agreement are o performanță foarte proastă și că nu prea ghicește bine care e ce tip de pagină e, mă uit și aici și văd că are foarte puțin training data, înseamnă că trebuie să-i mai adaug exemple, că probabil de asta nu are o performanță bună în zona aia."],
+ ["B", "31:57", "Deci da, are."],
+ ["P", "31:59", "Așa. Și apoi testing data. Aici vedem, presupun că sunt documentele pe care le-am avut noi mai devreme."],
+ ["F", "32:06", "Să zicem că tu ai uploadat..."],
+ ["P", "32:08", "tipului."],
+ ["F", "32:11", "Câte documente ai uploadat? Să zicem că ai uploadat, nu știu, 200 de pagini când ai făcut testarea. Tu știi asta. Erau 200."],
+ ["P", "32:20", "Așa."],
+ ["F", "32:21", "E bine atent."],
+ ["P", "32:22", "Ok. Și avem așa. A held out pool of 20% of each batch that is scored on every training run. 16 misclassified. Mhm."],
+ ["F", "32:46", "Cum interpretezi?"],
+ ["P", "32:53", "Deci ce înțeleg e că din fiecare batch de testing a held out pool reprezintă 20%. Și este păstrat și ăăă... rerulat de fiecare dată când se face un training run. Ce înțeleg prin asta e că dacă, de exemplu, de-a lungul timpului fac 10 batch-uri din astea, de la fiecare se păstrează câte 20%. Și la al 10-lea test o să, dacă de fiecare dată am uploadat câte 100 de pagini, de fiecare dată am păstrat câte 20, la al 10-lea test o să am 200 care se rerulează, pe lângă"],
+ ["F", "33:38", "Da."],
+ ["P", "33:39", "ce am făcut eu atunci. Ok. În cazul ăsta noi vedem acele 20% care se rerulează de fiecare dată în lista asta? Așa cred. Adică vă întreb."],
+ ["F", "33:59", "Adică asta pare că ai zis și tu."],
+ ["P", "34:01", "Da, da, da."],
+ ["F", "34:03", "Cum ți se pare ideea asta? Ți se pare e ce te așteptai sau ai avea o altă așteptare despre cum se testează training-ul?"],
+ ["P", "34:15", "Mhm. Ideea e că clar are sens să te uiți pe past data și să vezi dacă inclusiv pe celelalte batch-uri ai început să ai un scor mai mare. But... Nu, cred că e o idee foarte bună chestia asta. Singura teamă mi-e că poate să fie ever-growing zona asta și să faci 100 de teste și să fie 1000 de pagini aici într-un final."],
+ ["F", "34:43", "Ok, deci după ce ai zis asta, ai vrea niște control, mai scoți unele, mai dai disable la unele?"],
+ ["P", "34:47", "Maybe, da, exact."],
+ ["B", "34:50", "Să controlezi testing pool-ul sau să controlezi cum vezi informația asta aici? Adică inclusiv să scoți documente din testing pool sau să zici vreau să văd doar ultimul batch, vreau să văd batch-ul trei, vreau să văd batch-ul cinci."],
+ ["P", "35:07", "Aici sunt mai multe. Deci, în primul rând, cred că ar fi bine să poți să controlezi testing pool-ul, pentru că dacă dar nici nu știu aici. Să zicem că poate cu o nouă lege sau ceva se schimbă structura unui document de genul ăsta. Nu-mi dau seama aici dacă ar trebui să faci un ML complet, dar nu ar avea sens, că dacă doar un tip de document din tot batch-ul ăsta de mortgage document se schimbă, nu prea ar trebui. Dar în același timp n-ar trebui să mai fie relevant nici în test pe care l-am mai făcut până acuma pe tipul ăla de certificat energetic, să zicem. Deci ar trebui să pot să șterg toate certificatele energetice și să pot să adaug altele dacă s-a schimbat sau ceva. Asta ca un exemplu. Și apoi cealaltă chestie e că doar e pana mea de legată de performanță sau crăparea platformei. Că-s prea multe."],
+ ["F", "36:07", "Da, cine știe cine pune, face 1000 de teste aici și o să fie 100.000 de pagini în acest pool."],
+ ["B", "36:13", "Ok. Ok."],
+ ["F", "36:16", "Ok. Poți să te întorci un pic la confusion matrix?"],
+ ["P", "36:20", "Da."],
+ ["F", "36:20", "Sincer, pare clickable?"],
+ ["P", "36:24", "Nu."],
+ ["F", "36:24", "Ok."],
+ ["P", "36:25", "Nu."],
+ ["F", "36:25", "Să zicem că știi că e."],
+ ["P", "36:26", "Asta să facem."],
+ ["F", "36:27", "Am am citit pe el. Nu mai știu unde am citit, dar am citit că e. Poți să dai click tu să... Poți să încerci unele celule, să vezi ce se întâmplă."],
+ ["P", "36:35", "Ok, să zicem că vreau să văd această confuzie cu tax document la utility bill. Și o să-mi apară dedesubt, o să văd și aici că asta am selectat ca și filtru. Și aici. Held out pages, true class utility bill, true class fiind ce am confirmat eu și predicted fiind ce a zis modelul."],
+ ["F", "36:57", "Ce ai confirmat tu când?"],
+ ["B", "37:04", "Ce ai confirmat tu când, în ce moment?"],
+ ["P", "37:09", "Interesant. Că eu mă gândeam la când am confirmat când am pus training data, dar dacă dacă să zicem paginile astea au fost rerulate, nu cred că am mai... Dar că, a, dar nu, chiar și atunci, că dacă eu am băgat un batch prima oară și de atunci am zis că bă, ăsta e utility bill, nu e altceva, el a zis că e tax document. Poate nici data viitoare n-a înțeles că e utility bill și tot tax document a zis. Deci ar fi la fel true class și predicted. Și poate într-un final, după nu știu câte training-uri, el s-ar raporta în continuare la prima mea review, gen primul meu review, pentru că eu am definit ăla ca fiind true class."],
+ ["F", "37:59", "Mhm."],
+ ["P", "38:00", "Și el în continuare o să se o să compare ce a scos modelul cu ce am zis eu prima oară. Asta m-aștept. Să fie logica."],
+ ["B", "38:09", "Ok."],
+ ["F", "38:10", "Ca omul să fie single source of truth în chestia asta. Nu știu care e adevărul."],
+ ["B", "38:17", "Dacă plecăm de la premiza că odată ce ai antrenat un model pe un document, odată ce i-ai zis unui model de machine learning documentul ăsta e"],
+ ["P", "38:30", "pagina numărul..."],
+ ["B", "38:31", "E, da, pagina asta e utility bill."],
+ ["P", "38:34", "Da."],
+ ["B", "38:35", "El o să știe că pagina aia e utility bill. Adică nu o să mai aibă confuzie."],
+ ["P", "38:38", "Eu m-aștept în continuare ca el poate să greșească, gen la al doilea test, la al treilea test, la al patrulea test, poate cu un confidence un pic mai bun sau ceva."],
+ ["F", "38:47", "Pe o pagină pe care a fost antrenat deja?"],
+ ["P", "38:51", "Inclusiv."],
+ ["F", "38:52", "Ok, it can happen. Adică odată ce i-ai dat pagina aia și i-ai zis ăsta e un utility bill și s-a făcut antrenarea, el când o să vadă pagina aia, fix aceeași pagină, o să știe că e utility bill. Adică nu există șansă să..."],
+ ["P", "39:07", "Ok, ok, ok."],
+ ["F", "39:08", "misclassify."],
+ ["P", "39:09", "Ok."],
+ ["F", "39:09", "Cu informația asta in mind, cum se schimbă..."],
+ ["P", "39:16", "Păi atunci deci eu i-am pus ceva, el a zis că e tax document, deși de fapt e utility bill. Tu zici că de acuma încolo el n-o să mai greșească pagina aia."],
+ ["F", "39:30", "Nu, nu o să mai greșească."],
+ ["P", "39:32", "Ok. Deci el la al doilea run, să zicem că fix ăla pe care i-am i-am atras eu atenția, o să fie unul din aceste held out pages și o să-l retesteze. Și-l retestează și teoretic n-ar mai avea de ce să apară în această confusion matrix, pentru că n-ar avea de ce să mai greșească după ce i-ai zis tu. Deci aici ar... ar trebui să apară doar cele din ultimul run, teoretic, că"],
+ ["F", "40:07", "Aș mai propune încă o dată să parcăm acest subiect și să zicem că mai faci un training."],
+ ["B", "40:12", "Mai ai un set de documente, stai să testăm și cealaltă parte acuma. Să zicem că ai un set de documente și sunt toate utility bills. Ai un o arhivă cu un utility bill. Da? Și vrei să zici hai că-l train-uiesc și pe asta."],
+ ["P", "40:24", "Îl level? Oricum, oricum."],
+ ["F", "40:27", "Sure. Hai să încercăm."],
+ ["P", "40:28", "Hai să vedem. Da, ok. Să mergem la training. Ăla-i egal, ca să zic așa, în cazul ăsta. Da. Pentru că știu că"],
+ ["B", "40:35", "Că toate sunt."],
+ ["P", "40:36", "Da."],
+ ["F", "40:36", "Toate paginile din toate documentele pe care le încarci sunt utility bills."],
+ ["P", "40:40", "Da. Și dau upload. Ok. Și noi știm că Ok. Deci 80% sunt, uitasem chestia asta. 80% sunt training, 20% sunt test. Acele held out pages pe care vorbeam mai devreme, pe 20% sunt. Așa. Deci asta înseamnă că acele pagini nu s-a făcut training pe ele. Acele held out pages. Și ele cumva rămân rămân ca un o chestie complet obiectivă din punct de vedere al ML-ului. El nu are de unde să știe legat de alea care e rezultatul adevărat."],
+ ["F", "41:34", "Măi, stai."],
+ ["P", "41:34", "Nu."],
+ ["F", "41:35", "Ce ce ce?"],
+ ["P", "41:35", "Eu te dau. Da. Deci asta înseamnă că el la acele held out pages nu știe niciodată care e răspunsul corect, de fapt."],
+ ["B", "41:49", "Dar atunci"],
+ ["P", "41:50", "Dar le"],
+ ["B", "41:50", "ține și le evaluează de fiecare dată."],
+ ["P", "41:52", "Da, le evaluează de fiecare dată. Dar atunci ce e acel true class? De la paginile alea? De unde știe el care e true class?"],
+ ["F", "42:02", "Ălea sunt pe care tu le-ai label-uit. Pentru că tu o să trebuiască să închizi de-o."],
+ ["P", "42:06", "Păi da, nu, că m-am prins că faptul că le-am uploadat aici, ăsta e true class-ul, să zicem."],
+ ["F", "42:12", "Ideea e că și atunci când faci de unde cred că a venit momentul ăsta de confuzie, o să-ți și din nou la un moment dat."],
+ ["P", "42:17", "A, am înțeles acuma. Am înțeles, gata."],
+ ["F", "42:19", "Zi-ne ce"],
+ ["P", "42:20", "Deci, în lista aia mare de pagini așa, eu, chiar dacă am label-uit unul din alea care erau greșite, el nu a fost train-uit."],
+ ["F", "42:31", "Când s-a întâmplat training-ul?"],
+ ["P", "42:34", "Păi training-ul s-a întâmplat, dar poate nu s-a eu am din 10 pe care eu le-am corectat, două dintre ele nu au nu s-a întâmplat training pe ele."],
+ ["F", "42:42", "Da, asta e corect. Dar când s-a întâmplat training-ul? În tot flow-ul ăsta pe care l-ai parcurs tu, când s-a întâmplat? Când a fost momentul în care modelul a fost antrenat?"],
+ ["P", "42:50", "După ce eu am trecut prin toate și am zis că ăsta e corect, ăsta nu e corect."],
+ ["F", "42:55", "Și ai apăsat butonul ăla care se numea"],
+ ["P", "42:57", "Save and"],
+ ["F", "42:58", "Send to training data."],
+ ["P", "42:59", "Da."],
+ ["F", "43:00", "Da. Deci a fost clar în momentul ăla că s-a antrenat modelul. Adică că a fost o bucată de timp în care modelul s-a antrenat și apoi ai văzut rezultatele în testing."],
+ ["P", "43:09", "Da. Eu cu asta minte m-am dus mai departe, da."],
+ ["F", "43:13", "Ok."],
+ ["P", "43:14", "Doar că nu nu prinsesem chestia asta că din alea 10 pe care eu le-am corectat, două de fapt niciodată nu s-a antrenat pe ele, ele au fost ignorate complet în training și doar s-au dus în zona aia de held out pages, care o să fie o zonă care întotdeauna o să încerce să"],
+ ["F", "43:33", "Ruleze pe ea."],
+ ["P", "43:34", "Da, să ajungă la rezultatul corect, fără să fie train-uit fix pe pagina aia. Ceea ce are foarte mult sens, că altfel"],
+ ["F", "43:41", "De asta ți-am de asta am dat bucata aia de informații. Ok. Dacă e să te gândești acum la știind what is happening actually, care e momentul în care ai fi avut nevoie de mai mult ajutor sau care e momentul în care ai fi vrut, băi, aș fi vrut ca platforma să-mi zică asta punctual ca să înțeleg din prima?"],
+ ["P", "44:02", "Ăă, scria și pe undeva pe aici, mi se pare. Nu mai știu sigur. Stai să vedem. Deci, ok. Scrie asta aici în primul rând. Dar nu-ți descrie nimic aici de 80 20. Nici pe aici. Doar aici începem să aflăm cred că de conceptul ăla de 80 20, nu? Citindu-l aici, să zicem, sau ceva."],
+ ["B", "44:31", "Deci ar trebui un pic mai clar. Ăsta e un loc unde ar trebui să fie mai clar, nu?"],
+ ["P", "44:34", "Da, cred că un un info point aici sub toate chestiile astea sau ceva, că dintre toate corecturile pe care le faci tu aici, sau nici neapărat corecturi, din tot ce trimiți tu aici, 20% nu o să fie antrenat, o să fie complet ignorat de către ML și n-o să fie antrenat și o să fie păstrat ca un benchmark pe care să se tot retesteze. Ceva de genul."],
+ ["F", "44:57", "Ok. Dar atunci când ai apăsat pe butonul ăla se numește Save to training data. Tu ai înțeles că de pe butonul ăsta se întâmplă asta face startul antrenării modelului. De asta"],
+ ["P", "45:14", "Da."],
+ ["F", "45:18", "Dar de fapt"],
+ ["P", "45:19", "Dar ai înțeles."],
+ ["F", "45:19", "Da, nu, da, asta am înțeles."],
+ ["P", "45:20", "Da."],
+ ["F", "45:21", "Ok. Hai că e good. Perfect."],
+ ["P", "45:24", "Cool. Aici era un compare."],
+ ["B", "45:26", "Poate dacă ai tu timp la un moment dat să treci și prin zona asta. Deci la zona asta ajungi după ce faci un training și mai faci un training. Dacă poți să ne lași, dacă nu mai avem timp acuma, poți să ne lași niște feedback când ai timp."],
+ ["P", "45:38", "Da, cred că pot să trec și repede un minut prin ele. Deci, vedem old. Old înseamnă tot ce am făcut până acuma sau doar ultimul run înainte de, gen penultimul run?"],
+ ["B", "45:53", "Ce crezi că înseamnă?"],
+ ["P", "45:54", "Eu să zic, mă aștept să fie all previous."],
+ ["B", "45:58", "Ok. Și candidate?"],
+ ["P", "46:01", "Candidate e ce am uploadat acuma, teoretic, da. Comparison-ul e Deci, în primul rând ne arată câte s-au adăugat la fiecare, ca training distribution. Apoi aici, candidate, old. Presupun că dacă ar fi fost în continuare una greșită pe aici sau ceva, ar fi fost un plus unu la cu roșu, că n-ar fi fost pe zona corectă și ne arată că în cazul ăsta le-a nimerit pe toate corect. Avem plusuri la fiecare."],
+ ["B", "46:45", "Zero ce ce înseamnă zero când te uiți la o celulă?"],
+ ["P", "46:48", "Mă aștept ca zero să însemne că nu n-a fost nimic greșit."],
+ ["B", "46:53", "Dar tu având la celulă"],
+ ["F", "46:56", "Și plus nouă ce înseamnă?"],
+ ["P", "46:58", "Că din din tot rândul înseamnă că din cele nouă pagini adăugate de tip text document, toate au fost categorisite corect ca fiind text document."],
+ ["B", "47:14", "Ok. Și dacă te duci la tu zici pe candidat s-a întâmplat asta, nu?"],
+ ["P", "47:18", "Da."],
+ ["B", "47:20", "Dacă te duci pe candidat, vezi asta."],
+ ["P", "47:21", "Dar văd asta aici."],
+ ["B", "47:27", "Și dacă asta vezi pe candidat, pe comparison ce te-ai aștepta să vezi? Dacă ajută, uită-te și la"],
+ ["P", "47:44", "Sau să zic old?"],
+ ["B", "47:45", "Da. Sau și să te uiți și la tabelul de testing data."],
+ ["P", "47:48", "Testing data. Testing data. Deci true class era ăsta. Old a zis corect, ăsta a zis corect, în cazul ăsta. De exemplu, pe tenancy agreement. Nu pot să dau click ca să și vin acolo. Sau de fapt hai să-l dau pe wrong. A, și vedem și still wrong, still right. Dacă a greșit, deși de prima oară mai înainte a zis că e corect."],
+ ["B", "48:28", "Ok."],
+ ["P", "48:29", "Și fixed nu știu ce e."],
+ ["F", "48:39", "Ai o 15 minute azi pe parcursul zilei?"],
+ ["P", "48:42", "Da, da, da. Mai târziu un pic."],
+ ["F", "48:45", "Ăă"],
+ ["P", "48:48", "Ok."],
+ ["F", "48:49", "Doar 10 minute, că nu e nevoie de mai mult."],
+ ["P", "48:52", "Poți și mai mult, dar să parcăm acuma."],
+ ["F", "48:56", "Ok. Da, că știu că te așteaptă Cătălin."],
+ ["P", "48:58", "Da. Da."],
+ ["F", "48:59", "Da."],
+ ["P", "49:00", "Doar să opresc."],
+ ["B", "②·00:20", "▶ Continuation (Sync · 16:00) — Zic că rămăsesem la zona asta de comparare, de"],
+ ["P", "②·00:22", "Da."],
+ ["B", "②·00:23", "Da. și gen <span class=\"unsure\" title=\"Phase-1 confirm: „mai adresasem scenariul”\">mai adresasem scenariul</span> în care ai"],
+ ["P", "②·00:26", "Poți."],
+ ["B", "②·00:27", "na, dai refresh?"],
+ ["F", "②·00:28", "Da, am făcut niște modificări aici e mai clean. Doar doar că o să pierzi chestia asta, dacă poți să faci o experiență, să faci un training și o să ajungi tu."],
+ ["P", "②·00:35", "Da, da, da. Așa. Ok, avem niște chestii aici noi."],
+ ["F", "②·00:42", "Poți să te uiți un pic la asta înainte să"],
+ ["P", "②·00:44", "Ok."],
+ ["F", "②·00:44", "faci un training."],
+ ["P", "②·00:45", "Deci pe aici nu s-a schimbat nimic. Văd astea două. Two classes have too few pages. Ok, deci te anunță și el că bă, ăsta are foarte puține, deci n-o să aibă performanță bună, which is nice. Și ăsta la fel, ne anunță că e nu e balansată training data-ul, which again is nice. Nu văd altceva pe aici, cred. Așa. Și zona de training. Ok. Nu cred că e nimic diferit pe aici. Train. Și hai să vedem. Deci, în primul rând, aici nu se schimbă nimic. Apoi, pe ăsta, ce am înțeles eu e că ce vedem aici e basically training de deci training data-ul precedent plus ce s-a adăugat acuma. Asta am observat că e. Ăă, asta însemnând că, de exemplu, s-au adăugat trei utility bill care au fost găsite corect. Ăă, nu n-au mai fost găsite altele care să fie găsite ca utility bill fiind de fapt tenancy agreement. Dar au mai fost găsite două miscellaneous și un bank statement care au fost crezute că-s utility bill. Așa aș citi diferența între ele. Apoi jos ăă la comparison, vreau să încep de jos de aici. Ce înțeleg? Ăsta era fixed înainte, nu? Și acu e improved. Ăă, ăsta înseamnă că înainte a fost găsit greșit și acu e găsit corect. Ăsta înainte era greșit, acu e tot greșit. Ăă, degraded era dacă înainte era corect și brusc a devenit greșit dintr-un motiv sau altul. Era corect și e în continuare corect și astea sunt toate. Aici e clar. Ăă, și apoi la zona asta de sus, ce înțeleg eu e că au apărut, deci, la training data s-au adăugat trei exemple de utility bill care au fost găsite ca utility bill. Adică trei exemple cumva corecte."],
+ ["F", "②·03:25", "Și la plus unu acolo?"],
+ ["P", "②·03:26", "La bank statement, deci au fost găsite trei bank statement care sunt corecte, însă a s-a adăugat la training data și un ăă document de utility bill care a fost găsit greșit ca fiind bank statement. Dar în total s-au adăugat ăă patru exemple de utility bill. Trei corecte și unul greșit. Ok."],
+ ["F", "②·03:55", "Și odată ce ești în state-ul ăsta, să zicem că tu folosești modelul ăsta undeva pe un workflow."],
+ ["P", "②·04:00", "Da."],
+ ["F", "②·04:01", "Ce crezi? Ce opțiuni crezi că ai și în legătură cu workflow-ul ăla și variantele astea de model?"],
+ ["P", "②·04:09", "Hm."],
+ ["F", "②·04:10", "Adică în momentul ăsta, workflow-ul acela care rulează undeva pe config, nu în runtime deocamdată."],
+ ["P", "②·04:18", "Da."],
+ ["F", "②·04:19", "În dev. Tu ai aici un old și un candidate."],
+ ["P", "②·04:21", "Da."],
+ ["F", "②·04:22", "Ce crezi că rulează dacă te duci pe workflow-ul ăla și"],
+ ["P", "②·04:25", "Old. Candidate-ul nu mă aștept să fie încă în funcțiune până nu îl promovez eu."],
+ ["F", "②·04:29", "Ok."],
+ ["B", "②·04:31", "Ce cum ai lua decizia asta de promote? Adică te uiți la te uiți la combinația asta de date. Ce e un indicativ pentru tine că modelul s-a îmbunătățit și ce ți-ar da confidence să faci promote?"],
+ ["P", "②·04:49", "Mă gândesc că dacă îmi adaugă exemple corecte la training, înseamnă că trebuie să crească performanța modelului, deci îmi spune că fac un lucru bun dacă mai adaug și acest training data pe lângă ce aveam și înainte."],
+ ["B", "②·05:12", "Deci să ai plusuri pe diagonală."],
+ ["P", "②·05:14", "Da."],
+ ["B", "②·05:15", "Să ai verde pe diagonală."],
+ ["P", "②·05:16", "Da."],
+ ["B", "②·05:16", "Ok. Și ăă, referitor la outliers, gen, ok, e verde pe diagonală, dar ăla e acel utility bill, unul dintre ele a fost categorisit, unul în plus,"],
+ ["P", "②·05:32", "Da."],
+ ["B", "②·05:32", "a fost categorisit ca fiind bank statement. Cum cum compari improvement-ul versus riscul pe care ți-l introduce un model nou?"],
+ ["P", "②·05:42", "În capul meu nu sunt egale, sincer. Adică mi se pare mai nașpa să introduci chiar și unul greșit decât să introduci, să zicem, două corecte. Dar cumva e un balance din ăsta în care, uite, dacă în cazul ăsta cred că 3 la 1 sau 4 la 1 mi s-ar părea minimul că e ok. Adică nu, înseamnă că nu nu-l stric mai rău decât îi fac bine. Deci ar trebui să fie ok. Dacă ar fi gen 1 + 1, dar plus 3 aici, aș zice că, adică probabil cresc performanța la astelalte, dar la asta e chiar posibil s-o scad sau habar n-am. Deci, Da."],
+ ["B", "②·06:27", "Ok. Și e vreo, nu știu, metrică care simți că te-ar ajuta mai high level? Adică simți nevoia de mai multe metrici aici sau ți se pare că sunt chestii care pe care ai vrea să le știi înainte să faci acest promote?"],
+ ["P", "②·06:48", "Na, aici până la urmă cred că e foarte important și zona asta de jos, că una e să vezi ce s-a întâmplat aici, dar alta e să vezi, ok, cum a impactat asta scenariile mele de test. Știi? Astea mi se par că până la urmă sunt cele mai importante și dacă în astea găsești orice fel de improvement, super ok. Ăă, atâta timp cât să nu existe degradation. Și cred că dacă există orice fel de degradation, nu cred că e o idee bună să continui cu batch-ul ăla. Ăă, așa nu știu ce să zic mai mult. Poate doar pentru na, nu știu dacă e cazul, pentru oameni care poate înțeleg mai prost ce înseamnă acest metric sau ceva, un AI explanation sau habar n-am."],
+ ["B", "②·07:50", "Da."],
+ ["P", "②·07:50", "Da."],
+ ["B", "②·07:51", "Care ar arăta cum? Adică cum ți se pare că ar putea să arate ceva?"],
+ ["P", "②·07:57", "Ăă, cumva să te ajute să citești chestia asta, că poate pentru unii e greu de citit, în care să-ți zică acest nou batch de test îți aduce improvement-uri la confusion matrix, adică felul în care clasifică documentele. Ăă, pe zona de utility bill, pe bank statement, pe nu știu ce, e posibil să aducă și un mic ăă, o mică confuzie pe zona de utility bill, dar n-ar trebui să fie ceva care să afecteze foarte mult performanța în mod negativ. Ăă, tot așa, și poate un mic sumar și pe datele astea de test. Vedem că au fost pe testing data a fost improved five, niciun degradation, deci clar e un batch pozitiv. Recomandarea e că poți să-l promovezi."],
+ ["F", "②·08:50", "Ok. Dacă, să zicem că ai ajuns în punctul ăsta și tocmai ai primit de la cineva o un batch de tenancy agreement, că din astea aveai training prea puțin și primești un batch de uite niște exemple de tenancy agreement. Și te hotărăști să le incluzi pe alea în testing."],
+ ["P", "②·09:13", "Aici o să recunosc că știu ce urmează, că m-am jucat cu el mai devreme și am încercat să fac asta."],
+ ["F", "②·09:18", "Nu mă interesează ce"],
+ ["P", "②·09:20", "Da. Ăă, eu vin aici, dau așa și o să-mi zică că"],
+ ["F", "②·09:26", "Dacă știi că-s toate, puteai să folosești, adică ai vreun motiv pentru care folosești auto label?"],
+ ["P", "②·09:33", "A, n-am"],
+ ["F", "②·09:34", "Am văzut că te-ai grăbit."],
+ ["P", "②·09:35", "Da, da, da, că m-am grăbit. Da. N-am n-am"],
+ ["F", "②·09:38", "Nu contează pe ce cale o iei."],
+ ["P", "②·09:39", "Da, da, da. N-a fost neapărat așa și o să-mi zic aici că vezi că ai deja ceva in progress, ce vrei să faci. Și cum vezi? Cum cum vezi scenariul ăsta? Ce crezi că e likely să folosești sau ai avea nevoie de mai multă libertate? Nu nu mi s-ar părea că adică cred că la libertate te referi, gen să pot să salvez ce făceam înainte ca un draft și să promovez mai întâi ce am pus acuma și după aia să mă întorc la celălalt."],
+ ["F", "②·10:08", "În contextul ăsta să fie versionarea pe"],
+ ["P", "②·10:09", "Da, da, da. Părerea mea e că nu ar trebui nu văd să ne ducem chiar așa de mult în direcția asta în care să îl salvez pe ăla ca un draft, să mă întorc la el după aia, nu cred că e cazul. Ar trebui să iei o decizie legată de ce făceai acuma, mai ales că deja ai ajuns în zona în care doar vezi rezultatele și ar trebui să iei o decizie destul de repede, nu cred că e prea complex. Odată ce ai făcut deja training-ul. Deci, promote candidate first și presupun că train anyway ar șterge"],
+ ["F", "②·10:47", "Ar șterge."],
+ ["P", "②·10:50", "Adică m-aș m-aș m-aștept să dea discard la"],
+ ["F", "②·10:53", "La candidat."],
+ ["P", "②·10:54", "Da."],
+ ["F", "②·10:55", "Ok."],
+ ["P", "②·10:56", "Nu știu care e comportamentul de fapt, dar la asta mă gândesc."],
+ ["F", "②·11:02", "E ar construi pe peste, l-ar adăuga peste candidat."],
+ ["P", "②·11:06", "Mhm. Și ar deveni old, cum ar veni. Adică ce ce pun eu acuma, al doilea batch,"],
+ ["F", "②·11:14", "Da."],
+ ["P", "②·11:15", "în momentul în care eu zic train anyway,"],
+ ["F", "②·11:16", "Da."],
+ ["P", "②·11:17", "Pot să-i dau?"],
+ ["F", "②·11:19", "Poți să-i dai, dar înainte zi, înainte zi raționamentul."],
+ ["P", "②·11:21", "Odată ce dau train anyway, când mă duc înapoi în testing, o să văd tot batch 1 ca fiind in promotion, dar old-ul devine ce aveam inițial plus batch 2."],
+ ["F", "②·11:37", "Și dacă dai promote first?"],
+ ["P", "②·11:40", "Promote first o să-l promoveze batch 1, ăla o să devină old-ul, în momentul în care"],
+ ["F", "②·11:48", "N-ar fi fost același lucru?"],
+ ["P", "②·11:50", "Nu."],
+ ["F", "②·11:50", "Ok. Am înțeles ce zici."],
+ ["B", "②·11:53", "Deci, pentru aia, tu în momentul ăsta ești la un old, care e ce rulează pe workflow."],
+ ["P", "②·12:00", "Da."],
+ ["B", "②·12:01", "Și mai ai un candidat."],
+ ["P", "②·12:02", "Da."],
+ ["B", "②·12:03", "Să zicem batch 1."],
+ ["P", "②·12:04", "Da."],
+ ["B", "②·12:04", "Și tu acum vii cu un alt set de training."],
+ ["P", "②·12:07", "Da."],
+ ["B", "②·12:08", "Ăă, dacă apeși train anyway, pe ce fundament pui batch 2? Pe old sau pe batch 1?"],
+ ["P", "②·12:16", "Eu zic că batch 2 vine pe old."],
+ ["B", "②·12:19", "Pe old."],
+ ["P", "②·12:20", "Și apoi"],
+ ["B", "②·12:20", "Și ai trei versiuni."],
+ ["P", "②·12:21", "Da. Și eu brusc o să compar batch 1 cu old plus batch 2."],
+ ["B", "②·12:27", "Și workflow-ul pe ce rulează?"],
+ ["P", "②·12:31", "Bună întrebare."],
+ ["B", "②·12:36", "Ok."],
+ ["P", "②·12:37", "Da."],
+ ["B", "②·12:39", "Asta asta înseamnă că ai trei versiuni."],
+ ["P", "②·12:40", "Da, da, da."],
+ ["B", "②·12:41", "Da, da, da. Și nu merge."],
+ ["P", "②·12:44", "Atunci ăă nu văd cum altfel decât să facă discard."],
+ ["B", "②·12:55", "Și dacă ai vrea să construiești pe old, adică pe ce rulează workflow-urile, plus batch 2, ce ai face? Deci train anyway, train anyway pune pe batch 1, pune datele noi și îl compară tot cu old-ul, care rulează workflow-ul."],
+ ["P", "②·13:12", "Deci batch 1 plus batch 2 comparat cu old."],
+ ["B", "②·13:15", "Da. Promote candidate first îți pune batch 1, ți-l promovează"],
+ ["P", "②·13:22", "Și apoi compari batch 2 cu"],
+ ["B", "②·13:24", "batch 1 cu batch 2."],
+ ["P", "②·13:25", "Da."],
+ ["B", "②·13:28", "Dacă dacă ai vrea să pui batch 2 direct peste old,"],
+ ["P", "②·13:37", "Nu e bine, nu e bine."],
+ ["B", "②·13:39", "Când poți, cum?"],
+ ["P", "②·13:41", "Înțeleg, dar nu nu mi se pare ok, că trebuie să verifici și pe ăla totuși în testing, să vezi că nu-ți aduce mai rău, mai mult rău decât bine."],
+ ["B", "②·13:49", "Mhm."],
+ ["F", "②·13:50", "Dar să zicem că ai îți dai seama că vrei să scapi de primul candidat, de batch 1."],
+ ["P", "②·13:55", "De batch 1?"],
+ ["F", "②·13:56", "Da."],
+ ["P", "②·13:58", "Aș da cancel aici, m-aș duce să în testing din nou, fie să-i dau promote, sau discard lui ăla, m-aș întoarce aici să-i dau start training again."],
+ ["B", "②·14:11", "Ok. Ăă,"],
+ ["P", "②·14:20", "Deci în momentul de față, dacă-i dau train anyway, combină batch 1 cu batch 2 versus old?"],
+ ["B", "②·14:28", "Ok."],
+ ["F", "②·14:29", "Da. Poate am putea să clarificăm aici, nu? Sau cum ți s-ar părea mai clar comunicat?"],
+ ["P", "②·14:35", "Hm. Nu știu dacă are cum să fie mai clar comunicat. Deci, <span class=\"unsure\" title=\"Phase-1 query: George citește textul modalului train-anyway de pe ecran; ASR garbled\">[citire UI garbled]</span> Promote first to lock in the current results or train anyway to keep building on it. Poate să zică ceva super clar că your current batch that is a candidate is going to be merged with this one."],
+ ["B", "②·15:15", "You lose batch one basically."],
+ ["P", "②·15:16", "Not merged."],
+ ["B", "②·15:18", "Nu se pierde."],
+ ["P", "②·15:19", "Nu-l pierzi complet. Îl amesteci."],
+ ["B", "②·15:22", "Da, dar dacă vrei să ajungi la batch one pur, you cannot."],
+ ["P", "②·15:25", "Da."],
+ ["B", "②·15:26", "Da, da. E"],
+ ["P", "②·15:27", "Da."],
+ ["B", "②·15:28", "Pierzi prin crearea batch-ului 2."],
+ ["P", "②·15:35", "Da."],
+ ["B", "②·15:38", "Ce acum, mă rog, după ce a mai trecut ceva timp de la prima interacțiune cu zona asta, după ce te-ai mai jucat cu ea, care parte în continuare ți se pare că ar trebui, nu știu, explicată mai bine, care a fost vreun moment din ăsta de what the fuck is happening here?"],
+ ["P", "②·16:06", "Nu știu dacă what the fuck. Ăă, zona asta de jos chiar mi se pare clară, nu știu dacă e ceva dubios aici, mai ales pe comparison, dar și în mod normal nu e nimic. Ăă, deci cum am zis și mai devreme, foarte clar chestia asta că 20% se duc în training și pardon, în acest held out pool. Ăă, pe zona de candidate, teoretic e același lucru. Ăă, aici candidate e doar batch e doar batch-ul singur, nu? Fără să ne uităm și la sau e cum ar arăta tot training data-ul cu batch 2 peste?"],
+ ["F", "②·16:50", "Da."],
+ ["P", "②·16:51", "Ok. Ok. Ok, atunci are sens."],
+ ["F", "②·16:55", "Vezi și el, da?"],
+ ["P", "②·16:56", "Că mă"],
+ ["F", "②·16:56", "Vezi și el separat?"],
+ ["P", "②·16:58", "Ăă, nu neapărat, dar doar voiam să fiu sigur, pentru că văzusem eroarea asta și mă gândeam că dacă e doar pentru batch-ul ăla n-are sens."],
+ ["F", "②·17:09", "Apare doar aici, e posibil să fie un bug în prototip."],
+ ["P", "②·17:12", "Da, mă rog, nu nu"],
+ ["F", "②·17:14", "Da, nu era neapărat de asta, dar mă gândeam așa în general."],
+ ["P", "②·17:16", "Dacă așa are rost eroarea asta aici. În cazul ăsta așa are, dar da. Deci asta așa. Ăă, zona de comparison, mai ales înainte, nu știu dacă poate pentru că era și prototipul puțin greșit, ca și numere așa, pentru că încercam să-mi dau seama care e logica și stăteam și calculam, gen, ok, 3 cu 3 cu 1 cu nu dă cât trebuie. Păi și atunci ce înseamnă numerele astea?"],
+ ["B", "②·17:46", "Ți s-ar părea helpful, de exemplu, dacă ai face hover dacă ai face hover pe plus 1 aici, să-ți zică one document that is actually an utility bill but was classified as bank statement."],
+ ["P", "②·18:02", "Mhm."],
+ ["B", "②·18:03", "Adică ar ajuta asta în vreun fel să structureze un pic modelul mental de cum se citește"],
+ ["P", "②·18:11", "Da. Părerea mea, da. Că"],
+ ["B", "②·18:14", "Dacă e CSS, putem să punem un tooltip. Adică actually e atât, ca să"],
+ ["P", "②·18:24", "Și la fel și la astea cu plus. Adică la toate mi s-ar părea să dai hover și să îți explice. Ăsta înseamnă că se adaugă trei care au fost clasificate corect pe utility bill. Ăsta înseamnă că se adaugă unul pe utility bill care a fost clasificat greșit ca fiind bank statement, etc. Da."],
+ ["B", "②·18:45", "Cool."],
+ ["F", "②·18:47", "Anything else?"],
+ ["P", "②·18:49", "Nici din partea mea nu cred. N-avem nimic pe zona de workflow încă, nu?"],
+ ["F", "②·19:01", "Poți să intri un pic."],
+ ["P", "②·19:02", "A. Așa. Fac ceva nou sau?"],
+ ["F", "②·19:11", "Anything works."],
+ ["P", "②·19:15", "Așa. Ăă, păi m-aștept să fie pe la documents. Document classifier. Modelele pe care le am eu. Add a key or a path for the document. Ok. Classes, presupun că sunt hai. Output."],
+ ["F", "②·19:41", "E o problemă din nu poți să încerci alt"],
+ ["P", "②·19:43", "A."],
+ ["F", "②·19:44", "classifier."],
+ ["P", "②·19:45", "Ok, ok, ok. Deci îmi aduce toate clasele pe classifier-ul ăla."],
+ ["F", "②·19:50", "Clasele pe care știe să le clasifice modelul respectiv."],
+ ["P", "②·19:52", "Da, da, da, da. Așa. Reroute low confidence. Aha. Deci dacă găsește vreo pagină care confidence mic, să facă altceva. Ce-ar putea să facă? Să te întoarcă la proces, să zică că"],
+ ["F", "②·20:20", "Să dea să dea un mesaj, da, să te scoată din workflow pe un scenariu de error sau pe un de lucru, gen you tell me."],
+ ["P", "②·20:28", "Mhm."],
+ ["F", "②·20:29", "See this page and it was like."],
+ ["P", "②·20:32", "Ok. Hm. Adică și după aia să fie implementată asta în proces. Ceva care să să-ți aducă documentul într-un UI, să-l vezi, să zică: „Bă, la pagina asta așa, nu știu ce”. Păi și după aia ce ce răspuns trimiți înapoi?"],
+ ["F", "②·20:53", "Înapoi o să trimiți adică nu mai treci prin clasificare."],
+ ["P", "②·20:59", "Mhm."],
+ ["F", "②·20:59", "Tu deja ai clasificarea făcută."],
+ ["P", "②·21:04", "A, ok, ok, ok. Pornești workflow de unde ai rămas, cum ar veni. Ok. Interesant."],
+ ["F", "②·21:10", "asta și era."],
+ ["P", "②·21:12", "Da. Interesant, ok."],
+ ["F", "②·21:14", "Mă rog, ai asta este varianta foarte brută și grosieră."],
+ ["P", "②·21:18", "Da, da, da."],
+ ["F", "②·21:21", "O să ai un nod de human in the loop sau ceva similar care ar trebui să cheme o bucată de UI care să fie specializată pe zona asta."],
+ ["P", "②·21:32", "Mhm."],
+ ["F", "②·21:34", "Și să nu trebuiască s-o construiești tu from scratch."],
+ ["P", "②·21:37", "Da, da, da. Dar mă gândeam și care ar fi experiența, știi? Că dacă ai un proces din ăsta de mortgage, tu arunci acolo 10 documente, le râșnește pe toate. Cum cum prezentăm noi demo-urile? Acuma e că se întâmplă tot în spate, tu n-ai nicio treabă, vezi de-abia la final că unul dintre ele a fost low confidence și datele din ele sunt din documentul ăla sunt low confidence."],
+ ["F", "②·22:00", "Poți să faci asta în continuare, adică dacă pui acel confidence threshold la 1% sau la 10%."],
+ ["P", "②·22:07", "Da, sau nu bifezi reroute și atât."],
+ ["F", "②·22:10", "Da. Ideea e dacă ai use case-uri în care peste o sub un anumit confidence, nu vrei să mai faci nimic automat, pentru că depinde foarte mult în funcție de tipul în funcție de pagina documentului sau de tipul documentului, depinde foarte mult branching-ul procesului și atunci chiar nu știi unde să te duci."],
+ ["P", "②·22:30", "Da."],
+ ["F", "②·22:30", "decât să te duci pe un branch incorect și să pierzi putere de calcul, mai bine ai o mică interacțiune."],
+ ["P", "②·22:36", "Da, da, da."],
+ ["F", "②·22:37", "zi-mi și mie ce-i ăsta."],
+ ["P", "②·22:38", "Până să te apuci de restul."],
+ ["F", "②·22:39", "Și apoi continui."],
+ ["P", "②·22:42", "Decât poate să vezi că un document a fost low confidence, îl înlocuiești cu altul și după aia să rerulezi toată analiza din nou, da."],
+ ["F", "②·22:50", "Cam ăsta, adică idealul ăsta ar fi, asta ar fi interacțiunea. Îmi pare că n-am ceva, dă-mi ceva și apoi îi dau înainte."],
+ ["P", "②·22:53", "Mhm. Ok. Interesant. Deci putem să băgăm chestia asta în demo-uri?"],
+ ["F", "②·23:05", "Da, chestia asta."],
+ ["P", "②·23:08", "Vă dau un mediu dacă vreți."],
+ ["F", "②·23:09", "Păi nu, nu."],
+ ["P", "②·23:11", "Nu, dar gen, ok."],
+ ["F", "②·23:12", "2127 arăta altfel."],
+ ["P", "②·23:14", "Da, nu mă refer exact la asta, da, dar la genul ăsta de interacțiune în timpul procesului în care arunci documentele alea și la un moment dat se oprește analiza brusc, error, hands up. Vezi că unul din documente are foarte proastă, foarte prost confidence de clasificare. Mă ajuți să-l clasificăm manual? Și zici tu acolo: „Da, de fapt documentul ăsta e nu știu ce”."],
+ ["F", "②·23:42", "Da, e posibil să înțelegi."],
+ ["P", "②·23:42", "Și după aia să continue procesul."],
+ ["F", "②·23:45", "Da, poți să continui, adică poți să continui doar cu documentul ăla care e low confidence, nu trebuie să tot în spate."],
+ ["P", "②·23:50", "Mhm. Mhm."],
+ ["F", "②·23:52", "Pentru că de fapt din nodul ăsta, mă rog, el oricum ia doar un o pagină, adică el primește mai multe pagini dintr-un document sau, mă rog, de fapt mai multe texte, că nu-l interesează să fie același document. Poate să fie mai multe documente, nu te obligă nimeni să fie un singur document, dar să zicem că doar unul dintre ele are o problemă. Tu în workflow dacă ai branching pe celelalte documente și n-ai o problemă, ăla poate să continue și o să-ți pună rezultatele undeva, că probabil ți le pui într-un persistence de unde le afișezi și le răsfrumuți."],
+ ["P", "②·24:01", "Da."],
+ ["F", "②·24:23", "Și pe ăla mai ai nevoie de o chestie și atunci tu îl scoți pe error,"],
+ ["P", "②·24:28", "Mhm."],
+ ["F", "②·24:29", "îl redirecționezi într-un modal or something, o acțiune de modală. Aștepți input-ul de la user și apelezi sub workflow, îți faci un sub workflow care procesează și nu mai aștepți clasificarea. Ăla primește direct label-ul pe care ți l-a dat user-ul."],
+ ["P", "②·24:44", "Da, da, da. Da, da, da."],
+ ["F", "②·24:47", "Și ți-ai modelat cumva human in the loop."],
+ ["P", "②·24:51", "Mhm. Da, da, da."],
+ ["F", "②·24:54", "Dar da, ar trebui să poți să ai genul ăsta de."],
+ ["P", "②·24:56", "Și întrebare dacă, cum vorbeam noi pe scenariul de mai devreme în care îți pui ai un document care conține și certificat energetic și contractul de vânzare-cumpărare în același PDF. Dacă îl trec pe ăla din proces să vină prin classifier-ul nostru, el ce o să-mi zică la output?"],
+ ["F", "②·25:14", "O să-ți dea output-ul per pagină."],
+ ["P", "②·25:16", "Per pagină. Mhm."],
+ ["F", "②·25:18", "Adică tu la un moment dat ce o să poți să faci e că o să-i dai, o să-ți vină un document care are toate cele cinci clase și o să-ți zică pe pagină, după care tu o să ai niște noduri în în workflow de combine și split. Și o să poți să-ți aduci paginile pe un pe o categorie împreună și dacă vrei poți să le afișezi pe alea către user."],
+ ["P", "②·25:24", "Și să poți să le Da. Da, da, da. Ok. Make sense."],
+ ["F", "②·25:44", "Dar clasificarea momentan o să se facă pe pagină. Ne uităm și la clasificare pe un document întreg și dar aia probabil o să fie o combinație din ce e pe pagină."],
+ ["P", "②·25:54", "De ce e, da, da, da. Exact. Ok. Make sense."],
+ ["F", "②·26:01", "Good."],
+ ["P", "②·26:02", "Bine."],
+ ["F", "②·26:03", "Bine. Păi, îți mulțumesc."],
+ ["P", "②·26:04", "Mersi. Mersi și eu."]
+];
+
+const IDEAS = [
+ {"id": "idea-01", "title": "ML model belongs near data sources / integrations, not under “reusable resources”", "category": "design_insight", "topics": ["Navigation & IA"], "detail": "George first looked for ML model creation near data sources / workflows / integrations. Shown it under “reusable resources”, he felt it didn’t fit that category and agreed it sits better under integrations.", "quote": "Ca ăsta să fie și el tot aici, mi se pare că nu e în temă cu celelalte din categoria asta, sincer.", "speaker": "P", "confidence": "high", "needs": false, "anchors": [39, 25, 41]},
+ {"id": "idea-02", "title": "Mental model of training from scratch: examples + categories + scope + distinctive terms", "category": "design_insight", "topics": ["Mental models & expectations", "Class definition"], "detail": "Asked what training a classifier from zero would involve, George expected: examples first, defined categories, a bounded scope (e.g. mortgage docs), and distinctive terms/markers that raise per-class accuracy.", "quote": "În primul rând, exemple, clar… definit pe categorii… niște termeni specifici care să aducă un grad de corectitudine mai mare.", "speaker": "P", "confidence": "high", "needs": false, "anchors": [43]},
+ {"id": "idea-03", "title": "“Labels” field meaning is unclear", "category": "open_question", "topics": ["Class definition", "Guidance & transparency"], "detail": "George wasn’t sure what “labels” meant — either the distinctive keywords he’d mentioned, or per-model tags used to auto-select the right model later. The term didn’t resolve from the UI.", "quote": "Nu știu dacă sunt ce ziceam eu, cuvintele alea… sau dacă fiecare ML model să aibă niște label-uri… poate să se autoselecteze în funcție de label-urile alea.", "speaker": "P", "confidence": "high", "needs": false, "anchors": [61, 59, 60]},
+ {"id": "idea-04", "title": "Expected to add examples/keywords per class — not just name + description", "category": "feature_request", "topics": ["Class definition"], "detail": "After creating a class with only a name and description, George expected to also feed it example documents and keywords/terms to anchor the class.", "quote": "gen exemplele pe care le-am menționat anterior… niște termeni sau niște keyword-uri, exemple… uite aici trei exemple.", "speaker": "P", "confidence": "high", "needs": false, "anchors": [81, 79, 80]},
+ {"id": "idea-05", "title": "Correctly reasons auto-label&review vs labeled upload; picks auto-label for mixed docs", "category": "design_insight", "topics": ["Training & upload"], "detail": "George grasped the difference (labeled upload = you know the class; auto-label = let the model split) and reasoned that a concatenated/mixed document should go through auto-label & review rather than be force-uploaded into one class.", "quote": "dacă l-aș avea un document concatenat, n-ar fi o idee bună să-l uploadez pe unul sau pe altul, ci ar trebui să-l auto-label and review și să-l despartă el pe categoriile alea.", "speaker": "P", "confidence": "high", "needs": false, "anchors": [88, 86, 87]},
+ {"id": "idea-06", "title": "Expected training-data volume: ~10 pages per class minimum, confirmed via testing", "category": "design_insight", "topics": ["Training & upload", "Mental models & expectations"], "detail": "As a feel, George expected at least ~10 pages per class for good confidence, and said he’d confirm whether it’s enough later in the testing area.", "quote": "cel puțin 10 pagini pe fiecare clasă… ca să ai un level of confidence bun… dacă e îndeajuns sau nu, asta o să vină în zona de testing.", "speaker": "P", "confidence": "medium", "needs": false, "anchors": [95]},
+ {"id": "idea-07", "title": "Auto-marking a page “reviewed” when its label changes feels like good automation", "category": "design_insight", "topics": ["Review workflow"], "detail": "When George changed a page’s label it auto-flipped to “reviewed”. He found this natural — the chance of a mistaken selection is low, so a human clearly decided, and it saves a step.", "quote": "Cred că sunt șansele foarte mici ca eu să fac o greșeală în selecția asta… deci cred că e ok. Ar fi o automatizare bună.", "speaker": "P", "confidence": "high", "needs": false, "anchors": [119, 115, 116]},
+ {"id": "idea-08", "title": "Per-page content view: expected a summary, got full extracted text", "category": "design_insight", "topics": ["Review workflow"], "detail": "Opening a page, George initially assumed the shown text was a summary and that drilling in would reveal the full content — but it already was the full extracted page content.", "quote": "M-am gândit că poate aici e doar o sumarizare la analiză și aici intri și vezi chiar tot content-ul, dar ok.", "speaker": "P", "confidence": "medium", "needs": false, "anchors": [115, 107]},
+ {"id": "idea-09", "title": "Real-life review strategy: trust high-confidence once proven, focus low-confidence, mark-all at the end", "category": "design_insight", "topics": ["Review workflow"], "detail": "George described how he’d review for real: the doc name isn’t decisive; a person who knows the docs reviews; early on go through everything, but once high-confidence pages prove ~99% right, only review the low-confidence ones and “mark all reviewed” at the end to save clicks.", "quote": "m-aș duce doar la cele cu confidence mic… și apoi m-aș duce să dau mark all reviewed ca să le marcheze și pe cele cu confidence mare.", "speaker": "P", "confidence": "high", "needs": false, "anchors": [133, 131, 137, 141]},
+ {"id": "idea-10", "title": "No reliable way to resume review across sessions — “where did I leave off?”", "category": "pain_point", "topics": ["Review workflow"], "detail": "For big batches done over multiple sittings, George has no dependable way to know what he already reviewed. He’d rely on the last checkmark — but since he checks the obvious-correct ones only at the end, the last check isn’t the true stopping point, forcing him to re-traverse.", "quote": "probabil m-aș lua după ultima bifă pe care am pus-o… e posibil ca aia să nu fie ultima bifă. Să trebuiască poate să trec din nou prin ultimele câteva.", "speaker": "P", "confidence": "high", "needs": false, "anchors": [145, 142, 144]},
+ {"id": "idea-11", "title": "Confusion matrix is readable but takes effort to interpret", "category": "design_insight", "topics": ["Testing & metrics"], "detail": "George worked out the matrix only after some back-and-forth: rows = true class, columns = predicted; the diagonal is where the model was correct, off-diagonal is where he corrected it.", "quote": "cele care sunt pe diagonala matricei ar trebui să fie ce a scos modelul care a fost și corect. Și tot ce e în afară de diagonală înseamnă că am făcut eu o modificare.", "speaker": "P", "confidence": "medium", "needs": false, "anchors": [169, 161, 162]},
+ {"id": "idea-12", "title": "Training distribution is useful: low data explains a weak class → add examples", "category": "design_insight", "topics": ["Testing & metrics"], "detail": "George found training distribution relevant: if a class performs poorly he’d check whether it has little training data and, if so, add more examples for it.", "quote": "dacă văd că tenancy agreement are o performanță foarte proastă… văd că are foarte puțin training data, înseamnă că trebuie să-i mai adaug exemple.", "speaker": "P", "confidence": "high", "needs": false, "anchors": [182, 180, 181]},
+ {"id": "idea-13", "title": "Held-out test pool is a good idea, but fears it grows unbounded — wants control", "category": "feature_request", "topics": ["Held-out pool & 80/20", "Testing & metrics"], "detail": "George liked re-scoring against past held-out data, but worried the pool is ever-growing (100 tests → thousands of pages — performance risk). He wants control: remove/disable pages, prune outdated doc types when rules change, or view a single batch.", "quote": "Singura teamă mi-e că poate să fie ever-growing zona asta și să faci 100 de teste și să fie 1000 de pagini aici într-un final.", "speaker": "P", "confidence": "high", "needs": false, "anchors": [198, 201, 199]},
+ {"id": "idea-14", "title": "Confusion-matrix cells don’t look clickable, but the drill-down filter is useful", "category": "design_insight", "topics": ["Testing & metrics"], "detail": "Asked if the matrix looked clickable, George said no. Once told it is, clicking a cell (e.g. tax document → utility bill) filtered the held-out pages below — which he found useful. Discoverability is the gap, not the feature.", "quote": "să zicem că vreau să văd această confuzie cu tax document la utility bill… o să-mi apară dedesubt… Held out pages, true class utility bill.", "speaker": "P", "confidence": "medium", "needs": false, "anchors": [214, 207, 209]},
+ {"id": "idea-15", "title": "Misconception: thinks the model can still misclassify a page it was trained on", "category": "open_question", "topics": ["Held-out pool & 80/20", "Mental models & expectations"], "detail": "George expected the model could still get a page wrong on later runs even after being trained on it (just with better confidence). The facilitator corrected this: once trained on that exact page, it won’t misclassify it — a mental-model gap that drove later confusion.", "quote": "Eu m-aștept în continuare ca el poate să greșească, gen la al doilea test, la al treilea test, poate cu un confidence un pic mai bun.", "speaker": "P", "confidence": "high", "needs": false, "anchors": [227, 226, 229, 230]},
+ {"id": "idea-16", "title": "Didn’t realize 20% of corrected pages are held out and never trained on", "category": "pain_point", "topics": ["Held-out pool & 80/20"], "detail": "The core confusion: George hadn’t grasped that of the pages he corrected, ~20% are held out, never trained on, and kept as an objective benchmark. Once explained, it clicked — but it was the moment he most needed help.", "quote": "din alea 10 pe care le-am corectat, două de fapt niciodată nu s-a antrenat pe ele, ele au fost ignorate complet în training și doar s-au dus în zona aia de held out pages.", "speaker": "P", "confidence": "high", "needs": false, "anchors": [272, 259, 262, 273]},
+ {"id": "idea-17", "title": "The 80/20 split is never explained in the UI — wants an info point", "category": "feature_request", "topics": ["Held-out pool & 80/20", "Guidance & transparency"], "detail": "George looked for where the 80/20 held-out concept is explained and couldn’t find it before the testing screen. He recommends an info point near the training controls stating that 20% of what you submit is ignored for training and kept as a re-tested benchmark.", "quote": "cred că un info point aici sub toate chestiile astea… din tot ce trimiți tu aici, 20% nu o să fie antrenat, o să fie complet ignorat… păstrat ca un benchmark pe care să se tot retesteze.", "speaker": "P", "confidence": "high", "needs": false, "anchors": [278, 276, 277]},
+ {"id": "idea-18", "title": "Initial ML scope is document classification only — to improve groundedness, not prediction", "category": "context", "topics": ["Mental models & expectations"], "detail": "Stated by the team: the only ML models supported initially are document-classification models, introduced to improve groundedness and reduce LLM hallucination — not prediction/forecasting use cases (those are deliberately avoided for now).", "quote": "motivul pentru care introducem modelele de ML e ca să mai asigurăm groundedness și să mai scădem din probabilitatea de halucinare a unui LLM.", "speaker": "B", "confidence": "high", "needs": false, "anchors": [12, 8, 9]},
+ {"id": "idea-19", "title": "Compare view (old vs candidate) read quickly at the end; old/candidate semantics guessed", "category": "design_insight", "topics": ["Testing & metrics"], "detail": "Rushed for time, George skimmed the run-comparison view, guessing “old” = all previous runs and “candidate” = the latest upload, and read the +N deltas — but old/candidate and the still-wrong/fixed labels weren’t fully settled. (Revisited and resolved in the continuation call — see idea-20.)", "quote": "Old înseamnă tot ce am făcut până acuma… mă aștept să fie all previous. Candidate e ce am uploadat acuma, teoretic.", "speaker": "P", "confidence": "low", "needs": false, "anchors": [286, 290, 292]},
+ {"id": "idea-20", "title": "Now reads the comparison view confidently — fixed / improved / degraded + per-class deltas", "category": "design_insight", "topics": ["Testing & metrics"], "detail": "Picking up where call 1 left off, George read the run-comparison fluently: the bottom labels (fixed→improved, still-wrong, degraded, correct-and-still-correct) and the per-class +N additions. A clear step up from the rushed read in the first call (idea-19).", "quote": "Ăsta era fixed înainte, nu? Și acu e improved… înainte a fost găsit greșit și acu e găsit corect.", "speaker": "P", "confidence": "high", "needs": false, "anchors": [328, 330]},
+ {"id": "idea-21", "title": "Pre-train warnings (too few pages / unbalanced data) are appreciated", "category": "design_insight", "topics": ["Training & upload", "Guidance & transparency"], "detail": "Before training, George noticed the warnings that two classes have too few pages and that the training data is unbalanced, and liked being told up front — he reads it as a signal those classes won’t perform well.", "quote": "ne anunță că e nu e balansată training data-ul, which again is nice.", "speaker": "P", "confidence": "high", "needs": false, "anchors": [328]},
+ {"id": "idea-22", "title": "Promote criteria: correct additions + positive test-scenario impact, and zero degradation", "category": "design_insight", "topics": ["Testing & metrics", "Promote & versioning"], "detail": "George would promote when correct examples were added (raising performance) and, above all, when the test-scenario section shows improvement — but any degradation is a stop signal: he wouldn’t continue with that batch.", "quote": "dacă există orice fel de degradation, nu cred că e o idee bună să continui cu batch-ul ăla.", "speaker": "P", "confidence": "high", "needs": false, "anchors": [353, 343]},
+ {"id": "idea-23", "title": "One wrong addition outweighs a couple correct ones — wants a ~3:1/4:1 ratio", "category": "design_insight", "topics": ["Testing & metrics"], "detail": "George weights a wrongly-added example more heavily than correct ones; he’d want roughly a 3:1 or 4:1 ratio of correct-to-wrong additions as the minimum before he’s comfortable a batch doesn’t harm the model.", "quote": "mi se pare mai nașpa să introduci chiar și unul greșit decât să introduci două corecte… 3 la 1 sau 4 la 1 mi s-ar părea minimul.", "speaker": "P", "confidence": "high", "needs": false, "anchors": [351, 350]},
+ {"id": "idea-24", "title": "Wants an “AI explanation” / plain-language summary of the comparison for less-technical users", "category": "feature_request", "topics": ["Guidance & transparency", "Testing & metrics"], "detail": "George suggested an AI-written summary that reads the confusion-matrix/comparison for people who find it hard to parse — stating in words what the new batch improves, where it adds minor confusion, and whether it’s net-positive.", "quote": "cumva să te ajute să citești chestia asta, că poate pentru unii e greu de citit… acest nou batch de test îți aduce improvement-uri.", "speaker": "P", "confidence": "high", "needs": false, "anchors": [357, 353]},
+ {"id": "idea-25", "title": "Hover tooltips on each matrix/comparison cell explaining the number", "category": "feature_request", "topics": ["Testing & metrics", "Guidance & transparency"], "detail": "George strongly endorsed (and elaborated on) hovering a cell to explain it — e.g. “+1 = one page that is actually a utility bill but was classified as bank statement” — for every cell, to scaffold the mental model of how to read it.", "quote": "la toate mi s-ar părea să dai hover și să îți explice. Ăsta înseamnă că se adaugă trei care au fost clasificate corect pe utility bill.", "speaker": "P", "confidence": "high", "needs": false, "anchors": [458, 455]},
+ {"id": "idea-26", "title": "Mental model of old vs candidate: only “old” runs in the workflow until you promote", "category": "design_insight", "topics": ["Promote & versioning", "Workflow integration"], "detail": "Asked what a workflow using the model would run, George correctly said the “old” version runs; the “candidate” isn’t live until he promotes it himself.", "quote": "Candidate-ul nu mă aștept să fie încă în funcțiune până nu îl promovez eu.", "speaker": "P", "confidence": "high", "needs": false, "anchors": [340, 339]},
+ {"id": "idea-27", "title": "train-anyway vs promote-first versioning is confusing — “what does the workflow run on?”", "category": "pain_point", "topics": ["Promote & versioning"], "detail": "George worked out that train-anyway stacks batch 2 on “old”, producing three versions (old, batch 1, batch 2) — and couldn’t answer which one the workflow then runs on (“good question”). He doesn’t want heavy draft/versioning; he’d rather decide quickly on the current candidate, but the branching outcomes aren’t clear.", "quote": "Eu zic că batch 2 vine pe old… și eu brusc o să compar batch 1 cu old plus batch 2.", "speaker": "P", "confidence": "high", "needs": false, "anchors": [402, 369, 383, 411]},
+ {"id": "idea-28", "title": "The train-anyway modal copy is unclear — state plainly that the candidate gets merged", "category": "naming_copy", "topics": ["Promote & versioning", "Guidance & transparency"], "detail": "George found the train-anyway modal text hard to parse and wants it to say plainly that the current candidate batch will be merged with the new one — and that you can’t get back to a pure batch 1 afterwards.", "quote": "Poate să zică ceva super clar că your current batch that is a candidate is going to be merged with this one.", "speaker": "P", "confidence": "high", "needs": false, "anchors": [430, 429, 432]},
+ {"id": "idea-29", "title": "The 80/20 held-out split is now clear to him", "category": "design_insight", "topics": ["Held-out pool & 80/20"], "detail": "The big confusion from call 1 (idea-16/idea-17) is resolved: George now states plainly that 20% goes to the held-out pool, and that area reads clearly to him.", "quote": "foarte clar chestia asta că 20% se duc în… pardon, în acest held out pool.", "speaker": "P", "confidence": "high", "needs": false, "anchors": [442]},
+ {"id": "idea-30", "title": "Comparison numbers were confusing earlier — partly prototype math errors", "category": "pain_point", "topics": ["Testing & metrics"], "detail": "George recalls the comparison numbers not adding up earlier (he sat computing 3/3/1 and it didn’t total what it should), which made the logic hard to infer — partly attributable to the prototype’s numbers being off.", "quote": "stăteam și calculam, gen, ok, 3 cu 3 cu 1 nu dă cât trebuie. Păi și atunci ce înseamnă numerele astea?", "speaker": "P", "confidence": "medium", "needs": false, "anchors": [452]},
+ {"id": "idea-31", "title": "Reroute low-confidence to a human-in-the-loop step that resumes the workflow (and show it in demos)", "category": "feature_request", "topics": ["Workflow integration"], "detail": "George grasped the reroute-low-confidence node and envisioned a human-in-the-loop step: low-confidence pages surface in a UI for manual classification, then the workflow resumes from there. He specifically wants this visible interaction in demos rather than everything happening silently in the background.", "quote": "Cum prezentăm noi demo-urile? Acuma se întâmplă tot în spate, tu n-ai nicio treabă, vezi de-abia la final că unul a fost low confidence.", "speaker": "P", "confidence": "high", "needs": false, "anchors": [487, 475, 505]},
+ {"id": "idea-32", "title": "Classifier output is per-page; multi-class PDFs handled via combine/split nodes", "category": "design_decision", "topics": ["Workflow integration", "Class definition"], "detail": "Team-stated behaviour: when a single PDF mixes classes, the classifier outputs per page, and workflow combine/split nodes regroup pages by class for display. Document-level classification is planned later, likely derived from the per-page result. (Answers George’s question about mixed PDFs.)", "quote": "o să-ți vină un document care are toate cele cinci clase și o să-ți zică pe pagină, după care tu o să ai niște noduri de combine și split.", "speaker": "F", "confidence": "high", "needs": false, "anchors": [522, 519, 520]}
+];
+
+const REPAIRS = {
+  "auto": [
+    [
+      "groundness",
+      "groundedness"
+    ],
+    [
+      "date mocuite",
+      "date mock-uite  (mocked data)"
+    ],
+    [
+      "ochirizare (clasificare, ___, extragere de date)",
+      "OCR-izare  (OCR as a pipeline step) — confirmed"
+    ],
+    [
+      "Pe un sunt 50 de click-uri (23:55)",
+      "Pe undeva-s ~50 de click-uri în minus — confirmed"
+    ],
+    [
+      "[neinteligibil] (S1 45:09)",
+      "__DROP__"
+    ],
+    [
+      "Promoted first… (②14:55, citire UI)",
+      "Promote first to lock in the current results"
+    ],
+    [
+      "②~19 min de dead air la început (waiting room) + [neinteligibil]",
+      "__DROP__"
+    ],
+    [
+      "„2127” (②~23:12)",
+      "2127 = alt mediu cu alt prototip — confirmat (nu e garble)"
+    ]
+  ],
+  "confirm": [
+    [
+      "mai adresei la scenariul (②00:23)",
+      "mai adresasem scenariul  (we'd addressed the scenario)"
+    ]
+  ],
+  "query": [
+    [
+      "„Cadou” (S1 12:04) — fragment lângă denumirea clasei „certificat energetic”",
+      "ce a spus facilitatorul aici?"
+    ],
+    [
+      "citire UI garbled (②~14:48): „training against X1… We have to drag its course down”",
+      "ce scrie de fapt în modalul train-anyway de pe ecran?"
+    ]
+  ]
+};
+
+const turnToIdeas={};
+IDEAS.forEach(it=>it.anchors.forEach(a=>{(turnToIdeas[a]=turnToIdeas[a]||[]).push(it.id);}));
+const ORIG={};IDEAS.forEach(it=>{ORIG[it.id]=it;});
+const REVIEW={edits:{},notes:{},repairComments:{},repairSectionNote:"",turnComments:{},reportNote:""};
+function effective(it){return Object.assign({},it,REVIEW.edits[it.id]||{});}
+const SPK={"P": "George", "F": "Bogdan", "B": "Ana", "O": "Obs."};
+
+// Session provenance — flattened onto every exported insight so each one is
+// self-describing in a cross-session pool. `id` (slug <feature>-<date>) is the namespace.
+const SESSION={"id": "ml-doc-classification-2026-06-25", "feature": "ML document classification — model training & testing", "date": "2026-06-25", "participant": "George"};
+
+const scriptEl=document.getElementById('script');
+TURNS.forEach((t,i)=>{
+  const d=document.createElement('div');
+  d.className='turn '+t[0]+(turnToIdeas[i]?' anchored':'');
+  d.id='t-'+i;
+  d.innerHTML=`<div class="meta-r"><span class="spk">${SPK[t[0]]}</span><span class="ts mono">${t[1]}</span></div><span class="txt">${t[2]}</span>`;
+  if(turnToIdeas[i]) d.addEventListener('click',e=>{ if(e.target.classList.contains('unsure'))return; locate(turnToIdeas[i][0],true); });
+  const btn=document.createElement('button');btn.className='rowtool';btn.textContent='💬';
+  btn.title='Comment on this line';
+  btn.addEventListener('click',e=>{e.stopPropagation();toggleTurnComment(i,d);});
+  d.appendChild(btn);
+  scriptEl.appendChild(d);
+});
+
+const kept=new Set(IDEAS.map(i=>i.id)); // all cards included by default
+const ideasEl=document.getElementById('ideas');
+function titleOf(id){const x=IDEAS.find(i=>i.id===id);return x?x.title:id;}
+function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function cardHTML(it){
+  const q=it.needs?`<div class="query"><b>?</b><div><b>Needs confirmation — </b>${it.q}</div></div>`:'';
+  const src=TURNS[it.anchors[0]][1];
+  const nturns=it.anchors.length>1?`<span class="srcn"> · ${it.anchors.length} lines</span>`:'';
+  const topics=(it.topics&&it.topics.length)?`<div class="topics">${it.topics.map(t=>`<span class="topic">${esc(t)}</span>`).join('')}</div>`:'';
+  const tension=(it.conflictsWith&&it.conflictsWith.length)?`<div class="tension"><span class="tlabel">⚡ In tension with</span>${it.conflictsWith.map(cid=>`<button class="tlink" onclick="event.stopPropagation();locate('${cid}',true)">${titleOf(cid)}</button>`).join('')}</div>`:'';
+  return `<input type="checkbox" class="keep"${kept.has(it.id)?' checked':''} onchange="toggle('${it.id}',this.checked)" onclick="event.stopPropagation()" aria-label="keep">
+    <div>
+      <div class="tagrow">
+        <span class="tag ${it.category}">${it.category.replace('_',' ')}</span>
+        <span class="conf ${it.confidence}"><span class="dot"></span>${it.confidence}</span>
+        <span class="src">⌖ ${src}${nturns}</span>
+      </div>
+      <h3>${esc(it.title)}</h3>
+      <p class="detail">${esc(it.detail)}</p>
+      <blockquote class="quote">“${esc(it.quote)}”</blockquote>
+      <div class="who">${SPK[it.speaker]==='Facil.'?'Facilitator':SPK[it.speaker]}</div>
+      ${q}
+      ${tension}
+      ${topics}
+    </div>`;
+}
+// every id involved in a conflict (own links + cards others link to), for the filter
+const conflictIds=new Set();
+IDEAS.forEach(it=>(it.conflictsWith||[]).forEach(cid=>{conflictIds.add(it.id);conflictIds.add(cid);}));
+IDEAS.forEach(it=>{
+  const card=document.createElement('div');
+  card.className='card';card.id='c-'+it.id;card.dataset.cat=it.category;
+  card.dataset.topics=(it.topics||[]).join('|');
+  card.dataset.conflict=conflictIds.has(it.id)?'1':'';
+  card.addEventListener('click',()=>{if(card.classList.contains('editing'))return;locate(it.id,false);});
+  ideasEl.appendChild(card);
+  rerenderCard(it.id);
+});
+refresh(); // seed kept counters (all cards included by default)
+
+// category + topic filters (ANDed)
+const cats=['all',...new Set(IDEAS.map(i=>i.category))];
+const sel=document.getElementById('catFilter');
+cats.forEach(c=>{const o=document.createElement('option');o.value=c;
+  o.textContent=c==='all'?'All categories':c.replace('_',' ');sel.appendChild(o);});
+const topicSel=document.getElementById('topicFilter');
+const topicList=['all',...new Set(IDEAS.flatMap(i=>i.topics||[]))];
+topicList.forEach(t=>{const o=document.createElement('option');o.value=t;
+  o.textContent=t==='all'?'All topics':t;topicSel.appendChild(o);});
+let conflictsOnly=false;
+function toggleConflicts(){conflictsOnly=!conflictsOnly;
+  document.getElementById('conflictToggle').setAttribute('aria-pressed',conflictsOnly);applyFilter();}
+function applyFilter(){const c=sel.value,t=topicSel.value;
+  document.querySelectorAll('.card').forEach(card=>{
+    const okCat=(c==='all'||card.dataset.cat===c);
+    const okTopic=(t==='all'||(card.dataset.topics||'').split('|').includes(t));
+    const okConflict=(!conflictsOnly||card.dataset.conflict==='1');
+    card.style.display=(okCat&&okTopic&&okConflict)?'':'none';});}
+
+const repEl=document.getElementById('repairs');
+function repSection(title,arr,bucket){
+  const sec=document.createElement('div');sec.className='repsec';
+  const rows=arr.map(([o,f])=>{
+    if(bucket==='query')return `<div class="rep"><span class="b query">query</span><span class="orig mono">${o}</span><span class="arrow">→</span><span class="qtext">${f}</span></div>`;
+    const fix=f==='__DROP__'?`<span class="fix drop mono">[dropped — fragments]</span>`:`<span class="fix mono">${f}</span>`;
+    return `<div class="rep"><span class="b ${bucket}">${bucket}</span><span class="orig mono">${o}</span><span class="arrow">→</span>${fix}</div>`;
+  }).join('');
+  sec.innerHTML=`<h2>${title} <button class="sectool" data-bucket="${bucket}">💬 comment on this section</button></h2>${rows}`;
+  repEl.appendChild(sec);
+  // section comment
+  sec.querySelector('.sectool').addEventListener('click',e=>toggleSectionComment(bucket,sec));
+  // per-row comment tools
+  sec.querySelectorAll('.rep').forEach((row,i)=>{
+    const orig=arr[i][0];
+    const btn=document.createElement('button');btn.className='rowtool';btn.textContent='💬';
+    btn.title='Comment on this repair';
+    btn.addEventListener('click',()=>toggleRepairComment(bucket,orig,row));
+    row.appendChild(btn);
+  });
+}
+repSection('Applied confidently',REPAIRS.auto,'auto');
+repSection('Best guess — confirm',REPAIRS.confirm,'confirm');
+repSection('Needs your input',REPAIRS.query,'query');
+
+const repCount=REPAIRS.auto.length+REPAIRS.confirm.length+REPAIRS.query.length;
+set('m-ideas',IDEAS.length);set('m-rep',repCount);
+set('m-query',REPAIRS.query.length+IDEAS.filter(i=>i.needs).length);
+function set(id,v){document.getElementById(id).textContent=v;}
+
+let activeCard=null;
+function locate(id,fromTranscript){
+  const it=IDEAS.find(x=>x.id===id);if(!it)return;
+  document.querySelectorAll('.turn.hl,.turn.hl-primary').forEach(e=>e.classList.remove('hl','hl-primary'));
+  if(activeCard)document.getElementById('c-'+activeCard)?.classList.remove('active');
+  activeCard=id;
+  const card=document.getElementById('c-'+id);card.classList.add('active');
+  it.anchors.forEach((a,idx)=>{const tn=document.getElementById('t-'+a);if(tn)tn.classList.add(idx===0?'hl-primary':'hl');});
+  const first=document.getElementById('t-'+it.anchors[0]);if(first)first.scrollIntoView({behavior:'smooth',block:'center'});
+  if(fromTranscript)card.scrollIntoView({behavior:'smooth',block:'center'});
+  updateEdgeHints();
+}
+// Off-screen edge indicators: when the active idea's source turns sit outside the
+// visible transcript, show "N above / N below" pills that jump to the nearest one.
+const EDGE_PAD=4;
+function activeAnchorEls(){if(!activeCard)return[];const it=IDEAS.find(x=>x.id===activeCard);
+  return it?it.anchors.map(a=>document.getElementById('t-'+a)).filter(Boolean):[];}
+function updateEdgeHints(){
+  const up=document.getElementById('edge-up'),dn=document.getElementById('edge-dn');
+  const sc=document.getElementById('script'),scRect=sc.getBoundingClientRect();
+  let above=0,below=0;
+  activeAnchorEls().forEach(el=>{const r=el.getBoundingClientRect();
+    if(r.bottom<scRect.top+EDGE_PAD)above++;else if(r.top>scRect.bottom-EDGE_PAD)below++;});
+  up.classList.toggle('show',above>0);document.getElementById('edge-up-n').textContent=above+(above===1?' line':' lines');
+  dn.classList.toggle('show',below>0);document.getElementById('edge-dn-n').textContent=below+(below===1?' line':' lines');
+}
+function jumpEdge(dir){
+  const sc=document.getElementById('script'),scRect=sc.getBoundingClientRect();
+  const off=activeAnchorEls().map(el=>({el,r:el.getBoundingClientRect()}))
+    .filter(o=>dir<0?o.r.bottom<scRect.top+EDGE_PAD:o.r.top>scRect.bottom-EDGE_PAD);
+  if(!off.length)return;
+  const target=dir<0?off.reduce((a,b)=>b.r.top>a.r.top?b:a):off.reduce((a,b)=>b.r.top<a.r.top?b:a);
+  target.el.scrollIntoView({behavior:'smooth',block:'center'});
+}
+(function(){let raf=0;const sc=document.getElementById('script');
+  const tick=()=>{raf=0;updateEdgeHints();};
+  sc.addEventListener('scroll',()=>{if(!raf)raf=requestAnimationFrame(tick);},{passive:true});
+  addEventListener('resize',()=>{if(!raf)raf=requestAnimationFrame(tick);});})();
+
+function toggle(id,on){on?kept.add(id):kept.delete(id);document.getElementById('c-'+id).classList.toggle('excluded',!on);refresh();commitReviewChange();}
+function refresh(){document.getElementById('m-kept').textContent=kept.size;
+  if(document.getElementById('exportPanel').classList.contains('show'))renderOut();}
+function selectAll(on){document.querySelectorAll('.card').forEach(card=>{ if(card.style.display==='none')return;
+  const cb=card.querySelector('.keep');cb.checked=on;const id=card.id.slice(2);on?kept.add(id):kept.delete(id);card.classList.toggle('excluded',!on);});refresh();commitReviewChange();}
+function showTab(t){['ideas','rep','how'].forEach(name=>{
+  document.getElementById('view-'+name).classList.toggle('hidden',name!==t);
+  document.getElementById('tab-'+name).setAttribute('aria-selected',name===t);});}
+
+let fmt='md';
+function openExport(){document.getElementById('exportPanel').classList.add('show');renderOut();document.getElementById('exportPanel').scrollIntoView({behavior:'smooth',block:'nearest'});}
+function closeExport(){document.getElementById('exportPanel').classList.remove('show');}
+function setFmt(f){fmt=f;document.getElementById('fmt-md').setAttribute('aria-pressed',f==='md');document.getElementById('fmt-json').setAttribute('aria-pressed',f==='json');renderOut();}
+function keptList(){return IDEAS.filter(i=>kept.has(i.id));}
+function renderOut(){document.getElementById('outBox').value=fmt==='md'?toMd():toJson();}
+function toJson(){return JSON.stringify(keptList().map(({id,title,category,topics,detail,quote,speaker,confidence,needs,q,anchors})=>
+  ({id:SESSION.id+':'+id,session:SESSION.id,feature:SESSION.feature,date:SESSION.date,participant:SESSION.participant,
+    title,category,topics:topics||[],detail,evidence_quote:quote,speaker:SPK[speaker],confidence,
+    needs_confirmation:!!needs,question:q||null,timestamps:anchors.map(a=>TURNS[a][1])})),null,2);}
+function toMd(){const list=keptList();if(!list.length)return "# Nothing kept yet — check some ideas.";
+  const g={};list.forEach(i=>{(g[i.category]=g[i.category]||[]).push(i);});
+  const label={pain_point:"Pain points",feature_request:"Feature requests",naming_copy:"Naming & copy",
+    design_decision:"Design decisions",design_insight:"Design insights",open_question:"Open questions",context:"Context"};
+  let out=`# ${SESSION.feature} — kept ideas (${list.length})\n_Session ${SESSION.id} · ${SESSION.date} · participant ${SESSION.participant}_\n`;
+  for(const c in g){out+=`\n## ${label[c]||c}\n`;g[c].forEach(i=>{out+=`- **${i.title}** — ${i.detail}\n  > ${i.quote}  _(${SPK[i.speaker]}, ${TURNS[i.anchors[0]][1]})_\n`;
+    if(i.topics&&i.topics.length)out+=`  > _Topics: ${i.topics.join(', ')}_\n`;
+    if(i.needs)out+=`  > _Needs confirmation: ${i.q}_\n`;});}
+  return out;}
+function copyOut(){const t=document.getElementById('outBox');t.select();navigator.clipboard.writeText(t.value).then(()=>toast('Copied'));}
+function downloadOut(){const blob=new Blob([document.getElementById('outBox').value],{type:fmt==='md'?'text/markdown':'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='kept-ideas.'+(fmt==='md'?'md':'json');a.click();URL.revokeObjectURL(a.href);toast('Downloaded');}
+// ---- Review round-trip ----
+const CATS=['pain_point','feature_request','naming_copy','design_decision','design_insight','open_question','context'];
+const CONFS=['high','medium','low'];
+function nonEmpty(s){return typeof s==='string'&&s.trim().length>0;}
+function changedFields(id){
+  const e=REVIEW.edits[id];if(!e)return{};const o=ORIG[id],out={};
+  for(const k in e){const a=k==='topics'?(o.topics||[]):o[k];
+    if(JSON.stringify(a)!==JSON.stringify(e[k]))out[k]=e[k];}
+  return out;
+}
+function buildPacket(){
+  const cards=[];
+  IDEAS.forEach(it=>{
+    const ch=changedFields(it.id),note=REVIEW.notes[it.id],excluded=!kept.has(it.id);
+    const hasEdit=Object.keys(ch).length>0;
+    if(hasEdit||excluded||nonEmpty(note)){const c={id:it.id};
+      if(excluded)c.excluded=true;if(hasEdit)c.edits=ch;if(nonEmpty(note))c.note=note.trim();cards.push(c);}
+  });
+  const repairs=[];
+  Object.keys(REVIEW.repairComments).forEach(key=>{const cm=REVIEW.repairComments[key];
+    if(!nonEmpty(cm))return;const ix=key.indexOf('\t');
+    repairs.push({bucket:key.slice(0,ix),orig:key.slice(ix+1),comment:cm.trim()});});
+  const turns=[];
+  Object.keys(REVIEW.turnComments).forEach(i=>{const cm=REVIEW.turnComments[i];
+    if(nonEmpty(cm))turns.push({i:+i,comment:cm.trim()});});
+  const p={session:SESSION.id};
+  if(nonEmpty(REVIEW.reportNote))p.report_note=REVIEW.reportNote.trim();
+  if(cards.length)p.cards=cards;
+  if(repairs.length)p.repairs=repairs;
+  if(nonEmpty(REVIEW.repairSectionNote))p.repair_section_note=REVIEW.repairSectionNote.trim();
+  if(turns.length)p.turns=turns;
+  return p;
+}
+function packetCounts(){
+  let edits=0,comments=0,excluded=0;
+  IDEAS.forEach(it=>{if(Object.keys(changedFields(it.id)).length)edits++;
+    if(!kept.has(it.id))excluded++;if(nonEmpty(REVIEW.notes[it.id]))comments++;});
+  Object.values(REVIEW.repairComments).forEach(c=>{if(nonEmpty(c))comments++;});
+  Object.values(REVIEW.turnComments).forEach(c=>{if(nonEmpty(c))comments++;});
+  if(nonEmpty(REVIEW.repairSectionNote))comments++;
+  if(nonEmpty(REVIEW.reportNote))comments++;
+  return {edits,comments,excluded};
+}
+function renderTally(){
+  const {edits,comments,excluded}=packetCounts();
+  const parts=[];
+  parts.push(`<em>${edits}</em> edit${edits===1?'':'s'}`);
+  parts.push(`<em>${comments}</em> comment${comments===1?'':'s'}`);
+  parts.push(`<em>${excluded}</em> excluded`);
+  document.getElementById('review-tally').innerHTML=parts.join(' · ');
+  document.getElementById('sendReview').disabled=(edits+comments+excluded===0);
+}
+function commitReviewChange(){renderTally();
+  if(document.getElementById('reviewPanel').classList.contains('show'))renderReview();}
+let rfmt='json';
+function packetToMd(p){
+  let o=`# Review for ${p.session}\n`;
+  if(p.report_note)o+=`\n**Report note:** ${p.report_note}\n`;
+  (p.cards||[]).forEach(c=>{o+=`\n## ${c.id}${c.excluded?' — EXCLUDED':''}\n`;
+    if(c.edits)for(const k in c.edits)o+=`- edit \`${k}\` → ${JSON.stringify(c.edits[k])}\n`;
+    if(c.note)o+=`- note: ${c.note}\n`;});
+  if(p.repairs&&p.repairs.length){o+=`\n## Repairs\n`;
+    p.repairs.forEach(r=>{o+=`- [${r.bucket}] \`${r.orig}\` — ${r.comment}\n`;});}
+  if(p.repair_section_note)o+=`\n**Repair-log note:** ${p.repair_section_note}\n`;
+  if(p.turns&&p.turns.length){o+=`\n## Transcript\n`;
+    p.turns.forEach(t=>{o+=`- turn ${t.i} (${TURNS[t.i]?TURNS[t.i][1]:'?'}): ${t.comment}\n`;});}
+  return o;
+}
+function renderReview(){const p=buildPacket();
+  document.getElementById('reviewBox').value=rfmt==='json'?JSON.stringify(p,null,2):packetToMd(p);}
+function openReview(){document.getElementById('reviewPanel').classList.add('show');renderReview();
+  document.getElementById('reviewPanel').scrollIntoView({behavior:'smooth',block:'nearest'});}
+function closeReview(){document.getElementById('reviewPanel').classList.remove('show');}
+function setReviewFmt(f){rfmt=f;document.getElementById('rfmt-json').setAttribute('aria-pressed',f==='json');
+  document.getElementById('rfmt-md').setAttribute('aria-pressed',f==='md');renderReview();}
+function copyReview(){const t=document.getElementById('reviewBox');t.select();
+  navigator.clipboard.writeText(t.value).then(()=>toast('Copied'));}
+function downloadReview(){const ext=rfmt==='json'?'json':'md';
+  const blob=new Blob([document.getElementById('reviewBox').value],
+    {type:rfmt==='json'?'application/json':'text/markdown'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download='review-'+SESSION.id+'.'+ext;a.click();URL.revokeObjectURL(a.href);toast('Downloaded');}
+renderTally();
+function rerenderCard(id){
+  const it=IDEAS.find(x=>x.id===id);const card=document.getElementById('c-'+id);
+  card.classList.remove('editing');
+  card.innerHTML=cardHTML(effective(it));
+  attachCardTools(card,it);applyCardState(card,id);
+}
+function applyCardState(card,id){
+  const edited=Object.keys(changedFields(id)).length>0;
+  card.classList.toggle('has-edit',edited);
+  card.classList.toggle('has-note',nonEmpty(REVIEW.notes[id]));
+  card.classList.toggle('excluded',!kept.has(id));
+  const body=card.querySelector(':scope > div:not(.cardtools)'); // the <div> from cardHTML
+  let flags=card.querySelector('.flags');if(flags)flags.remove();
+  const tags=[];
+  if(edited)tags.push({cls:'edit',label:'edited',title:'Undo edits — restore the original wording',act:()=>revertEdit(id)});
+  if(nonEmpty(REVIEW.notes[id]))tags.push({cls:'note',label:'comment',title:'Remove this comment',act:()=>removeNote(id)});
+  if(tags.length){const f=document.createElement('div');f.className='flags';
+    tags.forEach(t=>{const b=document.createElement('button');b.type='button';b.className='flag '+t.cls;b.title=t.title;
+      b.innerHTML=`${t.label} <span class="flag-x">✕</span>`;
+      b.addEventListener('click',ev=>{ev.stopPropagation();t.act();});
+      f.appendChild(b);});
+    body.appendChild(f);}
+}
+function revertEdit(id){delete REVIEW.edits[id];rerenderCard(id);commitReviewChange();}
+function removeNote(id){delete REVIEW.notes[id];rerenderCard(id);commitReviewChange();}
+function attachCardTools(card,it){
+  const t=document.createElement('div');t.className='cardtools';
+  t.innerHTML=`<button data-t="edit">✎ Edit</button><button data-t="comment">💬 Comment</button>`;
+  t.querySelectorAll('button').forEach(b=>b.addEventListener('click',e=>{
+    e.stopPropagation();const k=b.dataset.t;
+    if(k==='edit')enterEdit(it.id);
+    else if(k==='comment')toggleCardComment(it.id);}));
+  card.appendChild(t);
+}
+function enterEdit(id){
+  const it=IDEAS.find(x=>x.id===id);const card=document.getElementById('c-'+id);
+  // compute effective BEFORE assigning undefined-keyed edit object (Object.assign copies undefineds)
+  const eff=effective(it);
+  const e=REVIEW.edits[id]=Object.assign({title:undefined,detail:undefined,quote:undefined,
+    category:undefined,confidence:undefined,topics:undefined},REVIEW.edits[id]||{});
+  // seed from effective values
+  ['title','detail','quote','category','confidence'].forEach(k=>{if(e[k]===undefined)e[k]=eff[k];});
+  if(e.topics===undefined)e.topics=(eff.topics||[]).slice();
+  card.classList.add('editing');
+  card.innerHTML=cardEditHTML(it,e);
+  // tool cluster shows Done
+  const t=document.createElement('div');t.className='cardtools';
+  t.innerHTML=`<button data-t="revert">↺ Revert</button><button data-t="done" class="on">✓ Done</button>`;
+  t.querySelectorAll('button').forEach(b=>b.addEventListener('click',ev=>{ev.stopPropagation();
+    b.dataset.t==='revert'?revertEdit(id):commitEdit(id);}));
+  card.appendChild(t);
+  wireEdit(card,id);
+}
+function cardEditHTML(it,e){
+  const src=TURNS[it.anchors[0]][1];
+  const catOpts=CATS.map(c=>`<option value="${c}"${c===e.category?' selected':''}>${c.replace('_',' ')}</option>`).join('');
+  const confOpts=CONFS.map(c=>`<option value="${c}"${c===e.confidence?' selected':''}>${c}</option>`).join('');
+  const chips=(e.topics||[]).map((tp,i)=>`<span class="topic echip" data-i="${i}">${tp}<button data-rm="${i}">×</button></span>`).join('');
+  return `<input type="checkbox" class="keep" disabled${kept.has(it.id)?' checked':''} aria-label="keep">
+    <div>
+      <div class="tagrow">
+        <select class="esel" data-f="category">${catOpts}</select>
+        <select class="esel" data-f="confidence">${confOpts}</select>
+        <span class="src">⌖ ${src}</span>
+      </div>
+      <h3 class="efield" contenteditable="true" data-f="title">${e.title}</h3>
+      <p class="detail efield" contenteditable="true" data-f="detail">${e.detail}</p>
+      <blockquote class="quote efield" contenteditable="true" data-f="quote">${e.quote}</blockquote>
+      <div class="topics" data-topics-edit>${chips}<input class="topic-add" placeholder="+ topic" /></div>
+    </div>`;
+}
+function wireEdit(card,id){
+  const e=REVIEW.edits[id];
+  card.querySelectorAll('.efield').forEach(el=>{
+    el.addEventListener('click',ev=>ev.stopPropagation());
+    el.addEventListener('input',()=>{e[el.dataset.f]=el.textContent;commitReviewChange();});});
+  card.querySelectorAll('.esel').forEach(sel=>{
+    sel.addEventListener('click',ev=>ev.stopPropagation());
+    sel.addEventListener('change',()=>{e[sel.dataset.f]=sel.value;commitReviewChange();});});
+  const tw=card.querySelector('[data-topics-edit]');
+  tw.addEventListener('click',ev=>{ev.stopPropagation();
+    const rm=ev.target.getAttribute('data-rm');
+    if(rm!==null){e.topics.splice(+rm,1);redrawTopics(card,id);commitReviewChange();}});
+  const add=tw.querySelector('.topic-add');
+  add.addEventListener('keydown',ev=>{ev.stopPropagation();
+    if(ev.key==='Enter'&&nonEmpty(add.value)){e.topics.push(add.value.trim());add.value='';
+      redrawTopics(card,id);commitReviewChange();}});
+}
+function redrawTopics(card,id){
+  const e=REVIEW.edits[id],tw=card.querySelector('[data-topics-edit]');
+  const chips=(e.topics||[]).map((tp,i)=>`<span class="topic echip" data-i="${i}">${tp}<button data-rm="${i}">×</button></span>`).join('');
+  tw.innerHTML=chips+'<input class="topic-add" placeholder="+ topic" />';
+  const add=tw.querySelector('.topic-add');
+  add.addEventListener('keydown',ev=>{ev.stopPropagation();
+    if(ev.key==='Enter'&&nonEmpty(add.value)){e.topics.push(add.value.trim());add.value='';
+      redrawTopics(card,id);commitReviewChange();}});
+}
+function commitEdit(id){
+  // prune unchanged fields so the packet only carries real edits
+  const ch=changedFields(id);
+  if(Object.keys(ch).length===0)delete REVIEW.edits[id];else REVIEW.edits[id]=ch;
+  rerenderCard(id);commitReviewChange();
+}
+function commentField(initial,onChange,placeholder,showRemove){
+  const wrap=document.createElement('div');wrap.className='cmt';
+  const ta=document.createElement('textarea');ta.className='cmt-in';
+  ta.value=initial||'';ta.placeholder=placeholder||'Comment for Claude…';
+  ta.addEventListener('click',e=>e.stopPropagation());
+  ta.addEventListener('input',()=>onChange(ta.value));
+  wrap.appendChild(ta);
+  // showRemove defaults true; card comments pass false since their "comment ✕" chip already removes
+  if(showRemove!==false){
+    const rm=document.createElement('button');rm.type='button';rm.className='cmt-rm';rm.textContent='Remove comment';
+    rm.addEventListener('click',e=>{e.stopPropagation();onChange('');wrap.remove();});
+    wrap.appendChild(rm);
+  }
+  return wrap;
+}
+function toggleCardComment(id){
+  const card=document.getElementById('c-'+id);
+  const host=card.querySelector(':scope > div'); // the card body <div> from cardHTML
+  let box=host.querySelector(':scope > .cmt');
+  if(box){const ta=box.querySelector('.cmt-in');ta.focus();return;}
+  box=commentField(REVIEW.notes[id]||'',v=>{REVIEW.notes[id]=v;applyCardState(card,id);commitReviewChange();},'What should change about this insight? (merge, re-scope, wrong speaker…)',false);
+  host.appendChild(box);box.querySelector('.cmt-in').focus();
+}
+function toggleReportNote(btn){
+  const host=btn.parentElement;let box=host.querySelector('.cmt');
+  if(box){box.querySelector('.cmt-in').focus();return;}
+  box=commentField(REVIEW.reportNote,v=>{REVIEW.reportNote=v;
+    btn.classList.toggle('on',nonEmpty(v));commitReviewChange();},
+    'Overall direction: too many cards, wrong framing, merge these two…');
+  host.appendChild(box);box.querySelector('.cmt-in').focus();
+}
+function repairKey(bucket,orig){return bucket+'\t'+orig;}
+function toggleRepairComment(bucket,orig,row){
+  let box=row.querySelector(':scope > .cmt');
+  if(box){box.querySelector('.cmt-in').focus();return;}
+  const key=repairKey(bucket,orig);const btn=row.querySelector('.rowtool');
+  box=commentField(REVIEW.repairComments[key]||'',v=>{REVIEW.repairComments[key]=v;
+    btn.classList.toggle('on',nonEmpty(v));commitReviewChange();},'Comment on this repair (e.g. leave as-is, wrong fix)…');
+  box.classList.add('inline');row.appendChild(box);box.querySelector('.cmt-in').focus();
+  btn.classList.toggle('on',nonEmpty(REVIEW.repairComments[key]));
+}
+function toggleSectionComment(bucket,sec){
+  let box=sec.querySelector(':scope > .cmt');const btn=sec.querySelector('.sectool');
+  if(box){box.querySelector('.cmt-in').focus();return;}
+  box=commentField(REVIEW.repairSectionNote,v=>{REVIEW.repairSectionNote=v;
+    btn.classList.toggle('on',nonEmpty(v));commitReviewChange();},'Comment on the repair log as a whole…');
+  box.classList.add('inline');sec.appendChild(box);box.querySelector('.cmt-in').focus();
+}
+function toggleTurnComment(i,turn){
+  let box=turn.querySelector(':scope > .cmt');const btn=turn.querySelector('.rowtool');
+  if(box){box.querySelector('.cmt-in').focus();return;}
+  box=commentField(REVIEW.turnComments[i]||'',v=>{REVIEW.turnComments[i]=v;
+    btn.classList.toggle('on',nonEmpty(v));commitReviewChange();},'Comment on this line (e.g. wrong speaker, misattributed)…');
+  box.classList.add('inline');turn.appendChild(box);box.querySelector('.cmt-in').focus();
+}
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),1400);}
+</script>
+</body>
+</html>
