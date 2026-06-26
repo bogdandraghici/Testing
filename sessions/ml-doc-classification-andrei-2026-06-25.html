@@ -1,0 +1,1262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,400;0,600;0,700;1,400;1,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<title>Session Review — ML Models doc classification</title>
+<style>
+  :root{
+    --paper:#FBF8F1; --paper-2:#F3EEE2; --ink:#211F1B; --ink-soft:#5A554C;
+    --rule:#D8D1C0; --mark:#B23A2E; --amber:#9C7A1E; --green:#2E6F5E;
+    --blue:#3A5A78; --plum:#6E4A6B; --hl:#FBF1D9; --shadow:rgba(33,31,27,.08);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--paper);color:var(--ink);
+    font-family:"Open Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+    font-size:14px;-webkit-font-smoothing:antialiased;line-height:1.5}
+  .mono{font-family:"JetBrains Mono",ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+  .wrap{max-width:1200px;margin:0 auto;padding:0 24px}
+
+  header.mast{border-bottom:1px solid var(--rule);margin-top:36px;margin-bottom:16px}
+  .eyebrow{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--ink-soft);font-weight:700}
+  h1{font-size:24px;line-height:1.2;margin:8px 0 6px;font-weight:700;letter-spacing:-.01em}
+  .sub{color:var(--ink-soft);font-size:14px;margin-bottom:6px}
+  .legend{display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--ink-soft);margin-bottom:8px}
+  .legend i{font-style:normal;display:inline-flex;align-items:center;gap:5px}
+  .sw{width:9px;height:9px;border-radius:50%;display:inline-block}
+  .mast-row{display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap;border-top:1px solid var(--rule);margin-top:10px;padding:12px 0}
+  .meta{display:flex;gap:26px;flex-wrap:wrap;font-size:13px}
+  .meta b{font-size:18px;font-weight:600;display:block;line-height:1}
+  .meta span{color:var(--ink-soft);font-size:11px;letter-spacing:.12em;text-transform:uppercase}
+
+  nav.tabs{display:flex;gap:4px;margin:0;flex-wrap:wrap}
+  .tab{background:none;border:1px solid var(--rule);border-radius:999px;padding:7px 16px;font:inherit;font-size:13px;cursor:pointer;color:var(--ink-soft)}
+  .tab[aria-selected="true"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+
+  /* How this works — two-lane handoff (You ⇄ Claude across a central spine) */
+  .how{max-width:1040px}
+  .lane-row{display:grid;grid-template-columns:1fr 56px 1fr;align-items:center}
+  .lane-row .l{display:flex;justify-content:flex-end}
+  .lane-row .r{display:flex;justify-content:flex-start}
+  .next-rule{display:flex;align-items:center;gap:14px;margin:10px 0 6px}
+  .next-rule .line{flex:1;border-top:1px dashed var(--rule)}
+  .next-rule .lbl{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-soft);font-weight:700}
+  .spine{align-self:stretch;position:relative;display:flex;align-items:center;justify-content:center}
+  .spine .seg{position:absolute;left:50%;width:2px;background:var(--rule);transform:translateX(-1px)}
+  .spine .seg.top{top:0;bottom:50%} .spine .seg.bot{top:50%;bottom:0}
+  .lane-row.future .spine .seg{background:none;border-left:2px dashed var(--rule)}
+  .avatar{position:relative;z-index:1;width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;box-shadow:0 2px 4px rgba(31,27,22,.18)}
+  .avatar svg{width:22px;height:22px;fill:currentColor;display:block}
+  .avatar.you{background:var(--blue)} .avatar.claude{background:#C75B38}
+  .lane-row.future .avatar{background:var(--paper);border:2px dashed var(--rule);color:var(--ink-soft);box-shadow:none}
+  .lane-row.future .avatar svg{width:20px;height:20px}
+  .lane-card{max-width:480px;width:100%;margin-bottom:20px;background:#fff;border:1px solid var(--rule);border-radius:14px;padding:16px 20px;box-shadow:0 1px 2px rgba(31,27,22,.05),0 10px 22px -16px rgba(31,27,22,.25)}
+  .lane-row.future .lane-card{background:rgba(255,253,247,.5);border-style:dashed;box-shadow:none}
+  .lane-card .ch{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-bottom:7px}
+  .lane-card h4{margin:0;font-size:17px;font-weight:600;line-height:1.25;color:var(--ink)}
+  .lane-row.future .lane-card h4{color:#5C544A}
+  .lane-card p{margin:0;font-size:14px;line-height:1.55;color:#5A534B}
+  .lane-row.future .lane-card p{color:#857D72}
+  .phase-tag{font-size:10px;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-soft);border:1px solid var(--rule);border-radius:999px;padding:2px 8px;font-weight:600}
+  .here{font-size:10px;letter-spacing:.07em;text-transform:uppercase;background:var(--green);color:#fff;border-radius:999px;padding:3px 9px;font-weight:700}
+  .actor{display:inline-flex;align-items:center;gap:5px;font-size:11px;letter-spacing:.09em;text-transform:uppercase;font-weight:700;border-radius:7px;padding:4px 9px}
+  .actor svg{width:11px;height:11px;fill:currentColor;display:block}
+  .actor.human{background:#E7ECF1;color:#3C5871} .actor.claude{background:#F6E1D7;color:#B4542F}
+  @media (max-width:640px){
+    .lane-row{display:flex;align-items:stretch;gap:14px}
+    .lane-row .spine{order:0;flex:none;width:44px}
+    .lane-row .l,.lane-row .r{order:1;flex:1;min-width:0;justify-content:flex-start}
+    .lane-row .l:not(:has(.lane-card)),.lane-row .r:not(:has(.lane-card)){display:none}
+    .lane-card{max-width:none;padding:13px 16px}
+    .lane-card h4{font-size:15px} .lane-card p{font-size:13.5px}
+  }
+
+  .panes{display:grid;grid-template-columns:1fr minmax(300px,40%);gap:24px;align-items:start}
+  .scriptcol{order:2;position:sticky;top:0;max-height:100vh;display:flex;flex-direction:column;background:var(--paper-2);border:1px solid var(--rule);border-radius:12px;overflow:hidden}
+  .scripthead{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-soft);display:flex;align-items:center;gap:8px;min-height:48px;padding:0 14px;border-bottom:1px solid var(--rule);flex:none}
+  .scripthead button{margin-left:auto;background:none;border:1px solid var(--rule);border-radius:7px;font:inherit;font-size:12px;padding:4px 10px;cursor:pointer;color:var(--ink-soft)}
+  .scriptwrap{position:relative;flex:1;min-height:0;display:flex;flex-direction:column}
+  .script{overflow:auto;flex:1;min-height:0;border:none;background:transparent;padding:4px 6px;box-shadow:none}
+  .edgehint{position:absolute;left:50%;transform:translateX(-50%);z-index:6;display:none;align-items:center;gap:5px;
+    font:inherit;font-size:11px;font-weight:600;letter-spacing:.04em;color:var(--ink);cursor:pointer;
+    background:#fff;border:1px solid var(--rule);border-radius:999px;padding:5px 11px;box-shadow:0 2px 8px var(--shadow)}
+  .edgehint:hover{border-color:var(--green);color:var(--green)}
+  .edgehint .arrow{color:var(--green);font-weight:700}
+  .edgehint.show{display:inline-flex}
+  .edgehint.top{top:8px} .edgehint.bot{bottom:8px}
+  .turn{padding:8px 13px;border-radius:8px;cursor:pointer;scroll-margin:14px;transition:background .15s}
+  .turn + .turn{border-top:1px dotted var(--rule)}
+  .turn .meta-r{display:flex;gap:8px;align-items:baseline;margin-bottom:1px}
+  .turn .spk{font-size:10px;letter-spacing:.1em;text-transform:uppercase;font-weight:700}
+  .turn .ts{font-size:10px;color:var(--ink-soft)}
+  .turn.P .spk{color:var(--blue)} .turn.F .spk{color:var(--ink-soft)}
+  .turn.B .spk{color:var(--plum)} .turn.O .spk{color:#9a948a}
+  .turn .txt{font-size:12.5px;line-height:1.45}
+  .turn:hover{background:#fff}
+  .turn.hl{background:var(--hl);box-shadow:inset 3px 0 0 var(--green)}
+  .turn.hl-primary{background:var(--hl);box-shadow:inset 3px 0 0 var(--mark)}
+  .turn.anchored .spk::after{content:"•";color:var(--green);margin-left:6px}
+  .unsure{background:#F4E6C4;border-bottom:1px dashed var(--amber);padding:0 2px;border-radius:2px;cursor:help}
+
+  .toolbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;min-height:56px;padding:8px 2px;background:var(--paper);border-bottom:1px solid var(--rule);margin-bottom:14px;position:sticky;top:0;z-index:5}
+  .toolbar .count{font-weight:600} .toolbar .count em{color:var(--green);font-style:normal}
+  .tb-break{flex-basis:100%;height:0;margin:0}
+  .spacer{flex:1}
+  button.act{background:var(--ink);color:var(--paper);border:none;border-radius:8px;padding:8px 13px;font:inherit;font-size:13px;cursor:pointer}
+  button.ghost{background:none;color:var(--ink);border:1px solid var(--rule)} button.ghost:hover{border-color:var(--ink)}
+  select.filter{font:inherit;font-size:13px;border:1px solid var(--rule);border-radius:8px;padding:7px 10px;background:#fff;max-width:150px}
+
+  .card{border:1px solid var(--rule);border-radius:12px;background:#fff;padding:16px 16px 14px;margin-bottom:13px;display:grid;grid-template-columns:30px 1fr;gap:13px;box-shadow:0 1px 2px rgba(33,31,27,.05),0 10px 24px -16px rgba(33,31,27,.22);transition:border-color .15s,box-shadow .15s,transform .15s;cursor:pointer}
+  .card:hover{border-color:var(--ink-soft);transform:translateY(-1px);box-shadow:0 2px 5px rgba(33,31,27,.06),0 16px 32px -18px rgba(33,31,27,.30)}
+  .card.active{border-color:var(--mark);box-shadow:0 0 0 2px var(--mark),0 10px 24px -16px rgba(33,31,27,.22)}
+  .keep{appearance:none;width:23px;height:23px;border:1.5px solid var(--ink-soft);border-radius:6px;cursor:pointer;position:relative;margin-top:2px;background:#fff;flex:none}
+  .keep:checked{background:var(--green);border-color:var(--green)}
+  .keep:checked::after{content:"✓";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;font-weight:700}
+  .card h3{margin:0 0 6px;font-size:18px;font-weight:600;line-height:1.3;letter-spacing:-.01em}
+  .tagrow{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:7px}
+  .tag{font-size:10px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;padding:0;background:none;color:var(--ink-soft);display:inline-flex;align-items:center;gap:6px}
+  .tag::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor;flex:none}
+  .tag.pain_point{color:#9A352A}
+  .tag.feature_request{color:#33536F}
+  .tag.naming_copy{color:#7A6320}
+  .tag.design_decision,.tag.design_insight{color:#246253}
+  .tag.open_question{color:#856516}
+  .tag.context{color:#55514a}
+  .conf{font-size:10px;letter-spacing:.05em;text-transform:uppercase;font-weight:600;display:inline-flex;align-items:center;gap:5px;color:var(--ink-soft)}
+  .dot{width:8px;height:8px;border-radius:50%;display:inline-block}
+  .conf .dot{display:none}
+  .src{margin-left:auto;font-size:11px;color:var(--ink-soft);font-weight:600;white-space:nowrap;transition:opacity .12s}
+  .card:hover .src,.card.editing .src{opacity:0}
+  .src .srcn{color:var(--ink-soft);font-weight:600}
+  .detail{margin:0 0 10px;font-size:14px;color:var(--ink-soft)}
+  .quote{border-left:3px solid var(--rule);padding:7px 0 7px 13px;margin:0 0 4px;font-style:italic;color:#3a372f;font-size:14px;line-height:1.5}
+  .topics{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+  .topic{font-size:10.5px;color:var(--ink-soft);border:1px solid var(--rule);border-radius:999px;padding:2px 9px;white-space:nowrap}
+  .who{font-size:11px;color:var(--ink-soft);margin-top:7px;letter-spacing:.04em}
+  .tension{display:flex;flex-wrap:wrap;align-items:center;gap:7px;margin-top:9px;padding-top:9px;border-top:1px dashed var(--rule)}
+  .tension .tlabel{font-size:11px;font-weight:700;letter-spacing:.04em;color:var(--mark);white-space:nowrap}
+  .tension .tlink{font:inherit;font-size:12px;text-align:left;color:var(--ink);background:#fbecea;border:1px solid #e3b9b2;border-radius:7px;padding:3px 9px;cursor:pointer;line-height:1.3}
+  .tension .tlink:hover{border-color:var(--mark);color:var(--mark)}
+  .conflict-toggle[aria-pressed="true"]{background:var(--mark);color:#fff;border-color:var(--mark)}
+  .query{display:flex;gap:8px;align-items:flex-start;margin-top:11px;padding:9px 11px;background:#FBF1D9;border:1px dashed var(--amber);border-radius:8px;font-size:12.5px;color:#6f560f}
+  .query b{color:var(--amber)}
+
+  .repsec{margin-bottom:24px}
+  .repsec h2{font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-soft);border-bottom:1px solid var(--rule);padding-bottom:6px;margin:0 0 10px}
+  .note{background:#E3EEE9;border:1px solid #Bcd7cd;border-left:3px solid var(--green);border-radius:8px;padding:12px 14px;margin-bottom:18px;font-size:13.5px}
+  .note b{color:var(--green)}
+  .rep{display:flex;gap:12px;align-items:baseline;padding:7px 0;border-bottom:1px dotted var(--rule);font-size:14px}
+  .rep .b{flex:0 0 64px;font-size:10px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;padding-top:2px}
+  .b.auto{color:var(--green)} .b.confirm{color:var(--amber)} .b.query{color:var(--mark)}
+  .orig{text-decoration:line-through;text-decoration-color:var(--mark);color:var(--ink-soft)}
+  .arrow{color:var(--mark);font-weight:700;padding:0 4px} .fix{color:var(--ink);font-weight:500}
+  .fix.drop{color:var(--ink-soft);font-style:italic;font-weight:400} .qtext{color:#6f560f}
+  .hint{font-size:13px;color:var(--ink-soft);margin:0 0 14px}
+
+  .export{display:none;border:1px solid var(--rule);border-radius:12px;background:#fff;padding:16px;margin:0 0 20px}
+  .export.show{display:block}
+  .export .row{display:flex;gap:8px;align-items:center;margin-bottom:10px}
+  .export textarea{width:100%;height:200px;border:1px solid var(--rule);border-radius:8px;padding:12px;font-family:"JetBrains Mono",ui-monospace,Menlo,monospace;font-size:12px;background:var(--paper);resize:vertical}
+  /* review round-trip */
+  .review{display:none;border:1px solid var(--mark);border-radius:12px;background:#fff;padding:16px;margin:0 0 20px}
+  .review.show{display:block}
+  .review .row{display:flex;gap:8px;align-items:center;margin-bottom:10px}
+  .review .lead{font-size:13px;color:var(--ink-soft);margin:0 0 10px}
+  .review textarea{width:100%;height:220px;border:1px solid var(--rule);border-radius:8px;padding:12px;font-family:"JetBrains Mono",ui-monospace,Menlo,monospace;font-size:12px;background:var(--paper);resize:vertical}
+  .review-tally{font-size:12px;color:var(--ink-soft)}
+  .review-tally em{color:var(--mark);font-style:normal;font-weight:700}
+  button.send{background:var(--ink);color:var(--paper);border:none;border-radius:8px;padding:8px 13px;font:inherit;font-size:13px;cursor:pointer}
+  button.send[disabled]{opacity:.45;cursor:default}
+  .seg{display:inline-flex;border:1px solid var(--rule);border-radius:8px;overflow:hidden}
+  .seg button{background:#fff;border:none;padding:7px 14px;font:inherit;font-size:13px;cursor:pointer}
+  .seg button[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
+  /* card tools + edit mode */
+  .card{position:relative}
+  .cardtools{position:absolute;top:8px;right:8px;display:flex;gap:4px;z-index:3;
+    background:var(--paper);border:1px solid var(--rule);border-radius:8px;padding:3px;
+    opacity:0;transition:opacity .12s;box-shadow:0 2px 8px var(--shadow)}
+  .card:hover .cardtools{opacity:1}
+  .cardtools button{font:inherit;font-size:11px;line-height:1;border:none;background:none;
+    color:var(--ink-soft);border-radius:5px;padding:5px 7px;cursor:pointer;white-space:nowrap}
+  .cardtools button:hover{background:var(--paper-2);color:var(--ink)}
+  .cardtools button.on{background:var(--mark);color:#fff}
+  .card.editing{box-shadow:0 0 0 2px var(--blue),0 1px 0 var(--shadow)}
+  .card.editing .cardtools{opacity:1}
+  .flags{display:flex;gap:6px;margin-top:9px}
+  .flag{font:inherit;font-size:10px;letter-spacing:.07em;text-transform:uppercase;font-weight:700;
+    border:none;border-radius:5px;padding:2px 7px;cursor:pointer;display:inline-flex;align-items:center;gap:5px}
+  .flag .flag-x{font-size:11px;line-height:1;opacity:.5}
+  .flag:hover .flag-x{opacity:1}
+  .flag.edit{background:#E2EBF1;color:#33536F}
+  .flag.note{background:#EDE6D6;color:#7A6320}
+  .card.excluded{opacity:.5}
+  .card.excluded h3,.card.excluded .detail,.card.excluded .quote{text-decoration:line-through;
+    text-decoration-color:var(--mark)}
+  .cmt{margin-top:10px}
+  .cmt-rm{margin-top:6px;font:inherit;font-size:11px;color:var(--ink-soft);background:none;border:none;
+    cursor:pointer;padding:2px 0;text-decoration:underline;text-underline-offset:2px}
+  .cmt-rm:hover{color:var(--mark)}
+  .cmt-in{width:100%;min-height:54px;border:1px solid var(--amber);border-radius:8px;
+    padding:8px 10px;font:inherit;font-size:13px;background:#FBF7EC;resize:vertical;color:var(--ink)}
+  .cmt-in::placeholder{color:var(--ink-soft)}
+  .mast-cmt{margin:10px 0 0}
+  .mast-note-btn{background:none;border:1px solid var(--rule);border-radius:7px;
+    font:inherit;font-size:12px;padding:4px 10px;cursor:pointer;color:var(--ink-soft)}
+  .mast-note-btn:hover{border-color:var(--ink);color:var(--ink)}
+  .mast-note-btn.on{background:var(--mark);color:#fff;border-color:var(--mark)}
+  .rep{position:relative} .turn{position:relative}
+  .rowtool{position:absolute;top:4px;right:4px;opacity:0;transition:opacity .12s;
+    background:var(--paper);border:1px solid var(--rule);border-radius:6px;
+    font:inherit;font-size:10.5px;color:var(--ink-soft);padding:3px 7px;cursor:pointer;z-index:2}
+  .rep:hover .rowtool,.turn:hover .rowtool{opacity:1}
+  .rowtool.on{background:var(--mark);color:#fff;border-color:var(--mark);opacity:1}
+  .repsec h2{position:relative}
+  .sectool{margin-left:10px;font:inherit;font-size:11px;border:1px solid var(--rule);
+    border-radius:6px;color:var(--ink-soft);padding:2px 8px;cursor:pointer;text-transform:none;letter-spacing:0}
+  .sectool.on{background:var(--mark);color:#fff;border-color:var(--mark)}
+  .cmt.inline{margin:6px 0 2px}
+  .efield[contenteditable="true"]{outline:none;border-bottom:1px dashed var(--blue);
+    background:#F7FAFD;border-radius:3px;padding:0 2px}
+  .card.editing .quote.efield[contenteditable="true"]{background:#F7FAFD}
+  .esel{font:inherit;font-size:12px;border:1px solid var(--rule);border-radius:6px;padding:3px 6px;background:#fff}
+  .echip{display:inline-flex;align-items:center;gap:5px}
+  .echip button{border:none;background:none;color:var(--mark);cursor:pointer;font-size:12px;padding:0 2px}
+  .topic-add{font:inherit;font-size:10.5px;border:1px dashed var(--rule);border-radius:999px;
+    padding:2px 8px;width:120px}
+  footer{color:var(--ink-soft);font-size:12px;border-top:1px solid var(--rule);padding:18px 0 50px;margin-top:24px}
+  .hidden{display:none!important}
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:10px 18px;border-radius:999px;font-size:13px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:20}
+  .toast.show{opacity:1}
+  @media (max-width:880px){
+    .panes{grid-template-columns:1fr}
+    .scriptcol{position:static;max-height:none;order:-1}
+    .script{max-height:300px}.toolbar{position:static}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="mast">
+    <div class="eyebrow">User testing · 2026-06-25 · full recording · transcript repaired</div>
+    <h1>ML Models — document classification training</h1>
+    <div class="sub">41 min · 3 speakers (diarized) · RO-primary with EN terms</div>
+    <div class="legend">
+      <i><span class="sw" style="background:var(--blue)"></span>Andrei — participant</i>
+      <i><span class="sw" style="background:var(--ink-soft)"></span>Ana — facilitator</i>
+      <i><span class="sw" style="background:var(--plum)"></span>Bogdan — facilitator</i>
+    </div>
+    <div class="mast-cmt">
+      <button class="mast-note-btn" data-act="report-note" onclick="toggleReportNote(this)">💬 Comment on the whole report</button>
+    </div>
+    <div class="mast-row">
+      <div class="meta">
+        <div><b id="m-ideas">0</b><span>ideas</span></div>
+        <div><b id="m-kept">0</b><span>kept</span></div>
+        <div><b id="m-rep">0</b><span>repairs</span></div>
+        <div><b id="m-query" style="color:var(--mark)">0</b><span>open queries</span></div>
+      </div>
+      <nav class="tabs">
+        <button class="tab" id="tab-ideas" aria-selected="true" onclick="showTab('ideas')">Ideas + transcript</button>
+        <button class="tab" id="tab-rep" aria-selected="false" onclick="showTab('rep')">Repair log</button>
+        <button class="tab" id="tab-how" aria-selected="false" onclick="showTab('how')">How this works</button>
+      </nav>
+    </div>
+  </header>
+
+  <section id="view-ideas">
+    <div class="panes">
+      <div class="scriptcol">
+        <div class="scripthead">Repaired transcript</div>
+        <div class="scriptwrap">
+          <button class="edgehint top" id="edge-up" onclick="jumpEdge(-1)" aria-label="Jump to highlighted lines above"><span class="arrow">▲</span> <span id="edge-up-n"></span> above</button>
+          <div class="script" id="script"></div>
+          <button class="edgehint bot" id="edge-dn" onclick="jumpEdge(1)" aria-label="Jump to highlighted lines below"><span class="arrow">▼</span> <span id="edge-dn-n"></span> below</button>
+        </div>
+      </div>
+      <div class="ideacol">
+        <div class="toolbar">
+          <select class="filter" id="catFilter" onchange="applyFilter()"></select>
+          <select class="filter" id="topicFilter" onchange="applyFilter()"></select>
+          <button class="ghost act" onclick="selectAll(true)">All</button>
+          <button class="ghost act" onclick="selectAll(false)">Clear</button>
+          <span class="spacer"></span>
+          <button class="ghost act conflict-toggle" id="conflictToggle" aria-pressed="false" onclick="toggleConflicts()" title="Show only insights that are in tension with another">⚡ Conflicts</button>
+          <span class="tb-break"></span>
+          <span class="review-tally" id="review-tally" data-tip=""></span>
+          <span class="spacer"></span>
+          <button class="send" data-act="send-review" id="sendReview" onclick="openReview()" disabled>Send to Claude ↑</button>
+        </div>
+        <div class="export" id="exportPanel">
+          <div class="row">
+            <div class="seg">
+              <button id="fmt-md" aria-pressed="true" onclick="setFmt('md')">Markdown</button>
+              <button id="fmt-json" aria-pressed="false" onclick="setFmt('json')">JSON</button>
+            </div>
+            <span class="spacer"></span>
+            <button class="ghost act" onclick="copyOut()">Copy</button>
+            <button class="act" onclick="downloadOut()">Download</button>
+            <button class="ghost act" onclick="closeExport()">Close</button>
+          </div>
+          <textarea id="outBox" readonly></textarea>
+        </div>
+        <div class="review" id="reviewPanel">
+          <p class="lead">Your edits, comments, and exclusions — paste this back into Claude to rebuild the report. Untouched items are omitted.</p>
+          <div class="row">
+            <div class="seg">
+              <button id="rfmt-json" aria-pressed="true" onclick="setReviewFmt('json')">JSON</button>
+              <button id="rfmt-md" aria-pressed="false" onclick="setReviewFmt('md')">Markdown</button>
+            </div>
+            <span class="spacer"></span>
+            <button class="ghost act" onclick="copyReview()">Copy</button>
+            <button class="act" onclick="downloadReview()">Download</button>
+            <button class="ghost act" onclick="closeReview()">Close</button>
+          </div>
+          <textarea id="reviewBox" readonly></textarea>
+        </div>
+        <div id="ideas"></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="view-rep" class="hidden">
+    <div class="note"><b>Diarization reconciled.</b> The recording came back in 3 chunks and the ASR
+      <b>swapped its speaker numbers</b> at the ~20-min boundary (Speaker&nbsp;1&nbsp;↔&nbsp;Speaker&nbsp;2 between chunk&nbsp;1 and
+      chunks&nbsp;2–3). Collapsed to <b>3 real voices</b>: <b>Andrei</b> (participant), <b>Ana</b> (interviewer) and
+      <b>Bogdan</b> (technical facilitator / prototype owner) — re-attributed by content throughout. One unknown is
+      still open: <b>“Theta 1.9”</b>, the menu/version Andrei compared ML Models' placement to.</div>
+    <p class="hint">Phase-1 repairs. <span style="color:var(--green)">Green</span> = applied ·
+      <span style="color:var(--amber)">amber</span> = confirm · <span style="color:var(--mark)">red</span> = needs you.</p>
+    <div id="repairs"></div>
+  </section>
+
+  <section id="view-how" class="hidden">
+    <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+      <symbol id="ic-human" viewBox="0 0 24 24"><path fill="currentColor" d="M12 12.6a4.3 4.3 0 1 0 0-8.6 4.3 4.3 0 0 0 0 8.6Zm7 7.4c0-3.3-3.4-5.4-7-5.4s-7 2.1-7 5.4V21h14v-1Z"/></symbol>
+      <symbol id="ic-claude" viewBox="0 0 24 24"><path fill="currentColor" fill-rule="evenodd" clip-rule="evenodd" d="M20.998 10.949H24v3.102h-3v3.028h-1.487V20H18v-2.921h-1.487V20H15v-2.921H9V20H7.488v-2.921H6V20H4.487v-2.921H3V14.05H0V10.95h3V5h17.998v5.949zM6 10.949h1.488V8.102H6v2.847zm10.51 0H18V8.102h-1.49v2.847z"/></symbol>
+    </svg>
+    <div class="how">
+      <div class="lane-row">
+        <div class="l">
+          <div class="lane-card">
+            <div class="ch"><span class="actor human"><svg><use href="#ic-human"/></svg> You</span><h4>Hand over the session</h4></div>
+            <p>Drop in the transcript, the recording, and a line on what was tested — all Claude needs to start.</p>
+          </div>
+        </div>
+        <div class="spine"><div class="seg bot"></div><div class="avatar you"><svg><use href="#ic-human"/></svg></div></div>
+        <div class="r"></div>
+      </div>
+
+      <div class="lane-row">
+        <div class="l"></div>
+        <div class="spine"><div class="seg top"></div><div class="seg bot"></div><div class="avatar claude"><svg><use href="#ic-claude"/></svg></div></div>
+        <div class="r">
+          <div class="lane-card">
+            <div class="ch"><span class="actor claude"><svg><use href="#ic-claude"/></svg> Claude</span><h4>Repairs the transcript</h4><span class="phase-tag">Phase 1</span></div>
+            <p>Fixes the ASR garble and restores the English domain terms — every fix logged in the Repair log.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="lane-row">
+        <div class="l"></div>
+        <div class="spine"><div class="seg top"></div><div class="avatar claude"><svg><use href="#ic-claude"/></svg></div></div>
+        <div class="r">
+          <div class="lane-card">
+            <div class="ch"><span class="actor claude"><svg><use href="#ic-claude"/></svg> Claude</span><h4>Extracts the insights</h4><span class="phase-tag">Phase 2</span><span class="here">you are here</span></div>
+            <p>Pulls insight cards — category, quote, confidence — each anchored to its exact transcript lines.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="lane-row">
+        <div class="l">
+          <div class="lane-card">
+            <div class="ch"><span class="actor human"><svg><use href="#ic-human"/></svg> You</span><h4>Review, edit &amp; classify</h4></div>
+            <p>Keep or drop cards, tweak the wording, answer the open queries, and sort them by destination database.</p>
+          </div>
+        </div>
+        <div class="spine"><div class="seg bot"></div><div class="avatar you"><svg><use href="#ic-human"/></svg></div></div>
+        <div class="r"></div>
+      </div>
+
+      <div class="lane-row">
+        <div class="l"></div>
+        <div class="spine"><div class="seg top"></div><div class="seg bot"></div><div class="avatar claude"><svg><use href="#ic-claude"/></svg></div></div>
+        <div class="r">
+          <div class="lane-card">
+            <div class="ch"><span class="actor claude"><svg><use href="#ic-claude"/></svg> Claude</span><h4>Folds in your changes</h4></div>
+            <p>Reads your edits, comments, and exclusions, then rebuilds the report with them folded in.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="next-rule"><div class="line"></div><span class="lbl">Next · planned, not yet built</span><div class="line"></div></div>
+
+      <div class="lane-row future">
+        <div class="l"></div>
+        <div class="spine"><div class="seg top"></div><div class="avatar claude"><svg><use href="#ic-claude"/></svg></div></div>
+        <div class="r">
+          <div class="lane-card">
+            <div class="ch"><span class="actor claude"><svg><use href="#ic-claude"/></svg> Claude</span><h4>Publishes to Notion</h4></div>
+            <p>Pushes the final insights to Notion via the Notion MCP — each into the right database.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer>Generated by the <b>meetinginsights</b> skill · Phase 1 repair → Phase 2 extract. Quotes are the repaired Romanian.</footer>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+// [speaker, timestamp, text]
+const TURNS = [["F", "00:00", "Ok, <span class='unsure' title='ASR: „am donat astăzi” — probabil „am dat record/start astăzi”'>am dat record astăzi</span>. Și povestim despre un feature care se leagă cu unul dintre use case-urile la care ai lucrat, și anume <span class='unsure' title='ASR: „plăcerea de la Price Horizon”'>partea</span> de la Price Horizon."], ["F", "00:14", "Și acolo, dacă îmi aduc aminte bine, aveați un model de ML care clasifica paginile din documente, așa-i? Suntem în același scenariu, doar că… stai, te rog. Am să te rog să intri, dacă ai tu ceva; dacă nu, am să-ți dau eu."], ["P", "00:54", "Nu."], ["F", "00:55", "Nu, nu contează. Bun. Scenariul în care suntem e că vrei să îți creezi un model de ML ca să clasifici documente, similar cu ce se întâmpla în Price Horizon. Și vrei să-l antrenezi până ajungi la un rezultat cu care ești happy să-l folosești într-un workflow. Acum, dacă poți să ne spui un pic cum te-ai aștepta să funcționeze procesul de antrenare, sau dacă ai avut vreo tangență cu zona asta când a fost proiectul."], ["P", "01:41", "Da, deci noi înainte aveam nodul ăla de OCR; aveam un nod în care făceam un call pe Integration Designer, prin API, către Doc Parser, care avea modelul care făcea clasificarea. Și aveam acolo o configurare de JSON în care îi dădeam toți classifier-ii într-un obiect. Aveam într-o cheie numele classifier-ului, iar în interiorul cheii aveam o listă de string-uri care reprezentau termeni pe care să-i caute în textul extras de OCR din documentul respectiv."], ["P", "02:18", "Acum am primit de la Laura o librărie prin care pot să-mi setez niște reguli și, pentru termenii respectivi, să-mi pun niște weight-uri, ori pozitive, ori negative; și în funcție de acel rule set, el să-mi calculeze pe classifier-ul respectiv un scor. Și dacă am scorul peste un anume threshold, pe care tot eu pot să-l setez, îmi clasifică acel document ca classifier-ul respectiv. Adică, dacă am un document și am în setul meu de reguli pentru clasificatorul de contract de credit că, dacă îmi conține textul „contract de credit”, atunci să îi pună un scor destul de mare — să zicem 200 — și să mi-l clasifice ca și contract de credit. Iar threshold-ul pe care îl setez eu ca să decid că documentul e contract de credit să fie 100, de exemplu. Pot, de exemplu, să-i dau și cu minus: dacă am „poliță de asigurare” scris în titlu, pot să scad foarte mult scorul, că probabil nu ăla e documentul."], ["P", "03:36", "Deci cam așa o să-l folosim acuma."], ["F", "03:44", "Ok."], ["P", "03:45", "Și regulile alea pot fi de tipul: să includă niște termeni, să excludă niște termeni, sau să conțină un anumit număr din acei termeni în document. Adică, dacă văd că îmi apare deja de 10 ori „contract de credit”, cel mai probabil e un contract de credit."], ["F", "04:04", "Ok. Să zicem că vrei să faci asta — un model de ML care să-ți clasifice…"], ["P", "04:14", "M-aș duce aici la ML Models."], ["F", "04:16", "Cum ți se pare poziționarea lui acolo? Ți se pare că are sens să fie sub Reusable Resources, sau l-ai vedea în altă parte?"], ["P", "04:25", "Nu, în meniul ăsta mi se pare că stă bine. Mai sunt meniurile alea de pe <span class='unsure' title='ASR „Theta 1.9” — neclar; posibil o versiune/release FlowX sau o secțiune de meniu'>Theta 1.9</span> — adică dacă era în partea aia de Agent AI, acolo l-aș fi pus; dar din moment ce nu-l avem aici, mi se pare foarte ok."], ["B", "04:40", "Dar cred că-l pui la Integrations cu un server."], ["P", "04:42", "Mi se părea că ar trebui să știu eu că există feature-ul ăsta. Așa, știu că modelul ăsta de ML, pe care pot să-l configurez cel mai probabil prin labeling, e mai ok să-l văd aici. Adică știu că pot să ajung mai repede la el."], ["P", "05:01", "Îmi creez un model nou?"], ["B", "05:03", "Da."], ["P", "05:21", "Și aici nu știu ce ar trebui să trag. Probabil există un mod de a importa genul ăsta de clasificatori după un format .ml, sau? N-am mai folosit până acuma."], ["F", "05:34", "Putem să…"], ["B", "05:36", "Da, momentan nu ai; și fiind de la zero, putem să-l lăsăm gol."], ["P", "05:44", "Ok. Și aici… ok, am numărul de pagini, last test accuracy, training, testing. Și aici, dacă vreau de exemplu…"], ["B", "05:59", "O să fie mock data, deci o să fie la unele niște exemple. Ăsta ar trebui să fie absolut gol, dar o să mai apară mock data."], ["B", "06:06", "Ce sunt clasele?"], ["P", "06:10", "Clasele le văd ca și clasificatoare — niște clase de documente, ca niște label-uri pe care le setez eu. Și după, știu că pentru label-ul ăla, în funcție de rezultatul returnat, pot să-i zic dacă a fost corect sau n-a fost corect."], ["B", "06:30", "Ok, hai să facem."], ["P", "06:33", "Nu știu… credit contract. This is the LLM judge classifier."], ["P", "07:02", "Aici mi-e puțin neclar descrierea asta. Îmi zice că trebuie să fie mandatory, dar e luată în calcul și în spate, sau doar e pentru management purposes — adică să știu eu despre ce e vorba aici?"], ["F", "07:18", "Ai schimba ce pui în funcție de asta?"], ["P", "07:22", "Da. Adică dacă e mandatory și aș ști că partea asta cu „this is the LLM judge's <span class='unsure' title='ASR „glossary” — probabil „description/guidance”, hint-ul folosit de LLM'>glossary</span>” e luată în calcul, aș încerca să-i fiu mai descriptiv — gen „the classifier should return this class only for documents that contain credit contract information such as…”. Adică i-aș da un fel de mic prompt sau descrierea documentului."], ["F", "07:54", "Da, el e folosit pentru a fi aplicat într-o interacțiune, deci ar trebui să fie… Momentan datele o să fie mock, adică n-are sens să te gândești la content, dar…"], ["P", "07:57", "A, ok. A, adică pot să pun asta. Ok."], ["P", "08:08", "Și aici le-aș pune așa — nu știu, m-aș aștepta să fie non-case sensitive, adică să pot să-i trec orice și să le ia el. Aici aș da keywords pe care să mi le conțină — „contract” — și genul de termeni care să nu mi-i conțină. Și acuma mi l-am pus. Și m-aș duce după la training, să-l antrenez practic."], ["F", "09:03", "Ai antrena pe o singură clasă, sau ai adăuga mai multe clase și apoi?"], ["P", "09:09", "Acum am intrat pe o singură clasă. Aș putea să mi le adaug pe toate și după doar să-i zic dacă a fost corect sau nu. Eu, cum testam inițial, verificam mai întâi dacă merge pe unul singur, și după…"], ["B", "09:24", "Și adăugai succesiv, adică… testai."], ["P", "09:26", "Le adăugam, da. Testam. Pentru că din modelul vechi pe OCR ori îmi dădea per pagină unknown — și încercam să am cât mai puține unknown-uri, ca să mă asigur că îmi vede toate paginile ok."], ["B", "09:47", "Și e vreo situație în care, când adăugai al treilea, al patrulea…?"], ["P", "09:51", "Aveam hit-uri cu celelalte. Și încercam să le repar în funcție de ce aveam în spate. De exemplu, pe contractul de vânzare se specificau lucruri despre polița de asigurare pentru imobilul respectiv; și după ce-mi adăugasem clasificatorul de poliță, aveam hit-uri pe multe pagini în contractul de vânzare, cum că ar fi poliță — vreo trei-patru pagini. Și la fel invers, pe polița de asigurare cu contractul de vânzare, că aveam „cumpărătorul”, „rata va fi pe…” sau termeni din ăștia care se regăseau."], ["B", "10:30", "Și ce făceai? Modificai…?"], ["P", "10:32", "Modificam într-una termenii, keyword-urile; testam cu ambele și vedeam la care îmi iese mai rău. Vedeam că, dacă modific la sales contract termenii, mi-a reparat sales contract-ul, dar polița încă nu. Modificam polița, iar aveam hit și pe sales contract, și pe poliță, cu aceiași termeni — adică cu același clasificator. Și tot așa, trial and error."], ["F", "11:05", "Deci pare că mecanismul ăsta de positive și negative examples era cel prin care balansai."], ["P", "11:12", "Exact, da. Înainte nu aveam chestia de exemplu negativ; aveam doar termeni care să se regăsească în text."], ["F", "11:19", "Ok. Și făceai balansarea asta și din adăugarea mai multor exemple, sau în mare parte din…?"], ["P", "11:31", "Da, mai adăugam exemple de obicei, sau mai scoteam termeni problematici. Încercam să-i găsesc prin pagină, să-mi dau seama ca om care-s termenii care au dus la hit-ul ăla, îi scoteam pe ăia, lăsam eventual gol la sales contract, rulam iar, vedeam că am hit-ul pe polița de asigurare doar cu sales contract. Și după mă duceam la polița de asigurare, vedeam paginile pe care îmi dă termenii problematici, mă uitam la sales contract și îi scoteam de acolo."], ["F", "12:10", "Foarte iterativ."], ["P", "12:11", "Da, da."], ["F", "12:12", "Ok. Se presupune că ai pune toate clasele de la început, ca să ai o varietate mai mare din prima, că acum unele lucruri o să fie un pic mai…"], ["B", "12:30", "Mai adăugăm o clasă de probă, sau mergem pe ce ai făcut?"], ["F", "12:33", "Hai să…"], ["B", "12:34", "A, poți să deschizi unul dintre cele existente, care au deja vreo cinci adăugate."], ["P", "12:45", "Ok. Ziceam, m-aș duce după la training să-mi…"], ["F", "12:48", "Da."], ["B", "12:49", "Și ai niște opțiuni."], ["P", "12:52", "Și cum ai folosi…? Ok, deci aici înțeleg că pot să-mi încarc mai multe documente și automat să-mi scoată el clasificatorul; dar după, îmi imaginez — nu știu dacă în view-ul ăsta sau după — trebuie să mă duc eu în testing ca să văd rezultatele run-ului de clasificare, ca să-i setez manual valoarea de adevăr a clasificării respective."], ["F", "13:25", "Ok."], ["P", "13:26", "Și aici mi-e clar — adică încarc pe rând tipul specific de document, ca el să înțeleagă în spate toate in-urile și out-urile. A, ok, îmi apare aici fix după „review predictions”, deci tot aici. Ok, și am pagina respectivă."], ["P", "13:48", "Analyze the document. <span class='unsure' title='ASR „Zici că e cu poșta” — neclar; posibil „pare că e o corespondență”'>Pare că e o corespondență</span>, da. Aici văd că e vorba de o corespondență, deci probabil nu e pașaport; nici National ID nu are cum să fie, nici driver's license, pentru că nu ai texte de genul acolo. Mă gândesc ori la residence permit, ori la un refugee travel doc. Nu știu cum arată un refugee travel doc — acuma tind să cred că e ori un residence permit, ori unknown."], ["F", "14:34", "Ok, și în funcție de ăsta…"], ["P", "14:36", "Să fie corect, sau poate să fie greșit. Da, pot să-mi setez… îmi dau seama că aici îmi trece review-ul, și — ok — deci dacă nu sunt de acord cu clasificatorul, pot doar să-l modific; iar dacă sunt de acord, doar să-l bifez ca verificat. Mi-e destul de clar aici. Driving license. Clar."], ["B", "14:57", "Da."], ["P", "15:00", "Adică aici mi se pare destul de straightforward workflow-ul; și da, trebuie să treci prin multe valori, dar mi se pare foarte ok că așa funcționează de fapt — trebuie să le <span class='unsure' title='ASR „băriști” → „bifezi”'>bifezi</span> oricum tu de mână."], ["F", "15:14", "Ok. Cum ți se pare acțiunea aia de review manual pe fiecare pagină, chiar dacă e corect? Ai prefera mai degrabă să ai la final o acțiune de genul „dacă nu am schimbat eu label-ul, înseamnă că e corect”, sau ți se pare că te ajută să dai review manual la fiecare?"], ["P", "15:37", "Mi se pare că mă ajută. Doar că bănuiesc că în text box-ul ăsta puneți fix textul de la OCR; mă gândeam, dacă aș fi avut un text mai mare… Nu — dacă aș fi avut un file preview cu pagina curentă…"], ["B", "15:55", "Cred că e…"], ["P", "15:59", "…ar fi mai ușor, din punct de vedere al omului, să se uite pe o pagină și imediat să observe un layout — de exemplu la buletin. Așa ar trebui să citesc măcar două-trei rânduri de text ca să-mi dau seama dacă e content-ul din partea aia. By default oricum mai ușor aș vedea thumbnail-ul respectiv."], ["P", "16:34", "Nu știu sincer dacă își are sens ăsta cu „Mark all reviewed”, că practic mi-aș fura singur căciula și l-aș trece doar ca să pot să trec peste și să încep antrenarea. Și așa poți să pui niște useri să antreneze greșit unele modele."], ["F", "16:55", "Din experiența ta, mai degrabă treci prin fiecare?"], ["P", "16:59", "Eu mai degrabă aș trece; nu aș da „all reviewed” ca o opțiune, personal. Că, na, vrei să-ți faci repede treaba și după tot prost iese și trebuie să te întorci să faci iar."], ["F", "17:14", "Ok. Momentan, for the sake of… poți să-l folosești ca să dai…"], ["P", "17:18", "Da, da, da. Ok. Fac training."], ["P", "17:25", "Ok, și da, aici îmi dă matricea de confuzie. Training distribution."], ["F", "17:32", "În momentul în care ai antrenat peste ceva ce exista deja — adică peste un model care era deja. Asta așa ar arăta dacă ai antrena pentru prima dată, fără să ai nimic, deci pleci de la zero."], ["P", "17:47", "Da, mă gândesc că pe măsură ce sunt mai multe run-uri, se modifică și matricea asta, și începi să-ți dai seama pe ce document fail-uiesc termenii și pe care nu."], ["F", "17:58", "Da, ăsta e o primă versiune, de genul „1”."], ["P", "18:05", "Și candidate-ul e ăsta, pe care l-am rulat acum."], ["F", "18:07", "Pe care l-ai antrenat acum."], ["P", "18:08", "Da, e intuitiv, e ok."], ["F", "18:11", "Ai vrea să trecem un pic prin pagina asta — confusion matrix? Ți s-a părut… l-ai recunoscut ușor?"], ["P", "18:19", "Îs familiar cu conceptul."], ["F", "18:21", "Ok. Zona de training distribution — ce crezi că înseamnă?"], ["P", "18:30", "Păi uite, pe residence permit, de exemplu, am uploadat mai multe residence permit-uri decât passport-uri, și a avut mai multe pagini care au fost clasificate după termenii ăia. Clar, dacă am mai puține exemple, o să am rezultate mai proaste pentru clasificatorul respectiv."], ["F", "18:52", "Și în zona de testing data?"], ["P", "18:58", "Aici îmi arată doar părțile… A, e mișto asta! E fix ce făceam eu — că eu rulam documentul și vedeam că am hit greșit pe o anumită pagină cu un alt clasificator. Deci chestia asta mi se pare foarte utilă aici și intuitivă."], ["F", "19:21", "De unde vin paginile astea? De unde crezi că au ajuns aici?"], ["P", "19:39", "Nu prea am cum să-mi dau seama de unde vine documentul sau pagina respectivă. Adică îmi dau seama că asta e content-ul din pagina respectivă și manual, da, pot să-mi dau seama că e…"], ["F", "19:53", "Și dacă ar fi să te gândești la journey-ul prin care ai trecut — adică ai băgat un batch de 50 de documente…"], ["F", "19:59", "…documente, ai dat train, și acum pe…"], ["P", "20:06", "Adică JPEG-ul ăsta clar era în zip-ul pe care l-am uploadat pentru ăsta, dacă asta e [întrebarea]."], ["F", "20:13", "Da, asta e o parte din întrebare. Și apoi: fișierul ăsta pe care l-ai selectat acum a fost folosit pentru antrenare, sau nu a fost folosit pentru antrenare?"], ["P", "20:24", "A fost folosit pentru antrenare, eu așa înțeleg. Pentru că am aici true class-ul — valoarea pe care eu am pus-o după review — și ce a prezis modelul în training, la „predicted”."], ["F", "20:44", "Dacă ți-ar spune că…?"], ["P", "20:46", "Invers?"], ["F", "20:46", "Nu, nu ți-ar spune nimic. Dacă ți-ar spune că, odată ce un model a fost antrenat pe o pagină, n-are cum s-o greșească — adică dacă a fost folosită la antrenare, a doua oară, când se rulează modelul pe pagina respectivă, n-are cum s-o greșească, pentru că o știe deja."], ["P", "21:18", "Ă, da, înțeleg ce zici. Nu înțeleg atunci de unde vine pagina asta. Adică eu mai întâi am încărcat…"], ["B", "21:31", "Să zicem că ai încărcat 250 de documente. 250 de pagini."], ["P", "21:33", "Da, exact. Așa, și după am trecut prin review la fiecare pagină, unde i-am setat eu true class-ul — că mă gândesc că de aici vine true class-ul. Și după ce am marcat toate ca „review”, am apăsat pe… start training."], ["B", "21:57", "Ok."], ["P", "21:59", "Păi, în training, modelul are deja și datele de la review-ul meu când pleacă la training, nu? Că doar ce le-am updatat."], ["F", "22:15", "Dar ca să-l testezi, nu are neapărat sens să testezi cu ceva ce a fost folosit pentru antrenare."], ["P", "22:26", "Da, da, știu că n-are sens — că ți-ar da 100% acuratețe pe tot."], ["F", "22:31", "Și atunci, din fișierele pe care le-ai <span class='unsure' title='ASR „evoluat” → „uploadat/încărcat”'>uploadat</span> tu, el pe ce a testat?"], ["P", "22:37", "A, să fie niște fișiere generate diferit, după modelul fișierelor pe care le-am pus eu pentru testare? A, sau nu — e un calup separat din fișierele pe care le-am pus eu. Are sens, mi-am amintit și eu acuma."], ["F", "22:58", "Vezi undeva informația asta?"], ["P", "22:59", "Ă, da, e asta — „20% of each batch”. Că da, țin minte acuma că le <span class='unsure' title='ASR „beciuiai” → probabil „batch-uiai / le împărțeai în batch-uri”'>batch-uiai</span> mai întâi și după îți luai una de test."], ["F", "23:09", "Ok. E ceva ce am putea să facem ca să fie mai evidentă chestia asta?"], ["P", "23:16", "Poate înainte să dai pe „start training” să fie mai evident. Am văzut că era un „80% din datele încărcate vor fi folosite pentru training și 20% pentru testing” — poate acolo să fie un pic mai mare textul. Țin minte că era pus, dar îs relativ familiar cu subiectul din facultate; pentru cineva care n-a mai folosit, e mai greu de înțeles."], ["F", "23:47", "Deci să fie mai clar în momentul ăla, când treci între training și testing, să ai o…"], ["P", "23:51", "Da, da. Să înțeleagă că, din toate fișierele pe care le-a încărcat, nu o să fie toate folosite pentru antrenament; și ca să poți trece la testare, doar 20% o să fie folosit acolo."], ["F", "24:04", "Ok."], ["P", "24:07", "Bun. Așa, și aici la comparison mă gândesc că sunt metrici despre modelul vechi și ăsta care tocmai a fost testat."], ["F", "24:20", "Cum ai interpreta delta? De fapt, uită-te la ce vrei să te uiți."], ["P", "24:25", "Stai să văd, îmi dau un pic mai sus. Deci, true class-ul e cel pe care l-am setat eu; ăsta e classifier-ul pe care îl punea modelul vechi, și ăsta e classifier-ul pe care îl pune modelul nou. Ok, aici e clar. Le am pe toate cu roșu — „still wrong”, clar, ambele cu roșu. Ăsta cu „still right” nici nu știu dacă e useful, dar poate să fie. Dar ăsta cu „degraded” mi se pare important, că poți să vezi dacă ai modificat ceva prost."], ["P", "25:11", "Și aici ce înțeleg eu e că, pe residence permit, modelul curent a clasificat corect cu trei documente mai mult decât modelul vechi."], ["F", "25:27", "A clasificat cu trei mai mult."], ["P", "25:28", "A clasificat cu trei mai multe decât modelul vechi. Ăsta e modelul vechi, ăsta e modelul candidat. Și am improvement de trei hit-uri corecte cu true class-ul pe candidatul curent."], ["F", "25:47", "Mhm. Ok. Deci, dacă ai vrea să vezi între old și candidate pe training pool — deci documentele care au fost folosite la antrenare — care-s diferențele între training pool-ul de la old și cel de la new, unde te-ai uita?"], ["P", "26:16", "Aici oricum am doar testing data, nu știu dacă o să mai am ceva. Mmm. Nu-mi dau seama din ecranele astea unde ar trebui să mă duc."], ["F", "26:42", "Și din zona aia de training distribution, ce te-a făcut să crezi că plusul ăla e de fapt…?"], ["P", "26:52", "A, ăsta?"], ["F", "26:53", "Ce te-a făcut să crezi că e de fapt improve-ul?"], ["P", "26:58", "Comparația asta între barele astea două. Am clasificatorul, și am asociat partea asta gri cu hit-urile corecte ale modelului vechi. Adică să zicem că aici avem cinci hit-uri și aici opt."], ["F", "27:16", "Da, deci cu hit-ul — cu ce a identificat corect — nu cu ce a avut la dispoziție pentru antrenare."], ["P", "27:22", "Da. A, deci asta înseamnă că, față de modelul vechi, modelul nou a avut încă trei exemple în plus pentru clasificatorul respectiv. A, ok. Eu astea le-am interpretat ca fiind hit-uri corecte cu true class-ul."], ["F", "27:45", "Și cum am putea să facem asta mai clar? Ai avea vreo sugestie — un distribution, cum ai asocia?"], ["P", "28:01", "Da, exact, o chestie de genul ăsta. Cumva să ai aici o săgeată spre valoarea asta, care să spună că valoarea asta reprezintă numărul de documente de tipul respectiv pe care acest candidat le-a avut în plus față de modelul vechi."], ["F", "28:28", "În antrenare."], ["P", "28:29", "Da, în antrenare."], ["F", "28:33", "Și dacă ar fi să te uiți un pic în confusion matrix, cum ai interpreta acel minus unu, acel plus unu — ăla dintre refugee travel și driver's licenses?"], ["P", "28:49", "Deci, green egal „more correct, fewer errors”, red egal „new or increased errors” — asta e clar. Dar nu-mi dau seama care ar fi true class-ul. M-ar ajuta un indice pe matricea asta de confuzie, că mă gândesc că într-o parte avem true class-ul și într-o parte valoarea pusă de model. Și nu știu care dintre ele e."], ["B", "29:18", "Da."], ["P", "29:20", "Dacă ar fi să iau partea asta de true class, înseamnă că pentru documentul de refugee travel am avut o încurcătură și a fost clasificat ca driver's license. Dacă am true class-ul în stânga."], ["B", "29:43", "Da, da. Să presupunem așa. Ce înseamnă plus unu?"], ["P", "29:48", "Că un document de refugee travel, care știm sigur că e refugee travel, a fost clasificat prost ca driver's license de modelul curent, candidat."], ["B", "30:03", "Doar unul singur?"], ["P", "30:06", "O… nu știu aici cum să zic."], ["B", "30:15", "Uită-te un pic și vezi dacă îți dă…"], ["P", "30:19", "A, aici n-am… a, nu, da, am…"], ["B", "30:22", "E un mock, ca să aibă sens între ele."], ["P", "30:25", "Da, dar practic, dacă aici am zero, aici aș fi avut unu. Deci comparison-ul ar fi că modelul nou clasifică mai prost refugee travel doc ca driver's license. Da — că în stânga avem true class-ul, și că modelul nou vede un refugee travel doc mai des ca driver's license decât modelul vechi."], ["B", "30:58", "Ok. Poți să te uiți dacă, dând hover pe „plus unu”, explicația… nu, tot acolo. Dacă ajută explicația asta. Ar trebui să apară ceva dacă nu te miști."], ["P", "31:11", "A. A, ok, super! Aș pune totuși ăsta pe tot box-ul, nu doar pe text."], ["B", "31:20", "A, e pe… da, ok."], ["P", "31:22", "Bine, acuma cred că… a, ok, scuze."], ["B", "31:26", "Ajută să punem explicația."], ["P", "31:28", "Ar merge — nu știu dacă aici…"], ["B", "31:31", "Aici nu știu dacă e."], ["F", "31:32", "Ba da."], ["P", "31:33", "Ar merge pus tot cu behavior-ul ăsta de hover, că știu că poate se întâmplă ceva dacă îmi las [cursorul] — aici n-aveam niciun feedback. Și de asta."], ["B", "31:43", "Da, da. Ok."], ["B", "31:52", "Dacă ar fi să mai testezi — dacă ar mai fi să primești niște documente sample în momentul ăsta — ce crezi că s-ar întâmpla? Deci, în momentul ăsta ai varianta veche și candidatul curent."], ["P", "32:10", "Dacă îi dau „start testing” din nou, m-aș aștepta să se compare cu varianta veche, să se dea discard la candidat. Dar dacă ar fi să mă întorc direct, m-aș aștepta să se dea discard automat, dacă nu l-am promovat eu explicit. Că aici pot ori să zic „ok”… da, m-aș aștepta să se dea discard automat."], ["P", "32:39", "Că să zicem că nu sunt de acord deloc cu modificările pe care le-am făcut la candidatul curent, și am o acțiune — aș da „promote” direct și așa aș avea candidatul la versiunea old. Dar dacă nu, atunci doar m-aș uita pe date și aș mai avea o acțiune de făcut în plus până să mă duc să dau iar training."], ["B", "33:08", "Crezi că ar fi, de exemplu…?"], ["P", "33:12", "Ar fi util totuși un fel de modal de atenționare — „ai grijă, o să se șteargă candidatul curent”. Adică mai bine am acțiunea aia decât să dau discard."], ["B", "33:24", "Da, da. Are sens să fii warned. Mă gândesc la o situație în care tu ai trainat pe toate tipurile astea de clase, și la un moment dat National ID-ul se schimbă, arată altfel și se schimbă informațiile de pe el. Deci, dintr-un anumit punct, training-ul pe care l-ai făcut pe National ID nu l-ai mai vrea — ori să-l scoți din training data, ori să retrainezi un model fără să folosești documentele vechi și să vii cu exemple noi. Cum ți s-ar părea cel mai ușor să faci chestia asta? Nu e în prototipul ăsta, dar ca concept — care ar fi așteptările tale?"], ["P", "34:11", "M-aș duce și aș crea, cred, o nouă clasă pentru țara respectivă. Dar nu știu cât de scalabil e asta — că e inevitabil, trebuie să faci asta, că el se uită pe anumite pattern-uri: buletinul nostru arată într-un fel, pașaportul în alt fel."], ["B", "34:32", "E tot buletin românesc, să zicem — dar e o variantă veche și una nouă."], ["P", "34:35", "Da. Mi-aș crea o…"], ["B", "34:38", "Ai șterge datele vechi?"], ["P", "34:39", "N-aș șterge, că probabil tot aș primi la un moment dat exemple; dar mi-aș adăuga, pentru modelul nou, exemple din buletine noi."], ["F", "34:48", "Și dacă ai avut un model antrenat pe clasele astea și zici „de acum încolo nu mă mai interesează residence permit, nu mai vreau să clasific residence permit”?"], ["P", "35:03", "Ar fi bine să am și varianta de a-l șterge."], ["F", "35:08", "Ce ar însemna asta pentru model? Că, în sine, ștergerea label-ului nu e problematică."], ["P", "35:14", "Da. Păi ar însemna ca modelul să… nu știu în spate cum s-ar reține toate <span class='unsure' title='„eval-urile” — probabil „evaluările / run-urile de antrenare”'>eval-urile</span>."], ["F", "35:31", "Datele de antrenare."], ["P", "35:32", "Da, istoricul run-urilor, cum ar veni."], ["F", "35:39", "Dacă ai avea, să zicem, undeva o listă cu toate documentele pe care le poți folosi pentru antrenare — un tabel gigantic?"], ["P", "35:50", "Nu știu dacă ar avea sens să le reținem undeva. Maxim m-aș uita… nici dacă ar fi să aveți voi vectori sau ceva, să puteți face debugging din punct de vedere AI — dar nu știu dacă m-ar ajuta. Mai degrabă mi-aș face un clasificator nou de la zero pentru chestia asta. Adică nu văd sensul să… poate am făcut un model de clasificare și am rulat un an încontinuu pe el — nu văd de ce ai vrea să ștergi un model pe care l-ai rulat un an încontinuu."], ["F", "36:35", "Mai am un scenariu, care am înțeles că s-a întâmplat la un moment dat la unul dintre use case-uri: oamenii aveau datele labeled greșit. Adică a pus „National ID” și de fapt e „passport”. Și totul a fost nice and dandy până când a ajuns în producție și și-au dat seama că e o problemă la diferența între passport și National ID. Și au zis „ok, ca să îmbunătățim asta, trebuie să ne curățăm datele, că avem garbage în date — date label-uite cu passport care de fapt sunt National ID”."], ["P", "37:04", "Poate ar fi mișto să ai o opțiune de re-label — adică să poți să asignezi, de exemplu, residence permit la driver's license, și în baza de date din spate toate documentele… bine, nu știu cât de corect ar fi asta de fapt. Să poți reasigna label-ul la documentele care aveau label-ul problematic."], ["F", "37:37", "Dar te gândești la asta pentru toate documentele — tot ce ai acum în training pool?"], ["P", "37:39", "Da. Pentru că, dacă ar fi să faci asta, aș face operațiunea și schimb de pe residence permit, care era problematic, pe driver's license; și am modelul vechi, antrenez cu un set nou de documente, și când fac review oricum pot să văd improvement-ul."], ["F", "38:05", "Adică în momentul ăsta ai rămas fără residence permit, că ai mutat toate datele pe driver's license."], ["P", "38:11", "Păi da. Deci am mutat toate datele pe driver's license. Sau nu — hai să luăm exemplul cu National ID și passport, că ăla e mai straightforward. Șterg National ID și rămân doar cu passport. Orice buletin aș băga după, mi-l clasifică ca passport. Și eu, când mă duc la review, am să trec prin toate label-urile alea proaste de passport și tot manual le voi corecta."], ["F", "38:46", "Deci la final tot ajungi să corectezi manual o listă de…"], ["P", "38:49", "Exact."], ["F", "38:50", "Doar că e filtrată după ce era anterior National ID."], ["P", "38:55", "Exact. Că altfel nu văd… nu știu nici dacă merită să ștergi din spate toate datele; și dacă ai pus un classifier prost și ai antrenat o dată prost, mai degrabă mai petreci o oră să repari și ai reparat."], ["F", "39:17", "E ceva în journey-ul ăsta — de când adaugi clasele, până la review, compare, multiple candidates — ceva ce ți se pare că nu a fost clar?"], ["P", "39:28", "Nu, chiar îmi place foarte mult cum a fost făcut. Poate partea asta — description-ul ăsta care e folosit — ar merge o parte de sugestii, cum vorbisem atunci pentru prompt-uri la chat."], ["F", "39:46", "A, la intent."], ["P", "39:46", "Să-ți sugereze o descriere, da. Pe baza numelui clasificatorului — sau poți să-i dai și un document."], ["F", "39:50", "Pe baza numelui."], ["F", "39:58", "Dar să te ajute."], ["P", "40:00", "Da, să-ți tailoruiască descrierea — dacă tot o folosim în spate pentru platformă, cum folosește contextul în spate descrierea aia."], ["F", "40:17", "Cred că și la exemple ar putea să venim cu o sugestie — doar că trebuie să vii cu sugestia după un training."], ["P", "40:22", "Da, exact. Astea chiar ar fi mișto după ce ai rulat cel puțin un training — la fiecare training să-ți tot adauge exemple."], ["F", "40:36", "Dar ai vrea să dai okay-ul, nu?"], ["P", "40:37", "Păi da. Da, da. Eventual poate după partea asta de testare, când faci promote la un candidate — eventual să mai ai un pas de approve la termenii noi găsiți, ca să-și facă self-improve și clasificatorul."], ["B", "41:08", "E cum?"], ["F", "41:09", "Păi, mulțumim mult. Și să ne mai auzim, că mai e o bucată de…"]];
+
+const IDEAS = [
+ {
+  "id": "idea-01",
+  "title": "ML Models under Reusable Resources feels right — easy to reach",
+  "category": "design_insight",
+  "detail": "Andrei validated the placement: he'd go straight to ML Models under Reusable Resources. He'd only put it under an Agent-AI section if one existed; absent that, here it's where he reaches first. Pushes back on Bogdan's Integrations suggestion.",
+  "quote": "în meniul ăsta mi se pare că stă bine… din moment ce nu-l avem aici, mi se pare foarte ok. Adică știu că pot să ajung mai repede la el.",
+  "speaker": "P",
+  "confidence": "high",
+  "needs": false,
+  "anchors": [
+   12,
+   10,
+   11,
+   13,
+   14
+  ],
+  "topics": [
+   "Navigation & discoverability"
+  ]
+ },
+ {
+  "id": "idea-02",
+  "title": "Class description: unclear if it's functional or just for management",
+  "category": "open_question",
+  "detail": "The mandatory class description confused Andrei — is it actually fed to the model/LLM judge, or only for human management? It changes how he'd write it: if functional, he'd make it a mini-prompt describing the document type.",
+  "quote": "Îmi zice că trebuie să fie mandatory, dar e luată în calcul și în spate, sau doar e pentru management purposes?",
+  "speaker": "P",
+  "confidence": "high",
+  "needs": false,
+  "anchors": [
+   26,
+   25,
+   27,
+   28,
+   29,
+   30
+  ],
+  "topics": [
+   "Classifier setup & copy"
+  ]
+ },
+ {
+  "id": "idea-03",
+  "title": "Keywords should be case-insensitive",
+  "category": "feature_request",
+  "detail": "When adding include/exclude keywords, Andrei expects matching to be non-case-sensitive — type anything and it should still match.",
+  "quote": "m-aș aștepta să fie non-case sensitive, adică să pot să-i trec orice și să le ia el.",
+  "speaker": "P",
+  "confidence": "medium",
+  "needs": false,
+  "anchors": [
+   31
+  ],
+  "topics": [
+   "Classifier setup & copy"
+  ]
+ },
+ {
+  "id": "idea-04",
+  "title": "Prior workflow: add all classes, then iterate keywords by trial-and-error",
+  "category": "context",
+  "detail": "How Andrei worked the old OCR/Doc Parser classifier: add classifiers successively, test, and hand-tune include/exclude terms to fix cross-class hits (e.g. sales-contract vs insurance-policy collisions). Positive/negative example weights were how he balanced. This is the mental model he brings to the new tool.",
+  "quote": "Modificam într-una termenii, keyword-urile, testam cu ambele și vedeam la care îmi iese mai rău… Și tot așa, trial and error.",
+  "speaker": "P",
+  "confidence": "high",
+  "needs": false,
+  "anchors": [
+   37,
+   32,
+   33,
+   34,
+   35,
+   36,
+   38,
+   39,
+   40,
+   41,
+   42,
+   43
+  ],
+  "topics": [
+   "Auto-label & manual review",
+   "Classifier setup & copy"
+  ]
+ },
+ {
+  "id": "idea-05",
+  "title": "Per-page manual review is valued, not seen as a chore",
+  "category": "design_insight",
+  "detail": "Andrei finds the review-each-page workflow straightforward and good — even though it means going through many values, he expects to verify them by hand anyway.",
+  "quote": "mi se pare destul de straightforward workflow-ul… mi se pare foarte ok că așa funcționează de fapt. Trebuie să le bifezi oricum tu de mână.",
+  "speaker": "P",
+  "confidence": "high",
+  "needs": false,
+  "anchors": [
+   60,
+   61,
+   62
+  ],
+  "topics": [
+   "Auto-label & manual review"
+  ]
+ },
+ {
+  "id": "idea-06",
+  "title": "“Mark all reviewed” is risky — invites users to shortcut and train bad models",
+  "category": "pain_point",
+  "detail": "Andrei is skeptical of the bulk “Mark all reviewed” action: it lets you cheat past review just to start training, and risks users training models on unverified labels. He wouldn't offer it.",
+  "quote": "mi-aș fura singur căciula… Și așa poți să pui niște useri să antreneze greșit unele modele. Nu aș da „all reviewed” ca o opțiune.",
+  "speaker": "P",
+  "confidence": "high",
+  "needs": false,
+  "anchors": [
+   65,
+   66,
+   67
+  ],
+  "topics": [
+   "Auto-label & manual review"
+  ]
+ },
+ {
+  "id": "idea-07",
+  "title": "Wants a page/file preview (thumbnail) during review, not just OCR text",
+  "category": "feature_request",
+  "detail": "During review only the OCR text box is shown. Andrei wants a file preview of the current page — a human can recognize a document by its layout (e.g. an ID card) far faster than by reading lines of text. A thumbnail would be his default.",
+  "quote": "dacă aș fi avut un file preview cu pagina curentă… imediat poate să observe un layout… by default oricum mai ușor aș vedea thumbnail-ul respectiv.",
+  "speaker": "P",
+  "confidence": "high",
+  "needs": false,
+  "anchors": [
+   64,
+   62,
+   63
+  ],
+  "topics": [
+   "Auto-label & manual review"
+  ]
+ },
+ {
+  "id": "idea-08",
+  "title": "Make the 80/20 train/test split prominent before Start Training",
+  "category": "feature_request",
+  "detail": "Andrei found the “80% training / 20% testing” note but says it should be more visible right before Start Training (bigger text). He's familiar with the concept from college; a first-time user would struggle to understand only 20% is held out for testing.",
+  "quote": "poate înainte să dai pe „start training” să fie mai evident… poate acolo să fie un pic mai mare textul… pentru cineva care n-a mai folosit e mai greu de înțeles.",
+  "speaker": "P",
+  "confidence": "high",
+  "needs": false,
+  "anchors": [
+   105,
+   104,
+   106,
+   107
+  ],
+  "topics": [
+   "Train / test split"
+  ]
+ },
+ {
+  "id": "idea-09",
+  "title": "Where the test pages come from isn't obvious (held-out 20% of each batch)",
+  "category": "pain_point",
+  "detail": "Andrei couldn't tell where the testing-data pages originated and worked through it out loud — eventually finding the “20% of each batch” note and recalling that a held-out slice is split off before training. The origin needs to be clearer up front.",
+  "quote": "Nu înțeleg atunci de unde vine pagina asta… A, da, e asta — „20% of each batch”.",
+  "speaker": "P",
+  "confidence": "medium",
+  "needs": false,
+  "anchors": [
+   103,
+   83,
+   84,
+   93,
+   94,
+   95,
+   97,
+   98,
+   99,
+   100,
+   101,
+   102
+  ],
+  "topics": [
+   "Train / test split"
+  ]
+ },
+ {
+  "id": "idea-10",
+  "title": "Old-vs-candidate comparison is clear; “degraded” matters, “still right” maybe not",
+  "category": "design_insight",
+  "detail": "Andrei reads the comparison table easily: true class he set, old-model classifier, new-model classifier. “Still wrong” and “still right” are clear; he questions whether “still right” is useful, but values “degraded” for catching a change that made things worse.",
+  "quote": "ăsta cu „still right” nici nu știu dacă e useful… Dar ăsta cu „degraded” mi se pare important, că poți să vezi dacă ai modificat ceva prost.",
+  "speaker": "P",
+  "confidence": "high",
+  "needs": false,
+  "anchors": [
+   111,
+   109,
+   112,
+   114
+  ],
+  "topics": [
+   "Confusion matrix & comparison"
+  ]
+ },
+ {
+  "id": "idea-11",
+  "title": "Training-distribution bars misread — add an annotation/arrow explaining them",
+  "category": "feature_request",
+  "detail": "Andrei first read the grey/colored distribution bars as correct hits vs the old model; only with guidance did he realize they show how many more training examples the candidate had per class. He suggests an arrow/annotation stating exactly what the value represents.",
+  "quote": "să ai aici o săgeată… care să spună că valoarea asta reprezintă numărul de documente de tipul respectiv pe care acest candidat le-a avut în plus față de modelul vechi.",
+  "speaker": "P",
+  "confidence": "high",
+  "needs": false,
+  "anchors": [
+   124,
+   117,
+   120,
+   121,
+   122,
+   123,
+   125,
+   126
+  ],
+  "topics": [
+   "Confusion matrix & comparison"
+  ]
+ },
+ {
+  "id": "idea-12",
+  "title": "Confusion matrix needs a true-class / predicted-class axis indicator",
+  "category": "feature_request",
+  "detail": "The green=more-correct / red=new-errors coloring is clear, but Andrei can't tell which axis is the true class vs the model's prediction. He wants an index/label on the matrix so the ±1 cells are interpretable.",
+  "quote": "nu-mi dau seama care ar fi true class-ul. M-ar ajuta un indice pe matricea asta de confuzie… nu știu care dintre ele e.",
+  "speaker": "P",
+  "confidence": "high",
+  "needs": false,
+  "anchors": [
+   128,
+   127,
+   130,
+   132,
+   138
+  ],
+  "topics": [
+   "Confusion matrix & comparison"
+  ]
+ },
+ {
+  "id": "idea-13",
+  "title": "Hover tooltip on matrix cells helps — extend it to the whole cell, not just the text",
+  "category": "feature_request",
+  "detail": "Once Andrei discovered the hover explanation on a “+1” cell he liked it (“super”), but wants the hover hit-area on the entire box, not only the number — he expected feedback when hovering anywhere on the cell and got none.",
+  "quote": "A, ok, super! Aș pune totuși ăsta pe tot box-ul, nu doar pe text… aici n-aveam niciun feedback.",
+  "speaker": "P",
+  "confidence": "high",
+  "needs": false,
+  "anchors": [
+   140,
+   139,
+   147
+  ],
+  "topics": [
+   "Confusion matrix & comparison"
+  ]
+ },
+ {
+  "id": "idea-14",
+  "title": "Expects candidate to auto-discard on exit — wants a warning modal",
+  "category": "feature_request",
+  "detail": "Andrei expects an un-promoted candidate to be discarded automatically when he leaves, rather than needing an explicit discard action. He'd prefer a warning modal (“the current candidate will be deleted”) over a manual discard step.",
+  "quote": "m-aș aștepta să se dea discard automat, dacă nu l-am promovat eu explicit… Ar fi util totuși un fel de modal de atenționare.",
+  "speaker": "P",
+  "confidence": "high",
+  "needs": false,
+  "anchors": [
+   153,
+   149,
+   150,
+   151,
+   152
+  ],
+  "topics": [
+   "Candidate vs promote"
+  ]
+ },
+ {
+  "id": "idea-15",
+  "title": "For a class that changes over time, create a new class — don't delete old data",
+  "category": "design_insight",
+  "detail": "On Bogdan's scenario (a National ID redesign), Andrei would create a new class for the new variant and keep the old data (he'll still receive old-format examples), adding new examples to the new model rather than wiping history.",
+  "quote": "N-aș șterge [datele vechi], că probabil tot aș primi la un moment dat exemple; dar mi-aș adăuga, pentru modelul nou, exemple din buletine noi.",
+  "speaker": "P",
+  "confidence": "high",
+  "needs": false,
+  "anchors": [
+   155,
+   154,
+   157,
+   159
+  ],
+  "topics": [
+   "Data lifecycle & re-labeling"
+  ]
+ },
+ {
+  "id": "idea-16",
+  "title": "Wants the option to delete a class he no longer cares about",
+  "category": "feature_request",
+  "detail": "Asked about dropping a class entirely (e.g. stop classifying residence permit), Andrei says he'd want a delete option available.",
+  "quote": "Ar fi bine să am și varianta de a-l șterge.",
+  "speaker": "P",
+  "confidence": "medium",
+  "needs": false,
+  "anchors": [
+   161,
+   160,
+   162
+  ],
+  "topics": [
+   "Data lifecycle & re-labeling"
+  ],
+  "conflictsWith": [
+   "idea-17"
+  ]
+ },
+ {
+  "id": "idea-17",
+  "title": "Skeptical of storing all training docs; would rather build a fresh classifier",
+  "category": "design_insight",
+  "detail": "Andrei doubts it's worth retaining every training document in a big table, and wouldn't delete a model that has run for a year. For a real reset he'd just build a new classifier from scratch rather than surgically managing stored data.",
+  "quote": "nu știu dacă ar avea sens să le reținem undeva… mai degrabă mi-aș face un clasificator nou de la zero… nu văd de ce ai vrea să ștergi un model pe care l-ai rulat un an încontinuu.",
+  "speaker": "P",
+  "confidence": "high",
+  "needs": false,
+  "anchors": [
+   167,
+   166
+  ],
+  "topics": [
+   "Data lifecycle & re-labeling"
+  ],
+  "conflictsWith": [
+   "idea-16"
+  ]
+ },
+ {
+  "id": "idea-18",
+  "title": "A re-label option for mislabeled data still collapses to manual correction",
+  "category": "design_insight",
+  "detail": "On the mislabeled-data scenario (passport vs National ID), Andrei floats a re-label/reassign action, then reasons it through: reassigning the bad label and re-reviewing just lands you back at manually correcting a list — only now it's filtered to the previously-wrong class. For a one-off bad train, he'd rather spend an hour fixing it.",
+  "quote": "Deci la final tot ajungi să corectezi manual o listă… Doar că e filtrată după ce era anterior National ID.",
+  "speaker": "P",
+  "confidence": "medium",
+  "needs": false,
+  "anchors": [
+   169,
+   168,
+   170,
+   171,
+   172,
+   173,
+   174,
+   176,
+   177
+  ],
+  "topics": [
+   "Data lifecycle & re-labeling"
+  ]
+ },
+ {
+  "id": "idea-19",
+  "title": "Suggest the class description automatically (from name or a sample doc)",
+  "category": "feature_request",
+  "detail": "Andrei likes the overall flow and asks for AI-suggested descriptions — like the chat prompt suggestions discussed before — tailored from the classifier name or a sample document, since the platform uses that description as context downstream.",
+  "quote": "ar merge o parte de sugestii… să-ți sugereze o descriere pe baza numelui clasificatorului, sau poți să-i dai și un document.",
+  "speaker": "P",
+  "confidence": "high",
+  "needs": false,
+  "anchors": [
+   179,
+   178,
+   180,
+   181,
+   184
+  ],
+  "topics": [
+   "AI assistance",
+   "Classifier setup & copy"
+  ]
+ },
+ {
+  "id": "idea-20",
+  "title": "Suggest new example keywords after training — with user approval, tied to promote",
+  "category": "feature_request",
+  "detail": "Andrei wants the tool to suggest example keywords after at least one training run, but with him approving them (not silent). He'd tie the approval step to promote: when promoting a candidate, approve the newly-found terms so the classifier self-improves.",
+  "quote": "după ce ai rulat cel puțin un training… când faci promote… să mai ai un pas de approve la termenii noi găsiți, ca să-și facă self-improve și clasificatorul.",
+  "speaker": "P",
+  "confidence": "high",
+  "needs": false,
+  "anchors": [
+   188,
+   185,
+   186,
+   187
+  ],
+  "topics": [
+   "AI assistance",
+   "Candidate vs promote"
+  ]
+ }
+];
+
+const REPAIRS = {"auto": [["…către Doc Parser sau Doc Parser, care avea modelul…", "Doc Parser  (repetiție ASR eliminată)"], ["clasificatorul / classifier-ul / classifier-le", "classifier / clasificator (normalizat, code-switching păstrat)"], ["driving license · driver's licenses", "driver's license (clasă de documente, păstrată EN)"], ["passport-uri · residence permit-uri · National ID · refugee travel doc", "passport / residence permit / National ID / refugee travel doc (clase de documente, păstrate EN)"], ["[00:13:41] „Ok” (la începutul sesiunii, timestamp aberant din diarizare)", "__DROP__"], ["Ăă · Mhm · Da, da, da (backchannels / filler izolat)", "__DROP__"]], "confirm": [["am donat astăzi  (00:00, replica de deschidere)", "am dat record/start astăzi  (facilitatorul confirmă că a pornit înregistrarea)"], ["plăcerea de la Price Horizon", "partea / use case-ul de la Price Horizon"], ["să le băriști de mână  (15:00)", "să le bifezi de mână"], ["le beciuiai mai întâi și după îți luai una de test  (22:59)", "le batch-uiai / le împărțeai în batch-uri (apoi luai una pentru test)"], ["fișierele pe care le-ai evoluat tu  (22:31)", "fișierele pe care le-ai uploadat / încărcat tu"], ["this is the LLM judge's glossary  (07:22)", "this is the LLM judge's description/guidance — P parafrazează scopul câmpului descriere"], ["Zici că e cu poșta  (13:48)", "posibil „pare că e o corespondență” — P deduce tipul documentului din text"], ["se rețin toate eval-urile  (35:14)", "se rețin toate evaluările / run-urile de antrenare"]], "query": [["„meniurile alea de pe Theta 1.9”  (04:25)", "Ce este „Theta 1.9”? O versiune/release FlowX sau o secțiune de meniu? Andrei compară plasarea ML Models cu meniurile de acolo."]]};
+
+const turnToIdeas={};
+IDEAS.forEach(it=>it.anchors.forEach(a=>{(turnToIdeas[a]=turnToIdeas[a]||[]).push(it.id);}));
+const ORIG={};IDEAS.forEach(it=>{ORIG[it.id]=it;});
+const REVIEW={edits:{},notes:{},repairComments:{},repairSectionNote:"",turnComments:{},reportNote:""};
+function effective(it){return Object.assign({},it,REVIEW.edits[it.id]||{});}
+const SPK={"P": "Andrei", "F": "Ana", "B": "Bogdan", "O": "Obs."};
+
+// Session provenance — flattened onto every exported insight so each one is
+// self-describing in a cross-session pool. `id` (slug <feature>-<date>) is the namespace.
+const SESSION={"id": "ml-doc-classification-andrei-2026-06-25", "feature": "ML Models — document classification training", "date": "2026-06-25", "participant": "Andrei"};
+
+const scriptEl=document.getElementById('script');
+TURNS.forEach((t,i)=>{
+  const d=document.createElement('div');
+  d.className='turn '+t[0]+(turnToIdeas[i]?' anchored':'');
+  d.id='t-'+i;
+  d.innerHTML=`<div class="meta-r"><span class="spk">${SPK[t[0]]}</span><span class="ts mono">${t[1]}</span></div><span class="txt">${t[2]}</span>`;
+  if(turnToIdeas[i]) d.addEventListener('click',e=>{ if(e.target.classList.contains('unsure'))return; locate(turnToIdeas[i][0],true); });
+  const btn=document.createElement('button');btn.className='rowtool';btn.textContent='💬';
+  btn.title='Comment on this line';
+  btn.addEventListener('click',e=>{e.stopPropagation();toggleTurnComment(i,d);});
+  d.appendChild(btn);
+  scriptEl.appendChild(d);
+});
+
+const kept=new Set(IDEAS.map(i=>i.id)); // all cards included by default
+const ideasEl=document.getElementById('ideas');
+function titleOf(id){const x=IDEAS.find(i=>i.id===id);return x?x.title:id;}
+function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function cardHTML(it){
+  const q=it.needs?`<div class="query"><b>?</b><div><b>Needs confirmation — </b>${it.q}</div></div>`:'';
+  const src=TURNS[it.anchors[0]][1];
+  const nturns=it.anchors.length>1?`<span class="srcn"> · ${it.anchors.length} lines</span>`:'';
+  const topics=(it.topics&&it.topics.length)?`<div class="topics">${it.topics.map(t=>`<span class="topic">${esc(t)}</span>`).join('')}</div>`:'';
+  const tension=(it.conflictsWith&&it.conflictsWith.length)?`<div class="tension"><span class="tlabel">⚡ In tension with</span>${it.conflictsWith.map(cid=>`<button class="tlink" onclick="event.stopPropagation();locate('${cid}',true)">${titleOf(cid)}</button>`).join('')}</div>`:'';
+  return `<input type="checkbox" class="keep"${kept.has(it.id)?' checked':''} onchange="toggle('${it.id}',this.checked)" onclick="event.stopPropagation()" aria-label="keep">
+    <div>
+      <div class="tagrow">
+        <span class="tag ${it.category}">${it.category.replace('_',' ')}</span>
+        <span class="conf ${it.confidence}"><span class="dot"></span>${it.confidence}</span>
+        <span class="src">⌖ ${src}${nturns}</span>
+      </div>
+      <h3>${esc(it.title)}</h3>
+      <p class="detail">${esc(it.detail)}</p>
+      <blockquote class="quote">“${esc(it.quote)}”</blockquote>
+      <div class="who">${SPK[it.speaker]==='Facil.'?'Facilitator':SPK[it.speaker]}</div>
+      ${q}
+      ${tension}
+      ${topics}
+    </div>`;
+}
+// every id involved in a conflict (own links + cards others link to), for the filter
+const conflictIds=new Set();
+IDEAS.forEach(it=>(it.conflictsWith||[]).forEach(cid=>{conflictIds.add(it.id);conflictIds.add(cid);}));
+IDEAS.forEach(it=>{
+  const card=document.createElement('div');
+  card.className='card';card.id='c-'+it.id;card.dataset.cat=it.category;
+  card.dataset.topics=(it.topics||[]).join('|');
+  card.dataset.conflict=conflictIds.has(it.id)?'1':'';
+  card.addEventListener('click',()=>{if(card.classList.contains('editing'))return;locate(it.id,false);});
+  ideasEl.appendChild(card);
+  rerenderCard(it.id);
+});
+refresh(); // seed kept counters (all cards included by default)
+
+// category + topic filters (ANDed)
+const cats=['all',...new Set(IDEAS.map(i=>i.category))];
+const sel=document.getElementById('catFilter');
+cats.forEach(c=>{const o=document.createElement('option');o.value=c;
+  o.textContent=c==='all'?'All categories':c.replace('_',' ');sel.appendChild(o);});
+const topicSel=document.getElementById('topicFilter');
+const topicList=['all',...new Set(IDEAS.flatMap(i=>i.topics||[]))];
+topicList.forEach(t=>{const o=document.createElement('option');o.value=t;
+  o.textContent=t==='all'?'All topics':t;topicSel.appendChild(o);});
+let conflictsOnly=false;
+function toggleConflicts(){conflictsOnly=!conflictsOnly;
+  document.getElementById('conflictToggle').setAttribute('aria-pressed',conflictsOnly);applyFilter();}
+function applyFilter(){const c=sel.value,t=topicSel.value;
+  document.querySelectorAll('.card').forEach(card=>{
+    const okCat=(c==='all'||card.dataset.cat===c);
+    const okTopic=(t==='all'||(card.dataset.topics||'').split('|').includes(t));
+    const okConflict=(!conflictsOnly||card.dataset.conflict==='1');
+    card.style.display=(okCat&&okTopic&&okConflict)?'':'none';});}
+
+const repEl=document.getElementById('repairs');
+function repSection(title,arr,bucket){
+  const sec=document.createElement('div');sec.className='repsec';
+  const rows=arr.map(([o,f])=>{
+    if(bucket==='query')return `<div class="rep"><span class="b query">query</span><span class="orig mono">${o}</span><span class="arrow">→</span><span class="qtext">${f}</span></div>`;
+    const fix=f==='__DROP__'?`<span class="fix drop mono">[dropped — fragments]</span>`:`<span class="fix mono">${f}</span>`;
+    return `<div class="rep"><span class="b ${bucket}">${bucket}</span><span class="orig mono">${o}</span><span class="arrow">→</span>${fix}</div>`;
+  }).join('');
+  sec.innerHTML=`<h2>${title} <button class="sectool" data-bucket="${bucket}">💬 comment on this section</button></h2>${rows}`;
+  repEl.appendChild(sec);
+  // section comment
+  sec.querySelector('.sectool').addEventListener('click',e=>toggleSectionComment(bucket,sec));
+  // per-row comment tools
+  sec.querySelectorAll('.rep').forEach((row,i)=>{
+    const orig=arr[i][0];
+    const btn=document.createElement('button');btn.className='rowtool';btn.textContent='💬';
+    btn.title='Comment on this repair';
+    btn.addEventListener('click',()=>toggleRepairComment(bucket,orig,row));
+    row.appendChild(btn);
+  });
+}
+repSection('Applied confidently',REPAIRS.auto,'auto');
+repSection('Best guess — confirm',REPAIRS.confirm,'confirm');
+repSection('Needs your input',REPAIRS.query,'query');
+
+const repCount=REPAIRS.auto.length+REPAIRS.confirm.length+REPAIRS.query.length;
+set('m-ideas',IDEAS.length);set('m-rep',repCount);
+set('m-query',REPAIRS.query.length+IDEAS.filter(i=>i.needs).length);
+function set(id,v){document.getElementById(id).textContent=v;}
+
+let activeCard=null;
+function locate(id,fromTranscript){
+  const it=IDEAS.find(x=>x.id===id);if(!it)return;
+  document.querySelectorAll('.turn.hl,.turn.hl-primary').forEach(e=>e.classList.remove('hl','hl-primary'));
+  if(activeCard)document.getElementById('c-'+activeCard)?.classList.remove('active');
+  activeCard=id;
+  const card=document.getElementById('c-'+id);card.classList.add('active');
+  it.anchors.forEach((a,idx)=>{const tn=document.getElementById('t-'+a);if(tn)tn.classList.add(idx===0?'hl-primary':'hl');});
+  const first=document.getElementById('t-'+it.anchors[0]);if(first)first.scrollIntoView({behavior:'smooth',block:'center'});
+  if(fromTranscript)card.scrollIntoView({behavior:'smooth',block:'center'});
+  updateEdgeHints();
+}
+// Off-screen edge indicators: when the active idea's source turns sit outside the
+// visible transcript, show "N above / N below" pills that jump to the nearest one.
+const EDGE_PAD=4;
+function activeAnchorEls(){if(!activeCard)return[];const it=IDEAS.find(x=>x.id===activeCard);
+  return it?it.anchors.map(a=>document.getElementById('t-'+a)).filter(Boolean):[];}
+function updateEdgeHints(){
+  const up=document.getElementById('edge-up'),dn=document.getElementById('edge-dn');
+  const sc=document.getElementById('script'),scRect=sc.getBoundingClientRect();
+  let above=0,below=0;
+  activeAnchorEls().forEach(el=>{const r=el.getBoundingClientRect();
+    if(r.bottom<scRect.top+EDGE_PAD)above++;else if(r.top>scRect.bottom-EDGE_PAD)below++;});
+  up.classList.toggle('show',above>0);document.getElementById('edge-up-n').textContent=above+(above===1?' line':' lines');
+  dn.classList.toggle('show',below>0);document.getElementById('edge-dn-n').textContent=below+(below===1?' line':' lines');
+}
+function jumpEdge(dir){
+  const sc=document.getElementById('script'),scRect=sc.getBoundingClientRect();
+  const off=activeAnchorEls().map(el=>({el,r:el.getBoundingClientRect()}))
+    .filter(o=>dir<0?o.r.bottom<scRect.top+EDGE_PAD:o.r.top>scRect.bottom-EDGE_PAD);
+  if(!off.length)return;
+  const target=dir<0?off.reduce((a,b)=>b.r.top>a.r.top?b:a):off.reduce((a,b)=>b.r.top<a.r.top?b:a);
+  target.el.scrollIntoView({behavior:'smooth',block:'center'});
+}
+(function(){let raf=0;const sc=document.getElementById('script');
+  const tick=()=>{raf=0;updateEdgeHints();};
+  sc.addEventListener('scroll',()=>{if(!raf)raf=requestAnimationFrame(tick);},{passive:true});
+  addEventListener('resize',()=>{if(!raf)raf=requestAnimationFrame(tick);});})();
+
+function toggle(id,on){on?kept.add(id):kept.delete(id);document.getElementById('c-'+id).classList.toggle('excluded',!on);refresh();commitReviewChange();}
+function refresh(){document.getElementById('m-kept').textContent=kept.size;
+  if(document.getElementById('exportPanel').classList.contains('show'))renderOut();}
+function selectAll(on){document.querySelectorAll('.card').forEach(card=>{ if(card.style.display==='none')return;
+  const cb=card.querySelector('.keep');cb.checked=on;const id=card.id.slice(2);on?kept.add(id):kept.delete(id);card.classList.toggle('excluded',!on);});refresh();commitReviewChange();}
+function showTab(t){['ideas','rep','how'].forEach(name=>{
+  document.getElementById('view-'+name).classList.toggle('hidden',name!==t);
+  document.getElementById('tab-'+name).setAttribute('aria-selected',name===t);});}
+
+let fmt='md';
+function openExport(){document.getElementById('exportPanel').classList.add('show');renderOut();document.getElementById('exportPanel').scrollIntoView({behavior:'smooth',block:'nearest'});}
+function closeExport(){document.getElementById('exportPanel').classList.remove('show');}
+function setFmt(f){fmt=f;document.getElementById('fmt-md').setAttribute('aria-pressed',f==='md');document.getElementById('fmt-json').setAttribute('aria-pressed',f==='json');renderOut();}
+function keptList(){return IDEAS.filter(i=>kept.has(i.id));}
+function renderOut(){document.getElementById('outBox').value=fmt==='md'?toMd():toJson();}
+function toJson(){return JSON.stringify(keptList().map(({id,title,category,topics,detail,quote,speaker,confidence,needs,q,anchors})=>
+  ({id:SESSION.id+':'+id,session:SESSION.id,feature:SESSION.feature,date:SESSION.date,participant:SESSION.participant,
+    title,category,topics:topics||[],detail,evidence_quote:quote,speaker:SPK[speaker],confidence,
+    needs_confirmation:!!needs,question:q||null,timestamps:anchors.map(a=>TURNS[a][1])})),null,2);}
+function toMd(){const list=keptList();if(!list.length)return "# Nothing kept yet — check some ideas.";
+  const g={};list.forEach(i=>{(g[i.category]=g[i.category]||[]).push(i);});
+  const label={pain_point:"Pain points",feature_request:"Feature requests",naming_copy:"Naming & copy",
+    design_decision:"Design decisions",design_insight:"Design insights",open_question:"Open questions",context:"Context"};
+  let out=`# ${SESSION.feature} — kept ideas (${list.length})\n_Session ${SESSION.id} · ${SESSION.date} · participant ${SESSION.participant}_\n`;
+  for(const c in g){out+=`\n## ${label[c]||c}\n`;g[c].forEach(i=>{out+=`- **${i.title}** — ${i.detail}\n  > ${i.quote}  _(${SPK[i.speaker]}, ${TURNS[i.anchors[0]][1]})_\n`;
+    if(i.topics&&i.topics.length)out+=`  > _Topics: ${i.topics.join(', ')}_\n`;
+    if(i.needs)out+=`  > _Needs confirmation: ${i.q}_\n`;});}
+  return out;}
+function copyOut(){const t=document.getElementById('outBox');t.select();navigator.clipboard.writeText(t.value).then(()=>toast('Copied'));}
+function downloadOut(){const blob=new Blob([document.getElementById('outBox').value],{type:fmt==='md'?'text/markdown':'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='kept-ideas.'+(fmt==='md'?'md':'json');a.click();URL.revokeObjectURL(a.href);toast('Downloaded');}
+// ---- Review round-trip ----
+const CATS=['pain_point','feature_request','naming_copy','design_decision','design_insight','open_question','context'];
+const CONFS=['high','medium','low'];
+function nonEmpty(s){return typeof s==='string'&&s.trim().length>0;}
+function changedFields(id){
+  const e=REVIEW.edits[id];if(!e)return{};const o=ORIG[id],out={};
+  for(const k in e){const a=k==='topics'?(o.topics||[]):o[k];
+    if(JSON.stringify(a)!==JSON.stringify(e[k]))out[k]=e[k];}
+  return out;
+}
+function buildPacket(){
+  const cards=[];
+  IDEAS.forEach(it=>{
+    const ch=changedFields(it.id),note=REVIEW.notes[it.id],excluded=!kept.has(it.id);
+    const hasEdit=Object.keys(ch).length>0;
+    if(hasEdit||excluded||nonEmpty(note)){const c={id:it.id};
+      if(excluded)c.excluded=true;if(hasEdit)c.edits=ch;if(nonEmpty(note))c.note=note.trim();cards.push(c);}
+  });
+  const repairs=[];
+  Object.keys(REVIEW.repairComments).forEach(key=>{const cm=REVIEW.repairComments[key];
+    if(!nonEmpty(cm))return;const ix=key.indexOf('\t');
+    repairs.push({bucket:key.slice(0,ix),orig:key.slice(ix+1),comment:cm.trim()});});
+  const turns=[];
+  Object.keys(REVIEW.turnComments).forEach(i=>{const cm=REVIEW.turnComments[i];
+    if(nonEmpty(cm))turns.push({i:+i,comment:cm.trim()});});
+  const p={session:SESSION.id};
+  if(nonEmpty(REVIEW.reportNote))p.report_note=REVIEW.reportNote.trim();
+  if(cards.length)p.cards=cards;
+  if(repairs.length)p.repairs=repairs;
+  if(nonEmpty(REVIEW.repairSectionNote))p.repair_section_note=REVIEW.repairSectionNote.trim();
+  if(turns.length)p.turns=turns;
+  return p;
+}
+function packetCounts(){
+  let edits=0,comments=0,excluded=0;
+  IDEAS.forEach(it=>{if(Object.keys(changedFields(it.id)).length)edits++;
+    if(!kept.has(it.id))excluded++;if(nonEmpty(REVIEW.notes[it.id]))comments++;});
+  Object.values(REVIEW.repairComments).forEach(c=>{if(nonEmpty(c))comments++;});
+  Object.values(REVIEW.turnComments).forEach(c=>{if(nonEmpty(c))comments++;});
+  if(nonEmpty(REVIEW.repairSectionNote))comments++;
+  if(nonEmpty(REVIEW.reportNote))comments++;
+  return {edits,comments,excluded};
+}
+function renderTally(){
+  const {edits,comments,excluded}=packetCounts();
+  const parts=[];
+  parts.push(`<em>${edits}</em> edit${edits===1?'':'s'}`);
+  parts.push(`<em>${comments}</em> comment${comments===1?'':'s'}`);
+  parts.push(`<em>${excluded}</em> excluded`);
+  document.getElementById('review-tally').innerHTML=parts.join(' · ');
+  document.getElementById('sendReview').disabled=(edits+comments+excluded===0);
+}
+function commitReviewChange(){renderTally();
+  if(document.getElementById('reviewPanel').classList.contains('show'))renderReview();}
+let rfmt='json';
+function packetToMd(p){
+  let o=`# Review for ${p.session}\n`;
+  if(p.report_note)o+=`\n**Report note:** ${p.report_note}\n`;
+  (p.cards||[]).forEach(c=>{o+=`\n## ${c.id}${c.excluded?' — EXCLUDED':''}\n`;
+    if(c.edits)for(const k in c.edits)o+=`- edit \`${k}\` → ${JSON.stringify(c.edits[k])}\n`;
+    if(c.note)o+=`- note: ${c.note}\n`;});
+  if(p.repairs&&p.repairs.length){o+=`\n## Repairs\n`;
+    p.repairs.forEach(r=>{o+=`- [${r.bucket}] \`${r.orig}\` — ${r.comment}\n`;});}
+  if(p.repair_section_note)o+=`\n**Repair-log note:** ${p.repair_section_note}\n`;
+  if(p.turns&&p.turns.length){o+=`\n## Transcript\n`;
+    p.turns.forEach(t=>{o+=`- turn ${t.i} (${TURNS[t.i]?TURNS[t.i][1]:'?'}): ${t.comment}\n`;});}
+  return o;
+}
+function renderReview(){const p=buildPacket();
+  document.getElementById('reviewBox').value=rfmt==='json'?JSON.stringify(p,null,2):packetToMd(p);}
+function openReview(){document.getElementById('reviewPanel').classList.add('show');renderReview();
+  document.getElementById('reviewPanel').scrollIntoView({behavior:'smooth',block:'nearest'});}
+function closeReview(){document.getElementById('reviewPanel').classList.remove('show');}
+function setReviewFmt(f){rfmt=f;document.getElementById('rfmt-json').setAttribute('aria-pressed',f==='json');
+  document.getElementById('rfmt-md').setAttribute('aria-pressed',f==='md');renderReview();}
+function copyReview(){const t=document.getElementById('reviewBox');t.select();
+  navigator.clipboard.writeText(t.value).then(()=>toast('Copied'));}
+function downloadReview(){const ext=rfmt==='json'?'json':'md';
+  const blob=new Blob([document.getElementById('reviewBox').value],
+    {type:rfmt==='json'?'application/json':'text/markdown'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download='review-'+SESSION.id+'.'+ext;a.click();URL.revokeObjectURL(a.href);toast('Downloaded');}
+renderTally();
+function rerenderCard(id){
+  const it=IDEAS.find(x=>x.id===id);const card=document.getElementById('c-'+id);
+  card.classList.remove('editing');
+  card.innerHTML=cardHTML(effective(it));
+  attachCardTools(card,it);applyCardState(card,id);
+}
+function applyCardState(card,id){
+  const edited=Object.keys(changedFields(id)).length>0;
+  card.classList.toggle('has-edit',edited);
+  card.classList.toggle('has-note',nonEmpty(REVIEW.notes[id]));
+  card.classList.toggle('excluded',!kept.has(id));
+  const body=card.querySelector(':scope > div:not(.cardtools)'); // the <div> from cardHTML
+  let flags=card.querySelector('.flags');if(flags)flags.remove();
+  const tags=[];
+  if(edited)tags.push({cls:'edit',label:'edited',title:'Undo edits — restore the original wording',act:()=>revertEdit(id)});
+  if(nonEmpty(REVIEW.notes[id]))tags.push({cls:'note',label:'comment',title:'Remove this comment',act:()=>removeNote(id)});
+  if(tags.length){const f=document.createElement('div');f.className='flags';
+    tags.forEach(t=>{const b=document.createElement('button');b.type='button';b.className='flag '+t.cls;b.title=t.title;
+      b.innerHTML=`${t.label} <span class="flag-x">✕</span>`;
+      b.addEventListener('click',ev=>{ev.stopPropagation();t.act();});
+      f.appendChild(b);});
+    body.appendChild(f);}
+}
+function revertEdit(id){delete REVIEW.edits[id];rerenderCard(id);commitReviewChange();}
+function removeNote(id){delete REVIEW.notes[id];rerenderCard(id);commitReviewChange();}
+function attachCardTools(card,it){
+  const t=document.createElement('div');t.className='cardtools';
+  t.innerHTML=`<button data-t="edit">✎ Edit</button><button data-t="comment">💬 Comment</button>`;
+  t.querySelectorAll('button').forEach(b=>b.addEventListener('click',e=>{
+    e.stopPropagation();const k=b.dataset.t;
+    if(k==='edit')enterEdit(it.id);
+    else if(k==='comment')toggleCardComment(it.id);}));
+  card.appendChild(t);
+}
+function enterEdit(id){
+  const it=IDEAS.find(x=>x.id===id);const card=document.getElementById('c-'+id);
+  // compute effective BEFORE assigning undefined-keyed edit object (Object.assign copies undefineds)
+  const eff=effective(it);
+  const e=REVIEW.edits[id]=Object.assign({title:undefined,detail:undefined,quote:undefined,
+    category:undefined,confidence:undefined,topics:undefined},REVIEW.edits[id]||{});
+  // seed from effective values
+  ['title','detail','quote','category','confidence'].forEach(k=>{if(e[k]===undefined)e[k]=eff[k];});
+  if(e.topics===undefined)e.topics=(eff.topics||[]).slice();
+  card.classList.add('editing');
+  card.innerHTML=cardEditHTML(it,e);
+  // tool cluster shows Done
+  const t=document.createElement('div');t.className='cardtools';
+  t.innerHTML=`<button data-t="revert">↺ Revert</button><button data-t="done" class="on">✓ Done</button>`;
+  t.querySelectorAll('button').forEach(b=>b.addEventListener('click',ev=>{ev.stopPropagation();
+    b.dataset.t==='revert'?revertEdit(id):commitEdit(id);}));
+  card.appendChild(t);
+  wireEdit(card,id);
+}
+function cardEditHTML(it,e){
+  const src=TURNS[it.anchors[0]][1];
+  const catOpts=CATS.map(c=>`<option value="${c}"${c===e.category?' selected':''}>${c.replace('_',' ')}</option>`).join('');
+  const confOpts=CONFS.map(c=>`<option value="${c}"${c===e.confidence?' selected':''}>${c}</option>`).join('');
+  const chips=(e.topics||[]).map((tp,i)=>`<span class="topic echip" data-i="${i}">${tp}<button data-rm="${i}">×</button></span>`).join('');
+  return `<input type="checkbox" class="keep" disabled${kept.has(it.id)?' checked':''} aria-label="keep">
+    <div>
+      <div class="tagrow">
+        <select class="esel" data-f="category">${catOpts}</select>
+        <select class="esel" data-f="confidence">${confOpts}</select>
+        <span class="src">⌖ ${src}</span>
+      </div>
+      <h3 class="efield" contenteditable="true" data-f="title">${e.title}</h3>
+      <p class="detail efield" contenteditable="true" data-f="detail">${e.detail}</p>
+      <blockquote class="quote efield" contenteditable="true" data-f="quote">${e.quote}</blockquote>
+      <div class="topics" data-topics-edit>${chips}<input class="topic-add" placeholder="+ topic" /></div>
+    </div>`;
+}
+function wireEdit(card,id){
+  const e=REVIEW.edits[id];
+  card.querySelectorAll('.efield').forEach(el=>{
+    el.addEventListener('click',ev=>ev.stopPropagation());
+    el.addEventListener('input',()=>{e[el.dataset.f]=el.textContent;commitReviewChange();});});
+  card.querySelectorAll('.esel').forEach(sel=>{
+    sel.addEventListener('click',ev=>ev.stopPropagation());
+    sel.addEventListener('change',()=>{e[sel.dataset.f]=sel.value;commitReviewChange();});});
+  const tw=card.querySelector('[data-topics-edit]');
+  tw.addEventListener('click',ev=>{ev.stopPropagation();
+    const rm=ev.target.getAttribute('data-rm');
+    if(rm!==null){e.topics.splice(+rm,1);redrawTopics(card,id);commitReviewChange();}});
+  const add=tw.querySelector('.topic-add');
+  add.addEventListener('keydown',ev=>{ev.stopPropagation();
+    if(ev.key==='Enter'&&nonEmpty(add.value)){e.topics.push(add.value.trim());add.value='';
+      redrawTopics(card,id);commitReviewChange();}});
+}
+function redrawTopics(card,id){
+  const e=REVIEW.edits[id],tw=card.querySelector('[data-topics-edit]');
+  const chips=(e.topics||[]).map((tp,i)=>`<span class="topic echip" data-i="${i}">${tp}<button data-rm="${i}">×</button></span>`).join('');
+  tw.innerHTML=chips+'<input class="topic-add" placeholder="+ topic" />';
+  const add=tw.querySelector('.topic-add');
+  add.addEventListener('keydown',ev=>{ev.stopPropagation();
+    if(ev.key==='Enter'&&nonEmpty(add.value)){e.topics.push(add.value.trim());add.value='';
+      redrawTopics(card,id);commitReviewChange();}});
+}
+function commitEdit(id){
+  // prune unchanged fields so the packet only carries real edits
+  const ch=changedFields(id);
+  if(Object.keys(ch).length===0)delete REVIEW.edits[id];else REVIEW.edits[id]=ch;
+  rerenderCard(id);commitReviewChange();
+}
+function commentField(initial,onChange,placeholder,showRemove){
+  const wrap=document.createElement('div');wrap.className='cmt';
+  const ta=document.createElement('textarea');ta.className='cmt-in';
+  ta.value=initial||'';ta.placeholder=placeholder||'Comment for Claude…';
+  ta.addEventListener('click',e=>e.stopPropagation());
+  ta.addEventListener('input',()=>onChange(ta.value));
+  wrap.appendChild(ta);
+  // showRemove defaults true; card comments pass false since their "comment ✕" chip already removes
+  if(showRemove!==false){
+    const rm=document.createElement('button');rm.type='button';rm.className='cmt-rm';rm.textContent='Remove comment';
+    rm.addEventListener('click',e=>{e.stopPropagation();onChange('');wrap.remove();});
+    wrap.appendChild(rm);
+  }
+  return wrap;
+}
+function toggleCardComment(id){
+  const card=document.getElementById('c-'+id);
+  const host=card.querySelector(':scope > div'); // the card body <div> from cardHTML
+  let box=host.querySelector(':scope > .cmt');
+  if(box){const ta=box.querySelector('.cmt-in');ta.focus();return;}
+  box=commentField(REVIEW.notes[id]||'',v=>{REVIEW.notes[id]=v;applyCardState(card,id);commitReviewChange();},'What should change about this insight? (merge, re-scope, wrong speaker…)',false);
+  host.appendChild(box);box.querySelector('.cmt-in').focus();
+}
+function toggleReportNote(btn){
+  const host=btn.parentElement;let box=host.querySelector('.cmt');
+  if(box){box.querySelector('.cmt-in').focus();return;}
+  box=commentField(REVIEW.reportNote,v=>{REVIEW.reportNote=v;
+    btn.classList.toggle('on',nonEmpty(v));commitReviewChange();},
+    'Overall direction: too many cards, wrong framing, merge these two…');
+  host.appendChild(box);box.querySelector('.cmt-in').focus();
+}
+function repairKey(bucket,orig){return bucket+'\t'+orig;}
+function toggleRepairComment(bucket,orig,row){
+  let box=row.querySelector(':scope > .cmt');
+  if(box){box.querySelector('.cmt-in').focus();return;}
+  const key=repairKey(bucket,orig);const btn=row.querySelector('.rowtool');
+  box=commentField(REVIEW.repairComments[key]||'',v=>{REVIEW.repairComments[key]=v;
+    btn.classList.toggle('on',nonEmpty(v));commitReviewChange();},'Comment on this repair (e.g. leave as-is, wrong fix)…');
+  box.classList.add('inline');row.appendChild(box);box.querySelector('.cmt-in').focus();
+  btn.classList.toggle('on',nonEmpty(REVIEW.repairComments[key]));
+}
+function toggleSectionComment(bucket,sec){
+  let box=sec.querySelector(':scope > .cmt');const btn=sec.querySelector('.sectool');
+  if(box){box.querySelector('.cmt-in').focus();return;}
+  box=commentField(REVIEW.repairSectionNote,v=>{REVIEW.repairSectionNote=v;
+    btn.classList.toggle('on',nonEmpty(v));commitReviewChange();},'Comment on the repair log as a whole…');
+  box.classList.add('inline');sec.appendChild(box);box.querySelector('.cmt-in').focus();
+}
+function toggleTurnComment(i,turn){
+  let box=turn.querySelector(':scope > .cmt');const btn=turn.querySelector('.rowtool');
+  if(box){box.querySelector('.cmt-in').focus();return;}
+  box=commentField(REVIEW.turnComments[i]||'',v=>{REVIEW.turnComments[i]=v;
+    btn.classList.toggle('on',nonEmpty(v));commitReviewChange();},'Comment on this line (e.g. wrong speaker, misattributed)…');
+  box.classList.add('inline');turn.appendChild(box);box.querySelector('.cmt-in').focus();
+}
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),1400);}
+</script>
+</body>
+</html>
