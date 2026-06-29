@@ -6,7 +6,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,400;0,600;0,700;1,400;1,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<title>Session Review — Document-classifier model training (peer sync)</title>
+<title>Session Review — AI Document Classification (training & management UI)</title>
 <style>
   :root{
     --paper:#FBF8F1; --paper-2:#F3EEE2; --ink:#211F1B; --ink-soft:#5A554C;
@@ -240,13 +240,13 @@
 <body>
 <div class="wrap">
   <header class="mast">
-    <div class="eyebrow">Peer sync · 2026-06-26 · full recording · transcript repaired</div>
-    <h1>Document classifier — model training UX</h1>
-    <div class="sub">59 min · 3 speakers · RO-primary with EN terms</div>
+    <div class="eyebrow">Design review · 2026-06-26 · full recording · transcript repaired</div>
+    <h1>AI Document Classification — training & management UI</h1>
+    <div class="sub">59 min · 3 speakers (reconciled from ASR’s 6 acoustic labels) · RO-primary with EN terms</div>
     <div class="legend">
-      <i><span class="sw" style="background:var(--blue)"></span>Bogdan — designer</i>
-      <i><span class="sw" style="background:var(--ink-soft)"></span>Ana — PM</i>
-      <i><span class="sw" style="background:var(--plum)"></span>Bogdan — researcher</i>
+      <i><span class="sw" style="background:var(--blue)"></span>Bogdan — Designer (presenting)</i>
+      <i><span class="sw" style="background:var(--plum)"></span>Ana — PM</i>
+      <i><span class="sw" style="background:#9a948a"></span>ML Engineer</i>
     </div>
     <div class="mast-cmt">
       <button class="mast-note-btn" data-act="report-note" onclick="toggleReportNote(this)">💬 Comment on the whole report</button>
@@ -322,13 +322,13 @@
   </section>
 
   <section id="view-rep" class="hidden">
-    <div class="note"><b>Speaker reconciliation.</b> Acoustic diarization (pyannote) <b>did not run</b> this time
-      (a HuggingFace library mismatch), so speakers come from Gemini's roster steering plus per-line voice-gender tags.
-      The cast is three people — Bogdan (designer, presents the prototype), Ana (PM), and Bogdan (researcher, joins ~36 min
-      to explain the ML internals). In the <b>37–40 min</b> stretch the gender tagger mis-read several of Ana's lines as
-      male; confirmed in review that this exchange is <b>Ana ↔ Bogdan (researcher)</b> — not the designer (who is quiet
-      between ~36 and ~40 min) — so those lines stay with Ana. The two same-gender Bogdans are otherwise separated by
-      timing (only the designer is present before ~36 min) and by content / ownership cues.</div>
+    <div class="note"><b>Speakers reconciled, not trusted raw.</b> The acoustic pass (pyannote) emitted
+      <b>6 labels for 3 real voices</b> and flagged 269/497 lines as contested — its per-line gender tags flipped within
+      a single speaker, the known failure mode on mixed-audio remote calls. So speakers were rebuilt from <b>content + role</b>:
+      <b>Bogdan</b> (Designer) narrates the prototype/UI; <b>Ana</b> (PM) drives requirements and relays Horia/Șerban/Andra;
+      the <b>ML Engineer</b> owns the internals (joins the deep-dive ~36&nbsp;min). Best repair: the engineer’s
+      <b>“Splay” → SPLADE</b> (sparse keyword→vector model, with LightGBM), confirmed. The two quiet stretches
+      (~26–36 and ~40–46 min) were an <b>intentional mute</b> while the conversation went off-topic — nothing missed.</div>
     <p class="hint">Phase-1 repairs. <span style="color:var(--green)">Green</span> = applied ·
       <span style="color:var(--amber)">amber</span> = confirm · <span style="color:var(--mark)">red</span> = needs you.</p>
     <div id="repairs"></div>
@@ -419,88 +419,28 @@
 const TURNS = [
  [
   "P",
-  "00:07",
-  "Ăă, hai să vedem un prototipul ăsta. Deci,"
- ],
- [
-  "F",
-  "00:10",
-  "Nu, nu."
- ],
- [
-  "P",
-  "00:11",
-  "Nu, nu."
- ],
- [
-  "F",
-  "00:12",
-  "Nu, nu."
- ],
- [
-  "P",
-  "00:13",
-  "Nu, nu."
- ],
- [
-  "P",
-  "00:15",
-  "Deocamdată."
+  "00:00",
+  "Bun. Hai să vedem prototipul ăsta."
  ],
  [
   "F",
   "00:17",
-  "Dați, scuze."
- ],
- [
-  "F",
-  "00:20",
-  "E aceeași linie, da?"
+  "Stai, scuze. E aceeași linie, da?"
  ],
  [
   "P",
   "00:23",
-  "Vizual, da."
+  "Vizual să zicem că e și aici, da."
  ],
  [
   "F",
-  "00:24",
-  "Da. Da, da, da. Este ok. Da, văd."
- ],
- [
-  "P",
-  "00:27",
-  "Așa."
+  "00:25",
+  "Da, da, da. E ok, văd."
  ],
  [
   "P",
   "00:29",
-  "Deci, avem următorul următorul flow, să zicem, în starea asta."
- ],
- [
-  "P",
-  "00:36",
-  "Avem tabul de beta, ăla de test, training și test."
- ],
- [
-  "P",
-  "00:41",
-  "Hai să zicem că începem."
- ],
- [
-  "P",
-  "00:44",
-  "Pe tabul de beta, acuma e doar ăă e un tab dedicat corpusului de documente și păstrăm, se păstrează ăă"
- ],
- [
-  "P",
-  "00:55",
-  "mecanismele de upload, labeled sau auto-label și what gets added ăă"
- ],
- [
-  "P",
-  "01:02",
-  "se adaugă în"
+  "Deci, avem următoarele. Să zicem că am ajuns la asta — avem tab-ul de data, train și test. Hai să zicem că suntem în „data”. Aici e un tab dedicat corpusului de documente; se păstrează mecanismele de upload — labeled sau auto-label — și what gets added se adaugă în…"
  ],
  [
   "F",
@@ -510,87 +450,32 @@ const TURNS = [
  [
   "P",
   "01:06",
-  "Da, se mută aici jos. Mhm. Și fără un efect"
- ],
- [
-  "P",
-  "01:10",
-  "automat asupra modelelor."
+  "Da, se mută aici jos. Și fără un efect automat asupra modelelor."
  ],
  [
   "F",
   "01:13",
-  "Cred că aici am putea să facem ca să facem"
- ],
- [
-  "F",
-  "01:15",
-  "easier, prim, poate prima iterație,"
- ],
- [
-  "F",
-  "01:20",
-  "ăă, să ai și o opțiune de start training with all data, care o să conțină și tot corpusul, plus datele pe care le-ai mai"
+  "Cred că aici am putea să facem easier, poate prima iterație: să ai și o opțiune de „start training with all data”, care o să conțină tot corpusul plus datele pe care le-ai mai încărcat."
  ],
  [
   "P",
   "01:30",
-  "Adică pe direct ca feedback."
+  "Adică pe direct, ca feedback."
  ],
  [
   "F",
-  "01:31",
-  "Da. Da."
- ],
- [
-  "P",
-  "01:33",
-  "Ok."
- ],
- [
-  "F",
-  "01:33",
-  "Și dacă vrei și celălalt buton să fie send to training corpus. Și dacă vrei să antrenezi cu ce ai încărcat plus doar o parte din ce ai în corpus, să poți să faci asta."
- ],
- [
-  "F",
-  "01:45",
-  "Dar aș zice că happy path-ul o să fie most like în ce în multe cazuri să poți să încarci ceva și apoi să antrenezi"
- ],
- [
-  "F",
-  "01:53",
-  "cu ce ai încărcat plus corpusul existent."
+  "01:34",
+  "Și celălalt buton să fie „send to training corpus”. Iar dacă vrei să antrenezi cu ce ai încărcat plus doar o parte din corpus, să poți. Dar happy path-ul o să fie, în multe cazuri, să încarci ceva și apoi să antrenezi cu ce ai încărcat plus corpusul existent."
  ],
  [
   "P",
   "01:56",
-  "Deci opțiunile sunt add to corpus sau add și train. Mhm."
+  "Deci opțiunile sunt „add to corpus” sau „add și train”."
  ],
  [
   "P",
   "02:00",
-  "Bun."
- ],
- [
-  "P",
-  "02:01",
-  "Deocamdată aici, momentan, să zicem că am dat doar add to corpus."
- ],
- [
-  "P",
-  "02:05",
-  "Ele au fost adăugate, poți să le vezi, sunt clasificate pentru că"
- ],
- [
-  "P",
-  "02:11",
-  "ai făcut review sau le-ai încărcat deja pe un așa."
- ],
- [
-  "P",
-  "02:15",
-  "Nu sunt sigur ce e split-ul ăsta."
+  "Și deocamdată, să zicem că am dat doar „add to corpus”. Ele au fost adăugate, poți să le vezi, sunt clasificate. Nu sunt sigur ce e split-ul ăsta."
  ],
  [
   "F",
@@ -599,223 +484,78 @@ const TURNS = [
  ],
  [
   "P",
-  "02:22",
-  "Pleacă de la premiza că"
- ],
- [
-  "P",
   "02:25",
-  "ăă, prea"
- ],
- [
-  "F",
-  "02:25",
-  "A, zice unde e. Da, super."
- ],
- [
-  "P",
-  "02:27",
-  "Pleacă de la premiza"
- ],
- [
-  "F",
-  "02:29",
-  "Da. Sau"
- ],
- [
-  "P",
-  "02:30",
-  "Dar și test, test-ul e tot în corpus, I guess."
+  "A, zice unde e. Da, super. Dar și test-ul e tot în corpus, I guess."
  ],
  [
   "F",
   "02:34",
-  "E tot în corpus. Ăă, da, și ar fi bine să fie clar."
+  "E tot în corpus. Și ar fi bine să fie clar. TBD pentru mine dacă split-ul se face pe pagină — for sure nu se face pe document. Și m-ar ajuta să am o modalitate ușoară să mă trec din train în test. Poate un filtru mai evident, cum avem la alea de după train."
  ],
  [
-  "F",
-  "02:40",
-  "Ăă, TBD pentru mine dacă"
- ],
- [
-  "F",
-  "02:45",
-  "split-ul se face pe se face pe pagină, for sure, nu se face pe document."
- ],
- [
-  "F",
-  "02:50",
-  "Ăă, Mhm. și cred că m-ar ajuta să am o modalitate ușoară să pot să mă trec din train în test. Poate un, da, da, poate un filtru mai evident, cum avem la"
- ],
- [
-  "F",
-  "03:04",
-  "ăă, cum avem la alea de după train."
- ],
- [
-  "F",
+  "P",
   "03:08",
-  "Cum avem la alea de după train, un segmented button or something."
+  "Cum avem la alea de după train — un segmented button or something."
  ],
  [
   "P",
-  "03:12",
-  "Mhm. Asta o dată. Și mie mi se par interesante și tag-urile astea puse. Ele deocamdată sunt puse automat, dar mă gândeam că în momentul când tu adaugi ceva în corpus, ai putea să adaugi opțional și un label, un nume undeva, știi?"
+  "03:13",
+  "Asta o dată. Și mi se par interesante și tag-urile astea puse. Deocamdată sunt puse automat, dar mă gândeam că în momentul când adaugi ceva în corpus, ai putea să adaugi opțional și un label, un nume. Și după aia te ajută să le filtrezi — că în afară de asta ai doar class, date."
  ],
  [
   "F",
-  "03:25",
-  "Da."
- ],
- [
-  "P",
-  "03:26",
-  "Și după aia asta te ajută cumva să le filtrezi, că în afară de asta ai doar class, date, știi?"
- ],
- [
-  "F",
-  "03:32",
-  "Aș pune date. Aș pune date-ul la care l-ai băgat."
- ],
- [
-  "P",
-  "03:35",
-  "Da."
+  "03:31",
+  "Aș pune date-ul la care l-ai băgat."
  ],
  [
   "P",
   "03:37",
-  "Ăă, și aș pune și un nume opțional."
+  "Și aș pune și un nume opțional. Pe lângă astea ar putea să fie și „train versus test”. Aici ar trebui să clarific faptul că, după ce adaugi, este împărțit în 80/20 — 20% pentru testing. Cam asta e pe pagina asta."
  ],
  [
   "F",
-  "03:40",
-  "Da."
+  "04:07",
+  "Mai dă o dată jos să mă asigur. Ce e pe multiple select?"
  ],
  [
   "P",
-  "03:40",
-  "Și cred că pe lângă astea ar putea să fie și train versus, nu știu dacă fix în corpul ăsta, dar undeva să ai și train versus test."
- ],
- [
-  "P",
-  "03:52",
-  "Aici ar trebui să clarific un pic că"
- ],
- [
-  "P",
-  "03:56",
-  "să să clarific faptul că după ce adaugi este împărțit în 80 20, 20% pentru testing."
- ],
- [
-  "P",
-  "04:04",
-  "Mă rog, so far, cam asta e pe pagina asta."
- ],
- [
-  "F",
-  "04:08",
-  "Mhm. Nu, mai dă o dată jos să mă asigur că"
- ],
- [
-  "F",
-  "04:13",
-  "Ce e pe multiple select?"
- ],
- [
-  "P",
-  "04:15",
-  "Ăă, să le scoți din corpus."
+  "04:16",
+  "Să le scoți din corpus."
  ],
  [
   "F",
   "04:18",
-  "Și jos e un buton de train, nu?"
+  "Și jos e un buton de train, nu? Jos de tot."
  ],
  [
   "P",
-  "04:23",
-  "Jos? Jos de tot? E un buton? Nu, training-ul nu se întâmplă de aici, se întâmplă din tab-ul de train, unde se cam duplică tabelul ăsta."
- ],
- [
-  "P",
-  "04:31",
-  "Hai să mergem Hai să mergem la train. Deci deocamdată poți să selectezi astea și să le dai delete, de exemplu."
- ],
- [
-  "F",
-  "04:36",
-  "Mhm."
+  "04:25",
+  "Nu, training-ul nu se întâmplă de aici, se întâmplă din tab-ul de train, unde se cam duplică tabelul ăsta. Hai să mergem în „train”. Deocamdată poți să selectezi astea și să le dai delete."
  ],
  [
   "P",
   "04:37",
-  "Că poate nu știu, vrei, poți, poate vrei să scoți din training, din corpus."
- ],
- [
-  "P",
-  "04:41",
-  "Aici le ai pe toate bifate by default și aceleași filtre"
- ],
- [
-  "P",
-  "04:46",
-  "ca de mai devreme, doar că aici butonul este de train."
- ],
- [
-  "P",
-  "04:49",
-  "Și nu e foarte bine pus butonul ăsta, dar ca idee"
+  "Aici le ai pe toate bifate by default și aceleași filtre ca mai devreme, doar că butonul e de train. Nu e foarte bine pus butonul ăsta, dar ca idee…"
  ],
  [
   "F",
   "04:53",
-  "Eu l-aș pune în celălalt."
- ],
- [
-  "F",
-  "04:55",
-  "Dar nu știu dacă are sens să duplicăm tabelul ăsta."
+  "Eu l-aș pune în celălalt. Dar nu știu dacă are sens să duplicăm tabelul ăsta."
  ],
  [
   "P",
   "04:58",
-  "Da, dar întrebarea e atunci la ce mai are sens?"
+  "Da, dar atunci la ce mai are sens?"
  ],
  [
   "F",
   "05:01",
-  "Adică un tab de training."
+  "Ai doar un tab de training? Poate aici o să merite să punem tabelul ăla cu candidații."
  ],
  [
   "P",
-  "05:03",
-  "Tab-ul de training?"
- ],
- [
-  "F",
-  "05:04",
-  "Da."
- ],
- [
-  "F",
-  "05:05",
-  "Poate în tab-ul ăsta o să merite să punem tabelul ăla cu candidații în loading."
- ],
- [
-  "P",
-  "05:09",
-  "Candidații. Și în momentul când eu dau train, să zicem că dau un train de aici,"
- ],
- [
-  "P",
-  "05:13",
-  "și mă mut în zona de, dar poate nu ești în training, poate ești în altfel. Mă mut aici și aici o să am un tabel cu toți candidații care au fost creați"
- ],
- [
-  "P",
-  "05:24",
-  "și niște detalii despre ei și poate niște acțiuni de"
+  "05:10",
+  "Candidații. Și în momentul când dau train, mă mut aici și o să am un tabel cu toți candidații care au fost creați, niște detalii despre ei și poate niște acțiuni."
  ],
  [
   "F",
@@ -825,1447 +565,462 @@ const TURNS = [
  [
   "P",
   "05:28",
-  "status, da, unul unul este ăla main și also ăă"
- ],
- [
-  "P",
-  "05:35",
-  "comparison can be triggered from here."
+  "Status, da. Unul e ăla „main”. And also comparison can be triggered from here."
  ],
  [
   "F",
   "05:37",
-  "Da. Ăă, și să pe ăla care e încă în progress, să putem să dăm cancel."
- ],
- [
-  "F",
-  "05:42",
-  "Și ideal ar trebui să putem să avem și mai mulți în progress, că dacă training-ul"
- ],
- [
-  "F",
-  "05:46",
-  "se face pe un, adică se face from scratch, atunci nu nu e un motiv pentru care n-aș putea să antrenez în paralel două modele."
- ],
- [
-  "F",
-  "05:55",
-  "În afară de obviously resurse,"
+  "Da. Și pe ăla care e încă in progress să putem da cancel. Ideal ar trebui să putem avea mai mulți in progress — dacă training-ul se face from scratch, nu e un motiv pentru care n-aș putea antrena în paralel două modele. În afară de resurse, obviously."
  ],
  [
   "P",
   "06:01",
-  "Ok, deci rămâne cumva să vedem ce nume ar fi cel mai bun, că nu cred că Bine, poate să fie și training, dar asta nu e doar zona unde trainezi, este zona și unde trăiesc cei trainați deja. E lista de variante de model."
+  "Ok, rămâne să vedem ce nume ar fi cel mai bun. Poate să fie „training”, dar asta nu e doar zona unde trainezi, e și zona unde trăiesc cei trainați deja. E lista de variante de modele."
  ],
  [
   "F",
   "06:15",
-  "Candidates. Sau"
- ],
- [
-  "P",
-  "06:16",
-  "Da."
- ],
- [
-  "F",
-  "06:17",
-  "Versions."
- ],
- [
-  "P",
-  "06:18",
-  "Nu."
+  "Candidates? Sau „versions”? Nu… „Trained models”, cred că ar fi cel mai potrivit."
  ],
  [
   "P",
   "06:21",
-  "Candidates sună bine pentru mine, dar poate ne vine și altceva."
- ],
- [
-  "F",
-  "06:27",
-  "Trained models, cred că ar fi cel mai"
- ],
- [
-  "P",
-  "06:31",
-  "Da."
+  "„Candidates” sună bine pentru mine, dar poate ne vine și altceva."
  ],
  [
   "P",
   "06:33",
-  "Și după aia avem acest tab testing, care sincer nu știu dacă ar trebui să mai stea în testing, ci cred că ar trebui să vezi ceea ce ar trebui să vezi astea când dai click pe unul dintre modelele trainate."
- ],
- [
-  "F",
-  "06:42",
-  "Da."
- ],
- [
-  "P",
-  "06:43",
-  "Și also comparison-ul vei fi dus la o pagină de genul ăsta când faci știi, dar nu știu dacă ar trebui să mai stea paralel cu training-ul pentru că vor fi cinci pagini de genul ăsta, dacă ai cinci modele."
- ],
- [
-  "F",
-  "06:57",
-  "Da."
+  "Și după aia avem tab-ul „testing”, care sincer nu știu dacă ar trebui să mai stea în testing. Cred că ar trebui să vezi astea când dai click pe unul dintre modelele trainate. And also comparison-ul te-ar duce la o pagină de genul ăsta. Dar nu știu dacă ar trebui să mai stea paralel cu training-ul, pentru că vor fi cinci pagini de genul ăsta dacă ai cinci modele."
  ],
  [
   "P",
   "06:59",
-  "Deci poate scot și o pun ca nested în interiorul unui model."
- ],
- [
-  "P",
-  "07:05",
-  "Dar other than that, lucrurile tot așa arată, așa când te uiți pe un model și varianta aia cu, mă rog, nu cu old, nu cu B1 versus B2 și comparison când selectezi doi candidați."
+  "Deci poate o scot și o pun nested în interiorul unui model. Other than that, lucrurile tot așa arată — când te uiți pe un model, varianta cu B1 versus B2 și comparison când selectezi doi candidați."
  ],
  [
   "F",
-  "07:19",
-  "Da."
- ],
- [
-  "P",
-  "07:20",
-  "Și cam atât."
- ],
- [
-  "F",
-  "07:22",
-  "Pe tab-ul ăla de training,"
- ],
- [
-  "F",
-  "07:24",
-  "mă rog, care o să fie redenumit whatever."
- ],
- [
-  "P",
-  "07:26",
-  "Da."
- ],
- [
-  "F",
-  "07:28",
-  "Aș vrea să ne gândim la ce informații scoatem pentru fiecare model. Aș aș scoate"
- ],
- [
-  "F",
-  "07:37",
-  "clasele, pentru că e posibil să fie antrenate pe clase diferite."
+  "07:23",
+  "Pe tab-ul de training — care o să fie redenumit, whatever — aș vrea să ne gândim la ce informații scoatem pentru fiecare model. Aș scoate clasele, pentru că e posibil să fie antrenate pe clase diferite."
  ],
  [
   "P",
   "07:42",
-  "Ok. Și aici să luăm în considerare și ce se întâmplă dacă am modificat detalii ale claselor între training-uri. Bănuiesc că a antrenat înainte și păstrează setările clasei de atunci și unul nou va lucra cu"
+  "Ok. Și aici să luăm în considerare ce se întâmplă dacă am modificat detalii ale claselor între training-uri. Bănuiesc că păstrează setările clasei de atunci, și unul nou va lucra cu altele."
  ],
  [
   "P",
   "07:56",
-  "dar dar ca o paranteză, de exemplu, în tab-ul de aici în care poți să te uiți, ea reflectă state-ul de acum."
- ],
- [
-  "P",
-  "08:06",
-  "Dar posibil să nu reflecte neapărat state-ul unui model care a fost creat înainte."
- ],
- [
-  "P",
-  "08:12",
-  "Nu zic că e ceva în neregulă, doar sunt curios dacă"
+  "Ca o paranteză: dacă intri într-o clasă, ea reflectă state-ul de acum, dar posibil să nu reflecte state-ul unui model care a fost creat înainte. Nu zic că e ceva în neregulă, doar sunt curios."
  ],
  [
   "F",
   "08:15",
-  "Cred că numele de settings mă induce în eroare."
+  "Cred că numele de „settings” mă induce în eroare."
  ],
  [
   "P",
   "08:26",
-  "Astea nu mai au foarte mult sens."
- ],
- [
-  "P",
-  "08:28",
-  "Deci putem să zicem să dedicăm acest tab claselor."
- ],
- [
-  "F",
-  "08:34",
-  "Da."
+  "Astea nu mai au foarte mult sens. Deci putem să dedicăm acest tab claselor."
  ],
  [
   "F",
   "08:39",
-  "În același timp,"
- ],
- [
-  "F",
-  "08:41",
-  "poate aș vrea să văd"
- ],
- [
-  "F",
-  "08:44",
-  "confusion matrix-ul și training distribution-ul pentru modelul care rulează."
+  "În același timp, poate aș vrea să văd confusion matrix-ul și training distribution-ul pentru modelul care rulează. Adică poate ăsta e mai degrabă un overview."
  ],
  [
   "P",
-  "08:48",
-  "Adică poate ăsta e mai degrabă un overview."
- ],
- [
-  "F",
   "08:52",
-  "Da, da."
- ],
- [
-  "P",
-  "08:53",
-  "Ok."
- ],
- [
-  "P",
-  "08:58",
-  "Voiam să zic că asta la început."
- ],
- [
-  "P",
-  "09:02",
-  "Ăă, singura chestie pe care o văd eu la faza asta este că tu poți să poți să ai un overview al unui model care este main, dar care nu mai reflectă neapărat ce vezi în clase aici, pentru că eu între timp am mai modificat chestii la clase. Și nu știu dacă e în neregulă asta, dacă e"
+  "Da. Asta voiam să zic — o pun la început. Singura problemă: poți avea un overview al unui model „main” care nu mai reflectă ce vezi în clasă, pentru că eu între timp am modificat chestii la clasă. Nu știu dacă e în neregulă."
  ],
  [
   "P",
   "09:22",
-  "Dar putem să le separăm. Pot să fie două carduri diferite și să ai classes și jos să ai un card care zice current running model, model sau ceva de genul ăsta. Și acolo vezi un card dedicat modelului main."
- ],
- [
-  "P",
-  "09:34",
-  "Și să fie un pic separat de definiția claselor care poate a mai evoluat de la modelul ăla."
+  "Dar putem să le separăm. Pot să fie două carduri diferite: „classes”, și jos un card „current running model”. Acolo vezi un card dedicat modelului main, separat de definiția claselor, care poate a mai evoluat."
  ],
  [
   "F",
-  "09:41",
-  "Păi da, da."
- ],
- [
-  "F",
-  "09:47",
-  "Mhm."
- ],
- [
-  "F",
-  "09:50",
-  "Păi ziceam de tab-ul de overview, mă gândeam că"
- ],
- [
-  "F",
-  "09:52",
-  "aș vrea să văd informații despre varianta despre versiunea modelului care e actively used în workflow."
- ],
- [
-  "F",
-  "10:02",
-  "Și asta înseamnă inclusiv un snapshot de clase."
+  "09:49",
+  "Ziceam de tab-ul de overview — aș vrea să văd informații despre versiunea modelului care e actively used în workflow. Și asta înseamnă inclusiv un snapshot de clase."
  ],
  [
   "P",
   "10:05",
-  "Al lui. Care poate să difere de clasele astea."
- ],
- [
-  "F",
-  "10:09",
-  "Da."
- ],
- [
-  "P",
-  "10:12",
-  "Again, nu cred că e o problemă neapărat, doar să fim aware."
- ],
- [
-  "F",
-  "10:16",
-  "Da."
- ],
- [
-  "F",
-  "10:18",
-  "Ok."
+  "Care folosește clasele astea. Again, nu cred că e o problemă, doar să fim aware."
  ],
  [
   "P",
   "10:21",
-  "Hai să ne gândim așa. Deci, tab-ul ăsta e overview și în acest overview vezi ce clase ai, poți să le editezi și poți să vezi și ce model rulează și care sunt clasele acelui model."
- ],
- [
-  "P",
-  "10:34",
-  "Trebuie doar separat vizual și conceptual. Other than that. Bine, tu poți"
+  "Hai să ne gândim așa: tab-ul ăsta e overview și în el vezi ce clase ai, poți să le editezi, și vezi ce model rulează și care sunt clasele acelui model. Trebuie doar separat vizual și conceptual."
  ],
  [
   "F",
-  "10:40",
-  "Mhm. Hai să hai să punem clasele într-un Adică, hai să păstrăm overview ca să vezi efectiv cum arată modelul care rulează acum, clasele lui și cu confusion matrix-ul și distribuția și whatever overview matrix."
- ],
- [
-  "P",
-  "10:56",
-  "Și cu testing-ul, că practic"
+  "10:41",
+  "Hai să păstrăm overview ca să vezi efectiv cum arată modelul care rulează acum — clasele lui, confusion matrix-ul, distribuția."
  ],
  [
   "F",
   "10:57",
-  "Nu, fără testing. Aș pune doar"
- ],
- [
-  "P",
-  "11:00",
-  "Deci astea primele, astea sau o variantă mai simplificată."
- ],
- [
-  "F",
-  "11:05",
-  "Da."
- ],
- [
-  "P",
-  "11:05",
-  "Nici nu știu cât o să simplifici ăsta."
+  "Fără testing. Aș pune doar atât."
  ],
  [
   "F",
   "11:08",
-  "Și"
- ],
- [
-  "F",
-  "11:11",
-  "în poate facem un tab de classes în care să poți să editezi clasele. Pentru că oricum ar fi misleading să poți să editezi clasele din overview-ul unui model care rulează, pentru că ai putea să te întrebi, ok, dar eu ce modific acum se duce direct în, adică"
+  "Și poate facem un tab de „classes” în care să poți edita clasele. Pentru că ar fi misleading să poți edita clasele din overview-ul unui model care rulează — te-ai întreba „ce modific acum se duce direct în…?”."
  ],
  [
   "P",
-  "11:30",
-  "Ok."
- ],
- [
-  "P",
-  "11:32",
-  "Ok, deci overview-ul este un quick snapshot al modelului default și noi clasele separat și"
- ],
- [
-  "P",
-  "11:40",
-  "dacă vrei să schimbi modelul default, te duci în candidates sau trained candidates și pui steluța pe altul și atunci ăla devine default-ul."
+  "11:33",
+  "Ok, deci overview-ul o să fie un quick snapshot al modelului default, și clasele separat. Dacă vrei să schimbi modelul default, te duci în „candidates”, pui steluța pe altul și ăla devine default-ul."
  ],
  [
   "P",
   "11:50",
-  "Da."
+  "Da. E reversibil — poți să schimbi de câte ori vrei."
  ],
  [
   "P",
-  "11:51",
-  "E reversibil, adică poți să te joci și cu ele, poți să schimbi de câte ori vrei tu și cu Ok."
- ],
- [
-  "P",
-  "11:58",
-  "Ăă"
- ],
- [
-  "P",
-  "12:00",
-  "Poate de fapt, mai mult de atât, ce punem în overview ar putea și să stea în candidates și să să ocupe un loc principal, ca un card mare cu toate cu detaliile astea și jos mai ai niște cărdurețe mai restrânse pentru"
+  "11:59",
+  "Poate de fapt ce punem în overview ar putea să stea și în „candidates” și să ocupe un loc principal — un card mare cu detaliile astea, și jos niște cardurețe mai restrânse."
  ],
  [
   "F",
   "12:17",
-  "Atunci aș pune asta să fie pagina de știi, la ce mă gândesc?"
- ],
- [
-  "F",
-  "12:22",
-  "E că intru"
- ],
- [
-  "F",
-  "12:26",
-  "și aș vrea să văd undeva un, adică chiar dacă chiar dacă modelul ăsta poate să aibă mai multe versiuni și candidați, aș vrea să văd undeva exact ce rulează."
- ],
- [
-  "P",
-  "12:36",
-  "Da."
+  "Atunci aș pune asta să fie pagina principală. Chiar dacă modelul are mai multe versiuni și candidați, aș vrea să văd undeva exact ce rulează."
  ],
  [
   "F",
   "12:37",
-  "Și adică asta e informația de care am nevoie. Ea poate să fie și un card și dedesubt să am ceilalți candidați."
- ],
- [
-  "F",
-  "12:45",
-  "Și poate poate tab-ul de candidates să devină de fapt overview sau, mă rog,"
- ],
- [
-  "P",
-  "12:50",
-  "Da."
- ],
- [
-  "F",
-  "12:50",
-  "să fie prima chestie pe care o vezi."
- ],
- [
-  "F",
-  "12:53",
-  "Ăă"
- ],
- [
-  "F",
-  "12:56",
-  "dar cum adică cumva cred că asta o să fie nevoia din spate."
- ],
- [
-  "F",
-  "13:00",
-  "Ok, am antrenat mai multe versiuni, dar three days later, vreau să văd exact ce rulează în momentul ăsta pe noduri. În cazul în care am o problemă pe noduri sau o instanță nu mi-a clasificat bine, să pot să mă întorc aici și să văd exact cum a arătat modelul pe care a rulat, știi?"
+  "Asta e informația de care am nevoie. Poate să fie un card și dedesubt ceilalți candidați. Poate tab-ul de „candidates” să devină de fapt overview — prima chestie pe care o vezi. Nevoia din spate e: „am antrenat mai multe versiuni, dar three days later vreau să văd exact ce rulează pe noduri” — dacă o instanță nu mi-a clasificat bine, să mă întorc aici și să văd exact cum a arătat modelul pe care a rulat."
  ],
  [
   "P",
   "13:20",
-  "Deci,"
- ],
- [
-  "P",
-  "13:20",
-  "dacă ar fi să luăm pe varianta asta, am avea un tab cu modelul main și cu celelalte modele care pot fi făcute main, un tab cu clase și un tab cu corpus."
+  "Deci, dacă mergem pe varianta asta, am avea un tab cu modelul main și celelalte modele care pot fi făcute main, un tab cu clase și un tab cu corpus."
  ],
  [
   "F",
-  "13:32",
-  "Mhm."
- ],
- [
-  "P",
   "13:33",
-  "Un tab cu clase, un tab cu corpus."
- ],
- [
-  "F",
-  "13:35",
-  "Da."
+  "Un tab cu clase, un tab cu corpus, da."
  ],
  [
   "P",
   "13:36",
-  "Și din corpus trainezi și când trainezi se adaugă unul în tab-ul principal."
- ],
- [
-  "P",
-  "13:44",
-  "Și poți să decizi dacă îl promovezi sau nu."
+  "Și din corpus trainezi, iar când trainezi se adaugă unul în tab-ul principal. Și poți decide dacă îl promovezi sau nu."
  ],
  [
   "F",
   "13:48",
-  "Da, pare un flow ok."
- ],
- [
-  "P",
-  "13:51",
-  "Ok."
- ],
- [
-  "F",
-  "13:52",
-  "Din empty state aș ajunge tot în classes, chiar dacă e tab-ul doi."
+  "Da, pare un flow ok. Din empty state aș ajunge tot în „classes”, chiar dacă e tab-ul doi."
  ],
  [
   "P",
   "13:56",
-  "O să ai o chestie care te ghidează, o să-ți zică"
- ],
- [
-  "F",
-  "13:59",
-  "A, din empty state-urile"
- ],
- [
-  "P",
-  "14:02",
-  "Da. Stai să intru pe"
- ],
- [
-  "P",
-  "14:06",
-  "A, deocamdată ai deja o clasă, dar"
+  "O să ai chestii care te ghidează."
  ],
  [
   "F",
   "14:10",
-  "Dar dacă o creez from scratch, nu ai. Că am văzut empty state-ul ăla undeva."
- ],
- [
-  "P",
-  "14:13",
-  "Nu ai, trebuie să ai ceva."
- ],
- [
-  "P",
-  "14:15",
-  "Da."
- ],
- [
-  "F",
-  "14:16",
-  "A, da, nu, ai am pus acela, dar peste tot, da."
- ],
- [
-  "F",
-  "14:21",
-  "Și să schimbăm misc cu other."
+  "Dar dacă o creez from scratch, nu ai clasă. Am văzut empty state-ul ăla undeva. Și să schimbăm „misc” cu „other”."
  ],
  [
   "P",
   "14:24",
-  "Faza e că la asta mă gândeam eu de fapt. Da, other sau unknown sau la asta mă gândeam de fapt, că practic ai vedea un empty state care îți zice nu ai niciun candidat, nu știu care e corespondentul cu candidat pentru ăla main, nu știu cum să i zicem, știi? Că nu e ok să zicem model, pentru că sunt mai multe variante, dar"
+  "La asta mă gândeam și eu — „other” sau „unknown”. Practic ai vedea un empty state care zice „nu ai niciun candidat”. Nu știu care e corespondentul lui „candidat” pentru ăla main; nu e ok să zicem „model”, pentru că sunt mai multe variante."
  ],
  [
   "F",
   "14:43",
-  "Version. Nu știu."
+  "„Version”? Nu știu."
  ],
  [
   "P",
   "14:45",
-  "Ok."
- ],
- [
-  "F",
-  "14:45",
-  "Poate."
- ],
- [
-  "P",
-  "14:46",
-  "Ne mai gândim, da. Basically nu ai niciun ăă"
- ],
- [
-  "P",
-  "14:51",
-  "nicio versiune creată de model. Și dacă el vede, sistemul știe că tu nu ai clase, îți zice în primul rând, ok, fă o clasă."
- ],
- [
-  "P",
-  "15:01",
-  "Sau dacă ai clase, dar n-ai training data, îți zice, ok, fă o clasă, pune training, adică te ghidează cumva în ce poți să faci."
+  "Ne mai gândim. Basically nu ai nicio versiune de model, și dacă sistemul știe că nu ai clase, îți zice „fă o clasă”. Dacă ai clase dar n-ai training data, îți zice „fă o clasă, pune training” — te ghidează în ce poți să faci."
  ],
  [
   "F",
   "15:10",
-  "Da, empty state-ul îți dă primul pas pe care trebuie să-l faci."
+  "Da, empty state-ul îți dă primul pas pe care trebuie să-l faci, depinzând de unde ești și ce ai deja."
  ],
  [
   "P",
-  "15:13",
-  "Da."
- ],
- [
-  "F",
-  "15:14",
-  "Sau"
- ],
- [
-  "P",
-  "15:15",
-  "Depinde de depinzând de unde ești și ce ai deja."
- ],
- [
-  "F",
   "15:18",
-  "Da."
- ],
- [
-  "P",
-  "15:19",
-  "Sau dacă ai clase, ai corpus, dar n-ai trainat, îți zice, ok, du-te și trainează un model de acolo. Și după ce te duci de acolo și trainezi, îți vine unul aici care bănuiesc că e main de bine, că n-ai oricum nu folosești încă niciunul."
+  "Da. Sau dacă ai clase și corpus dar n-ai trainat, îți zice „du-te și trainează un model”. După ce trainezi, îți vine unul aici care bănuiesc că e main de la început, că oricum nu folosești încă niciunul."
  ],
  [
   "P",
   "15:37",
-  "Da. Looks good, adică cred că cred că e, adică ce m-aș aștepta și oricine face flow-ul ăsta să fie destul Dacă dacă pun asta în prototip, Mhm. cred că o să-și dea seama ce are de făcut."
- ],
- [
-  "F",
-  "15:53",
-  "Mhm."
- ],
- [
-  "P",
-  "15:54",
-  "Poate mai chiar mai clar decât la versiunea live acuma."
+  "Looks good. Cred că oricine face flow-ul ăsta o să-și dea seama ce are de făcut — poate chiar mai clar decât la versiunea live de acum."
  ],
  [
   "F",
   "15:57",
-  "Cred că ce aș mai încerca să fac pe aceste empty state-uri"
- ],
- [
-  "F",
-  "16:02",
-  "ar fi să aduc niște mici definiții very short despre conceptul respectiv. Adică dacă zic să fac o să faci o clasă,"
- ],
- [
-  "F",
-  "16:09",
-  "să-ți explic briefly ce e o clasă."
- ],
- [
-  "P",
-  "16:12",
-  "Da."
- ],
- [
-  "F",
-  "16:13",
-  "Și nu doar ce e o clasă, ci faptul că e relevant să-i pui o descriere pentru că, adică"
+  "Ce aș mai încerca pe empty state-uri ar fi să scriu niște mici definiții very short despre conceptul respectiv. Dacă zic „fă o clasă”, să-ți explic briefly ce e o clasă — și nu doar ce e, ci faptul că e relevant să-i pui o descriere."
  ],
  [
   "P",
   "16:21",
-  "Da, bine, asta trebuie să fie Aici aș pune, știi? Adică n-aș da toată informația asta din direct pe pagină, că n-o s-o citească, dar când creezi o clasă, ce e o clasă? A, uite aici am explicat tot, știi?"
+  "Da, dar asta aș pune-o la momentul potrivit. N-aș da toată informația direct pe pagină, că n-o să citească; dar când creezi o clasă: „ce e o clasă? uite, aici am explicat”. E kind of already happening."
  ],
  [
   "P",
-  "16:34",
-  "Mă rog, e kind of"
- ],
- [
-  "P",
-  "16:36",
-  "kind of already happening."
- ],
- [
-  "P",
-  "16:39",
-  "Doar că nu la fel de explicit."
- ],
- [
-  "F",
-  "16:41",
-  "Da."
- ],
- [
-  "P",
-  "16:42",
-  "Ok."
- ],
- [
-  "F",
   "16:43",
-  "Good to me."
- ],
- [
-  "P",
-  "16:45",
-  "Sper că am înțeles corect totul."
- ],
- [
-  "F",
-  "16:48",
-  "Da, ultimul."
- ],
- [
-  "F",
-  "16:52",
-  "Ce ce cu ai zis ca să se simtă prost?"
- ],
- [
-  "F",
-  "16:57",
-  "Good."
+  "Sounds good to me. Sper că am înțeles corect totul."
  ],
  [
   "P",
   "17:03",
-  "Ok. Ăă, ar mai fi ceva ce crezi că ar trebui? Ce ai mai scris tu, nu?"
+  "Ar mai fi ceva ce crezi că ar trebui? Ce ai mai scris tu? O să le iau și eu."
  ],
  [
   "F",
   "17:09",
-  "O să le iau și eu. Hai să trecem un pic prin ce am scris, că sunt"
- ],
- [
-  "P",
-  "17:16",
-  "Aici nu știu ce să zic."
- ],
- [
-  "P",
-  "17:18",
-  "Nu sunt convins că nu"
+  "Hai să trecem un pic prin ce am scris."
  ],
  [
   "F",
   "17:19",
-  "Classes versus document types, nici eu n-am un very strong feeling."
- ],
- [
-  "P",
-  "17:24",
-  "Asta mi s-a părut interesant, într-adevăr, că"
+  "„Classes versus document types” — nici eu n-am un very strong feeling."
  ],
  [
   "F",
   "17:27",
-  "N-aș începe de la un document, în primă fază,"
- ],
- [
-  "F",
-  "17:32",
-  "dar ce mi s-a părut nice e să menționăm că nu e musai să adaugi positive și negative examples din prima și că să îl anunțăm pe user că el o să fie adăugat cu fiecare iterație în care testezi, automat."
+  "N-aș începe de la un document în primă fază, dar ce mi s-a părut nice e să menționăm că nu e musai să adaugi positive și negative examples din prima, și să-l anunțăm pe user că ele o să fie adăugate cu fiecare iterație în care testezi. Automat."
  ],
  [
   "P",
   "17:46",
-  "Mă gândeam la un mod destul de neintruziv în care ai putea să faci chestia asta, că tu testezi și s-ar putea să fie s-ar putea să fie intruziv dacă îți zice, îți dă un modal și zice, vezi că putem să updatăm alea. Mă gândeam că poți"
- ],
- [
-  "P",
-  "17:59",
-  "poți să-i pui lângă în tab-ul de clase, poți să-i pui un mini carduleț din ăla cu sparkles care zice că am identificat niște îmbunătățiri pe care le poți face."
- ],
- [
-  "P",
-  "18:10",
-  "Și dai review și el îți face un"
- ],
- [
-  "P",
-  "18:13",
-  "diff între ce date ai deja pe clase și ce-ți propune el să adaugi. Și poți să le dai bifă, să zici yes, update them."
+  "Într-un mod neintruziv — că tu testezi și s-ar putea să fie intruziv dacă îți dă un modal. Mă gândeam să-i pui în tab-ul de clase un mini-card din ăla cu sparkles care zice „am identificat niște îmbunătățiri pe care le poți face”. Dai review, îți face un diff între ce date ai pe clase și ce-ți propune să adaugi, și le dai bifă: „yes, update them”."
  ],
  [
   "F",
-  "18:22",
-  "Hm, păi da, dar"
- ],
- [
-  "F",
-  "18:25",
-  "nu știu neapărat cum cum se leagă asta ca journey, că de fapt ce s-ar întâmpla e că tu în baza ca un output al antrenării, pe fiecare clasă se pot scoate positive și negative examples. Dar ele sunt parte din antrenare."
- ],
- [
-  "F",
-  "18:40",
-  "Adică ies ca rezultat al antrenării."
- ],
- [
-  "P",
-  "18:44",
-  "Așa."
- ],
- [
-  "F",
-  "18:45",
-  "Ceea ce înseamnă că"
- ],
- [
-  "F",
-  "18:47",
-  "tu modelul pe care l-ai creat, da."
+  "18:23",
+  "Păi da, dar nu știu cum se leagă asta ca journey. Ce s-ar întâmpla e că, ca output al antrenării, pe fiecare clasă se pot scoate positive și negative examples. Dar ele ies ca rezultat al antrenării."
  ],
  [
   "F",
   "18:49",
-  "Ideea e că clasele"
+  "Clasele pe care le-a antrenat modelul ăla o să conțină those positive and negative examples. Nu e obligatoriu să le conțină — poți să ai pe separat. Dar ies ca rezultat în urma antrenării și apoi tu poți să alegi dacă să le folosești sau nu."
  ],
  [
   "F",
-  "18:52",
-  "pe care i-a antrenat modelul ăla o să conțină positive and those positive and negative examples."
+  "19:18",
+  "Să le folosești nu doar în viitor, ci și în modelul pe care tocmai l-ai antrenat, nu? Deci atunci are sens să iei o decizie. Dar rezultatele o să difere: tocmai ai antrenat un model, el devine un item în listă, are deja un confusion matrix, un scor. Scorul ăla e cu sau fără modificări? Că o să fie diferit."
+ ],
+ [
+  "P",
+  "19:57",
+  "Dacă scorul ăla inițial e fără modificări…"
  ],
  [
   "F",
-  "19:00",
-  "Adică tu poți să alegi, de fapt, nu, nu e obligatoriu să le conțină."
- ],
- [
-  "P",
-  "19:05",
-  "Poți să ai pe separat. Cred că are sens pe separat."
- ],
- [
-  "F",
-  "19:07",
-  "Dar positive and negative examples"
- ],
- [
-  "F",
-  "19:12",
-  "ies ca rezultat în urma antrenării și apoi tu poți să alegi dacă să le folosești sau nu."
- ],
- [
-  "P",
-  "19:19",
-  "Să le folosești nu doar în viitor, ci și în modelul pe care tocmai l-ai antrenat, nu? Deci tu trebuie să faci o"
- ],
- [
-  "F",
-  "19:25",
-  "Ok, deci atunci are sens să iei o decizie asta."
- ],
- [
-  "P",
-  "19:27",
-  "Da."
- ],
- [
-  "F",
-  "19:28",
-  "Da."
- ],
- [
-  "P",
-  "19:30",
-  "Dar rezultatele o să difere. Deci tu tocmai ai antrenat un model, el este devine un item în listă."
- ],
- [
-  "F",
-  "19:37",
-  "Da."
- ],
- [
-  "P",
-  "19:37",
-  "Ceea ce înseamnă că el are un confusion matrix deja, are un scor."
- ],
- [
-  "P",
-  "19:42",
-  "Scorul ăla e cu modificările sau fără modificări? Că o să fie diferit"
- ],
- [
-  "P",
-  "19:48",
-  "cu și fără."
- ],
- [
-  "P",
-  "19:56",
-  "Voi re dacă scorul ăla inițial e fără modificări,"
- ],
- [
-  "P",
   "20:00",
-  "alea. Asta înseamnă că odată ce tu zici da, sunt de acord, înseamnă că o să fie rescorat."
- ],
- [
-  "F",
-  "20:08",
-  "Hm."
+  "…asta înseamnă că odată ce zici „da, sunt de acord”, o să fie rescorat."
  ],
  [
   "F",
   "20:11",
-  "Cred că ăsta e un moment în care să ne gândim un pic și la ce zicea Horia cu acele positive queries, negative queries."
- ],
- [
-  "F",
-  "20:22",
-  "Pentru că alea făceau parte din definiția clasei."
- ],
- [
-  "F",
-  "20:27",
-  "Ăăă..."
- ],
- [
-  "F",
-  "20:34",
-  "A, ce bine că facem asta că eu am notițele mele și putem să comparăm."
- ],
- [
-  "F",
-  "20:41",
-  "Vedem."
- ],
- [
-  "F",
-  "20:45",
-  "Ce am învățat."
- ],
- [
-  "P",
-  "20:47",
-  "zic poate că"
- ],
- [
-  "F",
-  "21:03",
-  "Ăăă, pot să-l iau pe primul."
- ],
- [
-  "F",
-  "21:07",
-  "Să vedem de unde a scos-o."
- ],
- [
-  "F",
-  "21:18",
-  "Din"
- ],
- [
-  "P",
-  "21:33",
-  "Mhm."
- ],
- [
-  "P",
-  "21:34",
-  "I don't think we have that much."
- ],
- [
-  "P",
-  "21:37",
-  "Și ăsta cred că e relevant."
- ],
- [
-  "P",
-  "21:40",
-  "Don't gate it behind promotion."
- ],
- [
-  "P",
-  "21:45",
-  "Și a rămas și în promovare deja."
+  "Cred că ăsta e un moment în care să ne gândim și la ce zicea Horia cu acele positive queries / negative queries, pentru că alea făceau parte din definiția clasei. Ce bine că facem asta — am notițele mele și putem să comparăm."
  ],
  [
   "F",
   "21:54",
-  "De aici zice că le folosește ăă în training și că ele aparțin clasei, nu aparțin candidatului."
+  "Aici zice că le folosește în training și că ele aparțin clasei, nu aparțin candidatului."
  ],
  [
   "P",
   "22:04",
-  "Ok, și când dă dă trainingul face candidați."
+  "Ok, și când dă trainingul face candidați."
  ],
  [
   "F",
   "22:10",
-  "Da, și cred că de asta și voia să poată să editeze. Că dacă în urma unui training au fost identificate niște"
+  "Da. Și de asta voia să poată să le editeze — dacă în urma unui training au fost identificate niște îmbunătățiri."
  ],
  [
   "P",
   "22:23",
-  "Atunci de ce nu se trainează fără, adică la momentul în care se trainează încă n-au fost identificate îmbunătățirile alea. El primește un scor și also zice uite am identificat niște îmbunătățiri. Nu vrei să începem și cu ele? Și dacă dai"
+  "Atunci de ce nu se trainează fără? La momentul în care se trainează, încă n-au fost identificate îmbunătățirile alea. El primește un scor și zice „am identificat niște îmbunătățiri, nu vrei să începem și cu ele?”."
  ],
  [
   "F",
   "22:41",
-  "Dar nu cred că mai e nevoie de un retraining, asta încerc să, adică asta cred. Că de fapt ce zicea Horia e că din ce am înțeles eu atunci, e că"
- ],
- [
-  "P",
-  "22:54",
-  "Da."
+  "Dar nu cred că mai e nevoie de un retraining, asta încerc să zic. Ce zicea Horia e că SPLADE folosește aceste keywords pe care le convertește în vectori, și în baza lor caută în pagina pe care a antrenat-o și compară vectorii — cât să zică că e sau că nu e clasa aia."
  ],
  [
   "F",
-  "22:56",
-  "SPLADE-ul folosește aceste keywords pe care le convertește în vectori și în baza acestor keywords caută în pagina pe care i-a antrenat și și compară vectorii, cât să zică că e sau că nu e. Și cred că antrenarea, de fapt, poate să reprezinte identificarea acestor keywords din datele tale labeled. Și atunci dacă este un pas din antrenare, este specific, na, mă rog, că tu după poți să-l folosești și din și în alte antrenări."
+  "23:27",
+  "Și cred că antrenarea, de fapt, poate să reprezinte identificarea acestor keywords din datele tale labeled. Deci, dacă e un pas din antrenare, e specific — dar după poți să-l folosești și în alte antrenări."
  ],
  [
   "F",
-  "23:57",
-  "Cred că le zice să rămână pe clase, dar nu ce zic e că o da nu ar trebui nu cred că mai trebuie să antrenezi după. Adică tu le adaugi în lista aia de keywords, dar faptul că ele există sunt rezultatul antrenării. Ele sunt deja prinse în metricile"
+  "24:01",
+  "Cred că el zice să rămână pe clase, dar nu mai trebuie să antrenezi după. Adică le adaugi în lista aia de keywords, dar faptul că ele există e rezultatul antrenării — sunt deja prinse în metrici."
  ],
  [
   "P",
-  "24:22",
-  "Și dacă eu mă duc după aia și modific manual la clase ceva?"
+  "24:21",
+  "Și dacă mă duc după aia și modific manual ceva la clasă?"
  ],
  [
   "F",
   "24:26",
-  "Atunci oricum ar trebui să reantrenezi, dacă modifici ceva la clase, cred."
- ],
- [
-  "P",
-  "24:32",
-  "Nu sunt foarte clar."
- ],
- [
-  "F",
-  "24:34",
-  "Pentru că dacă modifici ceva la clase, clasele făcând parte din model, adică clasele fiind o parte din definiția modelului, modelul ar trebui reantrenat. Dar depinde ce modifici la clase."
+  "Atunci oricum ar trebui să reantrenezi, dacă modifici ceva la clase. Clasele fac parte din definiția modelului, deci modelul ar trebui reantrenat. Dar depinde ce modifici la clase."
  ],
  [
   "P",
   "24:51",
-  "Positive and negative examples. Inclusiv șterg sau"
+  "Positive and negative examples — inclusiv dacă șterg?"
  ],
  [
   "F",
   "24:56",
-  "Cred că ar trebui să reantrenezi, dacă faci asta."
- ],
- [
-  "P",
-  "24:58",
-  "Păi și atunci cum se"
+  "Cred că ar trebui să reantrenezi dacă faci asta."
  ],
  [
   "P",
   "25:02",
-  "Hai să zicem am scenariul ăsta în care am deja niște clase și am pus manual niște positive and negative examples. Manual sau au venit dintr-un training, nu contează. Și eu mai trainez o dată pe o mulțime de documente. Asta înseamnă că eu nu mai am un cuvânt de spus. El îmi modifică acele clase și îmi pune positive and negative examples ca urmare a trainingului. Și that's it, adică doar le modifică și atât."
+  "Hai să zicem scenariul: am deja niște clase și am pus manual niște positive și negative examples — manual sau dintr-un training, nu contează. Și mai trainez o dată pe o mulțime de documente. Înseamnă că nu mai am un cuvânt de spus — el îmi modifică acele clase și pune positive și negative examples ca urmare a trainingului. Și that's it, doar le modifică."
  ],
  [
   "F",
   "25:30",
-  "Da."
- ],
- [
-  "F",
-  "25:31",
-  "Apoi tu dacă vrei să scoți din ele sau să adaugi la ele manual, ar trebui să reantrenezi."
+  "Da. Apoi, dacă vrei să scoți din ele sau să adaugi manual, ar trebui să reantrenezi."
  ],
  [
   "P",
   "25:40",
-  "Și când reantrenez ar trebui să nu mai facă același lucru, să nu mai pună de la el chestii. Că eu tocmai am făcut manual. Sau poate ar trebui o bifă în care să-i dau permisiunea să îmbunătățească clasele. Că înțelegi? Într-o situație el îmi face niște modificări fără acordul meu, dar așa și într-o situație eu vreau să fie manual că am modificat eu niște chestii, vreau să rămână așa."
- ],
- [
-  "F",
-  "26:04",
-  "Mhm."
+  "Și când reantrenez ar trebui să nu mai facă același lucru — să nu mai pună de la el chestii, că eu tocmai am făcut manual. Poate ar trebui o bifă în care să-i dau permisiunea să îmbunătățească clasele. Într-o situație îmi face modificări fără acordul meu; în alta vreau să rămână manual ce am modificat eu."
  ],
  [
   "F",
   "26:06",
-  "Întrebarea e ce se întâmplă de fapt dacă eu antrenez, dacă eu modific ceva, când ce se întâmplă când reantrenez."
+  "Întrebarea e ce se întâmplă de fapt când reantrenez, dacă am modificat ceva."
  ],
  [
   "F",
-  "26:20",
-  "SPLADE."
+  "27:53",
+  "[citind explicația de pe ecran] „Close, but the division of labor is a bit different from SPLADE find keywords to search for. Let me break down.”"
  ],
  [
-  "P",
-  "26:24",
-  "I-am dat greu la partea asta din conversație."
- ],
- [
-  "F",
-  "27:54",
-  "Close, but the division of labor is a bit different from SPLADE find keywords to search for. Let me break down."
- ],
- [
-  "F",
-  "29:16",
-  "Păi nu, stai că dacă nu e dacă la fiecare antrenare se antrenează cu tot corpusul."
- ],
- [
-  "P",
-  "29:27",
-  "Ce înseamnă tot corpusul?"
- ],
- [
-  "F",
-  "29:29",
-  "Cu ce e selectat."
- ],
- [
-  "P",
-  "29:30",
-  "Cu ce e selectat."
- ],
- [
-  "F",
-  "29:31",
-  "Cu ce ai selectat din corpus. Adică se antrenează from scratch."
- ],
- [
-  "P",
-  "29:34",
-  "Da."
- ],
- [
-  "F",
-  "29:35",
-  "Ăă, positive, negative examples e ceea ce pune userul manual, dar ce vine de la sistem, adică acea listă de phrases, alea reies ca urmare a antrenării. Și userul când modifică din ele, modifică practic cum o să fie folosit, adică cum o să se comporte modelul când e folosit."
- ],
- [
-  "P",
-  "30:02",
-  "Păi când?"
- ],
- [
-  "F",
-  "30:03",
-  "Adică după ce dacă tu modifici o listă din acele system system keywords pe care le-a identificat el în urma antrenării, acțiunea pe care tu vrei să o faci după nu e să reantrenezi, e să retestezi. Adică vrei să testezi modelul ăsta în care tu ai intrat că e ca și cum ai ai editat tu de mână modul în care funcționează modelul. Și atunci vrei după ce modifici tu de mână, nu vrei să testezi cum se comportă după ce ai modificat de mână. Nu"
- ],
- [
-  "P",
-  "30:43",
-  "Păi și atunci clasele mai are sens să stea separat sau stau în fiecare model, are clasele și definițiile? Că asta înseamnă că atunci când tu modifici un detaliu la o clasă, asta înseamnă că afectezi toți candidații."
- ],
- [
-  "F",
-  "30:57",
-  "Nu, da, modifici doar cred că doar e vorba doar de aceste keywords de sistem. Ăă, positive, negative examples mi se pare că are sens să fie parte din să fie la nivel de resursă, pentru că alea sunt date de către user, sunt propuse de către user from scratch."
- ],
- [
-  "P",
-  "31:21",
-  "Asta înseamnă că tu nu poți să experimentezi cu un candidat, că în momentul când schimbi ceva la definiția unei clase, că afectezi și modelul meu."
- ],
- [
-  "F",
-  "31:29",
-  "Depinde dacă modifici fără să-l promovezi. Depinde dacă modifici din alea positive, negative examples."
- ],
- [
-  "P",
-  "31:40",
-  "Adică toată ideea mea era că testam un model și când eram mulțumit de el îi dădeam promote, adică promote. Dar era pentru era era gated de acest switch. Dar acuma dacă eu intru la positive și pun random stuff acolo, nu e ok să afecteze direct modelul care rulează în live."
- ],
- [
-  "F",
-  "32:02",
-  "Păi atunci înseamnă că după ce ai promovat un model, clasele și positive examples sunt frozen și când și poți să le editezi când antrenezi."
- ],
- [
-  "P",
-  "32:19",
-  "Poți să le editezi."
- ],
- [
-  "F",
-  "32:22",
-  "În decizia de train."
- ],
- [
-  "P",
-  "32:28",
-  "Deci nu mai sunt separate, nu mai sunt separate și le dau eu edit într-un tab separat."
- ],
- [
-  "F",
-  "32:35",
-  "Nu, maybe not."
- ],
- [
-  "F",
-  "32:42",
-  "Dar aici ar trebui să-l întreb pe Bogdan. Oare mai e la birou?"
- ],
- [
-  "P",
-  "32:59",
-  "Și oricum, adică n-am rezolvat problema de la care am plecat, că problema de la care am plecat e că după un training nou primești niște sugestii de improvement. Iar dacă tu editezi clasele la momentul trainingului, asta înseamnă că după training tu primești sugestiile alea, dar tot nu sunt incluse în Ori ori nu sunt incluse în ce tocmai ai trainat, ori sunt incluse, dar asta înseamnă că tu nu mai poți să faci modificări manual că peste ele vin modificările propuse de agentul de la."
- ],
- [
-  "F",
-  "33:37",
-  "Da. L-am l-am sunat pe Bogdan."
- ],
- [
-  "F",
-  "33:42",
-  "A zis că e suficient de drăguț încât să ne ajute, zicea că poate să vină un pic."
- ],
- [
-  "F",
-  "33:49",
-  "Cred că asumpția mea că positive and negative examples și aceste keywords pe care le folosește modelul sunt același lucru, it's wrong și că asta, adică asta face parte din confuzie."
- ],
- [
-  "F",
-  "34:06",
-  "Din discuția mea cu Claude nu m-a lămurit neapărat."
- ],
- [
-  "F",
-  "34:43",
-  "Am zis și eu Claude, dacă o să compare asta cu positive, negative examples."
- ],
- [
-  "F",
-  "34:48",
-  "Are user provided."
- ],
- [
-  "F",
-  "34:52",
-  "Untangling conceptual confusion between contrastive and supervised learning paradigms."
- ],
- [
-  "F",
-  "35:57",
-  "Așa. Ăă"
- ],
- [
-  "B",
+  "O",
   "36:07",
-  "Se face această combinație de SPLADE și LightGBM, ca parte din antrenarea modelului, se identifică niște termeni. Mhm. Ăă, care sunt transformați în vectori și în baza cărora se caută similitudine cu documentele pe care le are în training, ca să identifice ce documente aparțin în ce clasă."
+  "Se face această combinație de SPLADE și LightGBM ca parte din antrenarea modelului: se identifică niște termeni, care sunt transformați în vectori, și în baza cărora se caută similitudine cu documentele din training, ca să identifice ce documente aparțin în ce clasă. Acești termeni — el a spus că ar vrea să-i vadă și să poată să-i editeze."
  ],
  [
-  "B",
-  "36:34",
-  "Acești termeni, el a spus că ar vrea să-i vadă și să poată să-i editeze."
- ],
- [
-  "F",
+  "O",
   "36:42",
-  "Vrea el, că vrea el să facă totul de mână. Așa."
- ],
- [
-  "B",
-  "36:44",
-  "Pentru că pentru că e un advanced feature, whatever. Acum, noi pe clase avem și positive and negative examples. Mhm. Which are different. But I don't understand how they are different."
+  "Vrea el să facă totul de mână."
  ],
  [
   "F",
+  "36:44",
+  "Pentru că e un advanced feature, whatever. Acum, pe clase avem și positive și negative examples, which are different — but I don't understand how they are different."
+ ],
+ [
+  "O",
   "36:58",
   "Păi e un gate la sfârșit."
  ],
  [
-  "B",
+  "F",
   "37:02",
-  "Deci, înainte să mă apuc să antrenez modelul, pentru deci n-am nimic, sunt zero. Am positive examples, negative examples, care sunt date de către user. După aia, ele când când începe trainingul, acele positive examples sunt folosite in any way pentru identificarea keyword-urilor?"
+  "Deci, înainte să mă apuc să antrenez modelul, sunt de la zero. Am positive examples și negative examples, care sunt date de către user. După aia, când începe trainingul, acele positive examples sunt folosite in any way pentru identificarea keyword-urilor?"
  ],
  [
-  "F",
+  "O",
   "37:21",
-  "Da, dar nu mai știu exact ce pondere au. Trebuie să mă uit."
+  "Da, dar nu mai știu exact ce pondere au, trebuie să mă uit."
  ],
  [
-  "B",
-  "37:24",
-  "Ok, au o pondere. Oricum, nu, adică pentru user n-ar fi important neapărat ce pondere au, dar impactează."
+  "O",
+  "37:26",
+  "Pentru user nu ar fi important neapărat ce pondere au, dar impactează."
  ],
  [
   "F",
-  "37:32",
-  "Da. Impactează."
- ],
- [
-  "B",
   "37:34",
-  "După care se antrenează, se termină antrenarea. La finalul antrenării există această listă de keyword-uri pentru fiecare clasă."
+  "După care se termină antrenarea. La final există această listă de keyword-uri pentru fiecare clasă."
  ],
  [
-  "F",
-  "37:41",
-  "În principiu, da."
- ],
- [
-  "B",
-  "37:42",
-  "Ok."
- ],
- [
-  "B",
-  "37:44",
-  "Deci asta înseamnă că eu când am un"
- ],
- [
-  "F",
+  "O",
   "37:46",
-  "A, nu, scuze, cred că e o pagină care vine ulterior, folosește alea, cu cât sunt mai multe, cu atât te va apropia de o"
+  "A, nu, scuze — cred că e o pagină care vine ulterior. Folosește alea: cu cât sunt mai multe, cu atât te apropie de o clasă."
  ],
  [
-  "B",
+  "F",
   "37:52",
-  "Ok. Are sens să pun aceste keywords identificate în positive examples?"
+  "Are sens să pun aceste keywords identificate în „positive examples”?"
  ],
  [
-  "F",
-  "38:00",
-  "Nu."
+  "O",
+  "37:59",
+  "Nu. Eu zic nu."
  ],
  [
-  "B",
-  "38:02",
-  "Eu știam eu că undeva se termină. Ok. Și dacă le am"
- ],
- [
-  "F",
+  "O",
   "38:07",
-  "Dar de ce să le dar de ce le-ar vedea? De ce ar vrea să le vadă?"
- ],
- [
-  "B",
-  "38:10",
-  "Pentru că ca un advanced user, un user ar vrea să le editeze, să zică ăsta e ăsta vreau să-l scap"
+  "Dar de ce le-ar vedea? De ce ar vrea să le vadă?"
  ],
  [
   "F",
-  "38:18",
-  "Da, și asta zic, dacă editez un keyword de ăla, trebuie să reantrenez sau să retestez?"
+  "38:10",
+  "Pentru că un advanced user ar vrea să le editeze, să zică „ăsta vreau să-l scot”."
  ],
  [
-  "B",
+  "P",
+  "38:18",
+  "Da, și asta zic — dacă editezi un keyword de ăla, trebuie să reantrenezi sau să retestezi?"
+ ],
+ [
+  "O",
   "38:26",
   "Cred că trebuie înapoi în model."
  ],
  [
-  "B",
+  "F",
   "38:31",
-  "Dacă adaug, for sure trebuie, dar dacă șterg?"
+  "Dacă adaug, for sure trebuie re-embedded; dar dacă șterg? Pentru că erau legate de niște fișiere din training. Deci eu înțeleg că aceste keywords sunt direct legate de o versiune de model antrenată; și dacă modific ceva în ele, trebuie să reantrenez. Deci editarea sau ștergerea lor fac parte din procesul de antrenare — un pas care se întâmplă după prima iterație."
  ],
  [
-  "F",
-  "38:35",
-  "Nu prea ai cum să modifici. Dacă ștergi"
- ],
- [
-  "B",
-  "38:39",
-  "Pentru că avea niște era legat de niște fișiere din training. Deci, eu înțeleg că aceste keywords sunt direct legate de o versiune de model antrenată."
- ],
- [
-  "F",
-  "38:49",
-  "Mhm."
- ],
- [
-  "B",
-  "38:50",
-  "Și dacă modific ceva în ele, trebuie să reantrenez."
- ],
- [
-  "F",
-  "38:55",
-  "Da."
- ],
- [
-  "B",
-  "38:56",
-  "Deci, editarea sau ștergerea acestor keywords fac parte din procesul de antrenare și e un pas care se întâmplă după ce ai o primă iterație."
- ],
- [
-  "F",
+  "O",
   "39:07",
-  "Da, dar nu nu aș pune, adică deja facem ML Ops aici, adică nu o să folosească nimeni."
+  "Da, dar nu aș pune asta — deja facem ML Ops aici, n-o să folosească nimeni."
  ],
  [
-  "B",
+  "P",
   "39:15",
   "Păi nu, asta facem."
  ],
  [
-  "F",
+  "O",
   "39:15",
-  "Decât Horia."
+  "…Decât Horia."
  ],
  [
-  "B",
-  "39:16",
-  "de antrenare, a fost făcut label și va fi un model de optimizare a unui model existent și vii tu, modifici tu manual și după aia apeși un buton de train și îți creează un"
- ],
- [
-  "F",
+  "O",
   "39:25",
-  "Dar nu cred că avem persoana asta care știe să facă chestia asta."
- ],
- [
-  "B",
-  "39:28",
-  "Nici eu nu cred că"
+  "Dar nu cred că avem persoana asta care știe să facă chestia asta, în afară de Horia."
  ],
  [
   "F",
-  "39:29",
-  "În afară de Horia."
- ],
- [
-  "B",
   "39:30",
-  "E un e clar un advanced, a very advanced use case, dar dacă n-o să-l introduc într-o oarecare versiune, după aia în mijlocul unui proiect o să mă trezesc că nu poate fi folosit feature-ul că nu are editare de keywords și că n-o să poată fi folosit la nivelul ăla. Ok, adică it's for sure something advanced, dar e clar că e ceva ce ține de procesul de antrenare a modelului și nu de"
- ],
- [
-  "F",
-  "39:59",
-  "[neinteligibil]"
- ],
- [
-  "F",
-  "40:00",
-  "de definirea claselor conceptual."
+  "E clar un very advanced use case. Dar dacă n-o introduc într-o versiune, după aia în mijlocul unui proiect o să mă trezesc că nu poate fi folosit feature-ul, că nu are editare de keywords. E ceva ce ține de procesul de antrenare a modelului — nu de testare, nici de definirea conceptuală a claselor."
  ],
  [
   "P",
-  "40:03",
-  "Da."
+  "40:06",
+  "Da, și asta ne ușurează foarte mult."
  ],
  [
-  "P",
-  "40:05",
-  "Ok. Dar și asta ne ușurează foarte mult."
- ],
- [
-  "B",
+  "O",
   "40:09",
-  "Dar nu e... ți-am zis, nu trebuie alea, adică e minimum minimorum. Ă, zi. E cea mai extremă..."
- ],
- [
-  "F",
-  "40:18",
-  "granularitatea cea mai mică."
- ],
- [
-  "B",
-  "40:19",
-  "Da."
- ],
- [
-  "F",
-  "40:19",
-  "Da, îmi imaginez, da."
- ],
- [
-  "B",
-  "40:21",
-  "Întrebare, că mă de aia mă ia Ioan și văd dacă ați face un model, pentru ce ați antrena modelul."
+  "Dar nu trebuie alea — ți-am zis, e minimum minimorum, e granularitatea cea mai mică."
  ],
  [
   "F",
   "46:05",
-  "clasele generale din, da, din resursa de ML model, o să aibă positive și negative examples"
- ],
- [
-  "P",
-  "46:14",
-  "Puse de tine manual."
- ],
- [
-  "F",
-  "46:15",
-  "puse de tine manual."
- ],
- [
-  "F",
-  "46:17",
-  "După aia tu faci antrenarea. În urma antrenării îți iese modelul antrenat, plus pe fiecare clasă, seria aia de keyword-uri."
- ],
- [
-  "P",
-  "46:28",
-  "Care nu o vezi inițial."
- ],
- [
-  "F",
-  "46:29",
-  "Pe care n-o s-o vezi inițial."
+  "Clasele generale, din resursa de ML model, o să aibă positive și negative examples puse de tine manual. După aia faci antrenarea; în urma ei îți iese modelul antrenat plus, pe fiecare clasă, seria aia de keyword-uri — care nu o vezi inițial."
  ],
  [
   "P",
@@ -2275,1198 +1030,788 @@ const TURNS = [
  [
   "F",
   "46:33",
-  "Da. Dar dacă la un moment dat o să vrei s-o vezi, ea o să țină de un candidat și tu dacă o să vrei să editezi chestiile alea, o să trebuiască să reantrenezi."
+  "Da. Dacă la un moment dat o să vrei s-o vezi, o să țină de un candidat; și dacă o să vrei să editezi, o să trebuiască să reantrenezi."
  ],
  [
-  "B",
+  "O",
   "46:43",
   "Vreți să vedeți cum arată? Să scot eu la mine?"
  ],
  [
   "F",
   "46:45",
-  "Ne-a arătat Horia un exemplu pe un model de-al lui, dar era destul de mare, adică, da, o să fie zeci de... zeci, poate chiar sute de..."
+  "Ne-a arătat Horia un exemplu pe un model de-al lui, dar era destul de mare — o să fie zeci, poate sute de keyword-uri."
  ],
  [
   "P",
   "46:57",
-  "Eu văd ca un feature ultra power user care o să fie ascuns undeva și cei mai power useri poate să facă chestia asta, dacă vor să mai optimizeze un pic un candidat."
+  "Eu văd ca un feature ultra power-user, ascuns undeva — cei mai power useri pot să facă asta, dacă vor să mai optimizeze un candidat."
  ],
  [
   "F",
   "47:07",
-  "Da, dar n-aș n-aș băga nici eu asta în primă fază, dar doar să știm dacă vrem s-o băgăm vreodată, că ea o să trigger-uieze o reantrenare. Adică orice editare a acelor keywords, fie că-s cele pozitive, fie că-s negative, o să trigger-uiască o reantrenare și o să vezi după rezultatele ca un alt candidate sau cum s-a numit."
- ],
- [
-  "P",
-  "47:29",
-  "Da."
+  "Da, dar n-aș băga nici eu asta în primă fază. Doar să știm dacă vrem s-o băgăm vreodată, că o să triggeruiască o reantrenare: orice editare a acelor keywords, fie positive fie negative, o să declanșeze o reantrenare și o să vezi rezultatele ca un alt candidate."
  ],
  [
   "F",
-  "47:31",
-  "Ok."
- ],
- [
-  "P",
-  "47:33",
-  "Ok."
- ],
- [
-  "F",
-  "47:34",
-  "Ok, cu... Cu asta, da."
- ],
- [
-  "P",
-  "47:38",
-  "Da. Nu, cred că mai erau niște chestii."
- ],
- [
-  "F",
-  "47:42",
-  "Care?"
- ],
- [
-  "P",
-  "47:43",
-  "Hai să vedem."
- ],
- [
-  "B",
-  "47:46",
-  "Dar doar cu... de la Horia ai și multe sau doar?"
+  "47:39",
+  "Cred că mai erau niște chestii. Hai să vedem."
  ],
  [
   "F",
   "47:50",
-  "Ăă, nu. De la Horia am ieșit niște chestii. Au mai ieșit unele chestii din discuția cu Andra și cu Șerban."
- ],
- [
-  "P",
-  "47:58",
-  "A, pentru aia cu documentul posibil, nu? Sau?"
+  "De la Horia au ieșit niște chestii; au mai ieșit unele din discuția cu Andra și cu Șerban."
  ],
  [
   "F",
-  "48:01",
-  "Da."
- ],
- [
-  "P",
-  "48:02",
-  "Da."
- ],
- [
-  "F",
-  "48:03",
-  "Da. Rejects for positive, negative, aici nu..."
- ],
- [
-  "P",
   "48:06",
-  "Asta ce avea și Bogdan, da."
- ],
- [
-  "F",
-  "48:08",
-  "Asta că poți să... Ar trebui teoretic să poți să antrenezi mai mulți candidați at the same time."
+  "Asta o avea și Bogdan: ar trebui teoretic să poți antrena mai mulți candidați at the same time. Ar fi vreo problemă să antrenezi mai multe versiuni în paralel? Că oricum antrenezi de la zero."
  ],
  [
   "P",
-  "48:14",
-  "Nu? Ar fi vreo problemă? Să antrena mai multe mai multe versiuni în paralel?"
+  "48:21",
+  "Doar de resurse în spate. O să plângă Popa — Șerban, de la DevOps — că o să dea CPU-uri și se întrerupe. Ok, notification for him."
  ],
  [
   "F",
-  "48:20",
-  "Că de oricum antrenezi de la zero... doar de resurse în spate."
- ],
- [
-  "P",
-  "48:24",
-  "Da. O să plângă pe urmă popa ăsta."
- ],
- [
-  "F",
-  "48:28",
-  "Cu Șerban, cu cine?"
- ],
- [
-  "P",
-  "48:31",
-  "Ăă, DevOps."
- ],
- [
-  "F",
-  "48:33",
-  "O să dea... începe... se întrerupe... Da, îți dai seama."
- ],
- [
-  "P",
-  "48:39",
-  "Ok. Notification for him."
- ],
- [
-  "F",
-  "48:40",
-  "A, să facem un summary pe compararea de candidates. Zicea... a fost sugestia lui Șerban."
+  "48:41",
+  "A, să facem un summary pe compararea de candidates — a fost sugestia lui Șerban."
  ],
  [
   "P",
   "48:46",
-  "Da, natural language."
+  "Da, un fel de explicat, în natural language."
+ ],
+ [
+  "O",
+  "48:49",
+  "Dar aici ar fi nevoie de un agent, îți dai seama, nu? Care să se uite la matrix, la distribuție și să compare."
  ],
  [
   "F",
-  "48:48",
-  "Da, natural language. Dar aici ar fi nevoie de un agent, îți dai seama, nu?"
- ],
- [
-  "F",
-  "48:53",
-  "Care să se uite la... să se uite să compare... matrix-ul, distribuția și..."
- ],
- [
-  "B",
   "49:01",
-  "Sau să se uite la toate și alea poți să le scoți și rule-based, știi? Că cum pusesei tu că ai zis că pui la evaluare alea sunt... la <span class=\"unsure\" title=\"Phase-1 confirm: garbled; best-guess 'sumar/summary'\">sumatrice</span> ziceai că pui tu niște alea, pusesei deja."
- ],
- [
-  "F",
-  "49:14",
-  "Da."
- ],
- [
-  "B",
-  "49:15",
-  "Astea. Uite cum e aia, most confused, știi?"
- ],
- [
-  "P",
-  "49:19",
-  "Pe aceeași bază..."
- ],
- [
-  "B",
-  "49:20",
-  "Da."
+  "Da, și alea poți să le scoți și rule-based, știi?"
  ],
  [
   "P",
   "49:21",
-  "Ai putea să faci."
- ],
- [
-  "B",
-  "49:23",
-  "Și două două pagini care aveau clasa bank statement au fost correctly predicted as bank statement."
- ],
- [
-  "F",
-  "49:29",
-  "Adică e o... Da, da. Da, dar mie mi se pare că poate să devină unde poate să fie de ajutor e atunci când ai două modele care chiar se comportă cât de cât, care chiar se comportă diferit și nu știi de fapt care e mai bun overall."
+  "Practic, când dai „comparison”, te uiți la matricea asta — dar e un pic obositor. Poate să-ți zică ce s-a câștigat, ce s-a pierdut în mare, și o recomandare."
  ],
  [
   "P",
-  "49:46",
-  "Da."
+  "50:08",
+  "Să-ți povestească: „eu îți recomand să dai un buton”."
  ],
  [
   "F",
-  "49:47",
-  "Asta cred că era ce... Și eu generează chestia asta, practic când dai aici comparison, practic tu te uiți la matricea asta, dar e un pic obositor și poate să-ți zică ok, ce s-a câștigat, ce s-a pierdut în mare și o... îți dă și o recomandare dacă tu să mergi pe el."
- ],
- [
-  "P",
-  "50:02",
-  "A, să pui doar... Da, bine, că aici e modified de fapt."
- ],
- [
-  "F",
-  "50:05",
-  "Să-ți explice ca la... Da, dar să-ți... ca la o... să-ți povestească... să-ți zică... Eu îți recomand să dai un buton."
- ],
- [
-  "P",
   "50:12",
-  "Recomandarea mea este să-l promovezi pe ăsta."
+  "„Recomandarea mea e să-l promovezi pe ăsta”."
  ],
  [
   "P",
   "50:15",
-  "Adică îți dai seama că asta poate să vină cu niște... o model evaluat dacă is this good or is this bad, știi? 14 plus, minus..."
+  "Îți dai seama că asta poate veni cu un mod de a evalua dacă is this good or is this bad — 14 plus, 15 minus."
  ],
  [
-  "B",
-  "50:24",
-  "Păi da. Cred că se poate uita la... poți să te uiți la ăla de promotion al meu."
+  "O",
+  "50:25",
+  "Cred că te poți uita la ăla de promotion al meu — când aveam tab-ul ăla. Avea niște clase de confidență: dacă vezi că e mai bună ca ailaltă, să autopromoveze. Ăla e algoritmul din spate."
  ],
  [
-  "F",
-  "50:30",
-  "Când aveam tab-ul ăla, știi? Și ăla are... ăla avea niște... clase de confidență, ok. Când... dacă vezi că e mai bună ca ailaltă, se autopromoveze, știi?"
- ],
- [
-  "B",
-  "50:42",
-  "Când ai improvement, știi? Și ăla e algoritmul din spate. Improvement..."
- ],
- [
-  "F",
+  "O",
   "50:46",
-  "Improvement pe critical labels... da, exact. Și nu... nu, de fapt că nu ai degradation pe critical labels și că ai improvement pe orice altceva."
+  "Improvement pe critical labels."
  ],
  [
-  "P",
-  "50:58",
-  "Da. A, din candidate... de exemplu, for each... astea..."
+  "F",
+  "50:51",
+  "Nu — de fapt că n-ai degradation pe critical labels și că ai improvement pe orice altceva."
  ],
  [
   "F",
   "51:04",
-  "A, ziceam că după antrenare poți să folosești..."
+  "On the candidate page: după antrenare, în urma antrenării, să mai poți adăuga în zona de positive examples ale clasei. Dar nu știu dacă asta…"
  ],
  [
-  "P",
-  "51:07",
-  "A, da."
- ],
- [
-  "F",
-  "51:08",
-  "adică în urma antrenării să mai adaugi în zona de positive examples ale clasei."
- ],
- [
-  "P",
-  "51:22",
-  "Ok."
- ],
- [
-  "F",
-  "51:23",
-  "Dar nu știu dacă asta o să..."
- ],
- [
-  "B",
+  "O",
   "51:24",
   "Eu am făcut aia cu AI, știi? Când am dat."
  ],
  [
   "F",
   "51:26",
-  "Da, dar acolo tu folosești și un... folosești un sample, nu?"
+  "Da, dar acolo folosești un sample. Ăsta nu are treabă neapărat cu training-ul, ci mai degrabă: după ce ai date în pool-ul de teste / de antrenare, alea-s labeled, folosești câteva — și ăla e un agent care rulează total separat de ML."
  ],
  [
-  "P",
-  "51:31",
-  "Deci asta nu are treabă neapărat cu training-ul, ci mai degrabă după ce... după ce ai niște date în corpusul de... în pool-ul de teste, în pool-ul de antrenare... alea-s labeled."
- ],
- [
-  "F",
-  "51:47",
-  "Să folosești câteva și ăla e un agent care rulează total separat de ML."
- ],
- [
-  "P",
+  "O",
   "51:52",
-  "Șerban ce-a zis cu selecția, cu să faci un subset și cu alea cum să se facă?"
+  "Șerban ce-a zis cu selecția, să faci un subset?"
  ],
  [
   "F",
   "51:57",
-  "Nu i-am arătat versiunea asta și n-am vorbit. Să povestesc cu el, o să încerc să-l prind azi, să povestesc."
- ],
- [
-  "P",
-  "52:04",
-  "Dar nu cred că ar trebui să fie... Da, nu e întrebare."
+  "Nu i-am arătat versiunea asta; o să încerc să-l prind azi și să-i povestesc. M-aș aștepta să selecționeze bine — pare genul de feature la care el ar reacționa."
  ],
  [
   "F",
-  "52:07",
-  "Doar că e zis așa cum ar funcționa."
- ],
- [
-  "P",
-  "52:10",
-  "I-am povestit în mare, dar nu sunt sigur că..."
- ],
- [
-  "F",
-  "52:13",
-  "Horia ce-a zis cu subset-ul?"
- ],
- [
-  "P",
-  "52:14",
-  "N-a văzut. N-a văzut. N-a văzut nici el."
- ],
- [
-  "F",
-  "52:16",
-  "Da. Dar m-aș aștepta să selecționeze bine. Pare genul de feature la care el ar reacționa."
- ],
- [
-  "P",
-  "52:21",
-  "Da, să le scoată."
- ],
- [
-  "F",
-  "52:23",
-  "Da, ca să <span class=\"unsure\" title=\"Phase-1 confirm: best-guess 'documenteze'\">documenteiască</span>..."
- ],
- [
-  "F",
-  "52:27",
-  "Așa. Și ce-am mai fost la... Horia?"
- ],
- [
-  "P",
   "52:32",
-  "La Șerban cred că astea erau. Da."
+  "La Horia: dacă o să avem un model generic, nu ai nevoie de acel „other”, că el oricum clasifică binar."
  ],
  [
-  "F",
-  "52:34",
-  "Și la Horia... A, că dacă o să avem un model generic, nu ai nevoie de acel other, că el oricum clasifică binar."
- ],
- [
-  "P",
+  "O",
   "52:44",
-  "Păi da, n-ai nevoie, dar... pentru un model care nu e document classifier, ziceam."
- ],
- [
-  "F",
-  "52:50",
-  "A, ok. Un model care face altceva."
- ],
- [
-  "P",
-  "52:52",
-  "Păi da, dar nu cred că se mai aplică flow-ul ăsta."
+  "Păi da, n-ai nevoie, dar nu cred că se mai aplică flow-ul ăsta."
  ],
  [
   "F",
   "52:55",
-  "Da, nu se mai aplică multe, adică nu se mai aplică destul de mult."
+  "Da, nu se mai aplică destul de mult. Deci, dacă vrem să băgăm asta, când alegi ce model faci o să alegi între „document classifier” și „generic binary model” sau ceva."
  ],
  [
-  "P",
-  "52:58",
-  "Nu e doar ăla de... e doar ăla de upload, atâta. Nu mai e flow-ul ăla de la SIM."
- ],
- [
-  "F",
-  "53:04",
-  "Adică îl avem antrenat pentru orice alt scop și îl arunci acolo, whatever."
- ],
- [
-  "P",
-  "53:10",
-  "Dar la astea le separă, ăsta lași faci... clasificator."
- ],
- [
-  "F",
-  "53:14",
-  "Da. Adică oricum dacă vrem să băgăm asta, când alegi ce model faci, o să alegi între document classifier și generic binary model sau ceva."
- ],
- [
-  "P",
+  "O",
   "53:23",
-  "Ăsta e ce scoate ție în audio, nu?"
- ],
- [
-  "F",
-  "53:25",
-  "Da. Ce scoate poți curăța de... folosim și și de ăsta, intră și repară."
+  "Ăsta e ce-ți scoate ție din audio, nu?"
  ],
  [
   "P",
-  "53:32",
-  "Și mai stai."
+  "53:26",
+  "Ce scoate poți curăța."
  ],
  [
   "P",
-  "53:34",
-  "<span class=\"unsure\" title=\"Phase-1 confirm: garbled; best-guess 'o sa lucrezi la astea maine'\">O să locuiești la astea de mâini</span>. O să facem un subscription."
+  "53:40",
+  "Nu, I'm kidding. Poate ar trebui un pic mai puțin verbos. Dar am și transcript aici — pot să mă uit și aici. E legitim."
  ],
  [
-  "F",
-  "53:36",
-  "Subscription based."
- ],
- [
-  "P",
-  "53:39",
-  "Așa. E foarte..."
- ],
- [
-  "F",
-  "53:41",
-  "Mhm. Nu, e..."
- ],
- [
-  "P",
-  "53:44",
-  "Poate ar trebui un pic mai puțin verbos la..."
- ],
- [
-  "F",
-  "53:48",
-  "De ce? Nu, că eu văd... Am și transcript aici, știi? Adică pot să mă uit și aici. Mi se pare, nu, e destul de..."
- ],
- [
-  "P",
-  "53:55",
-  "Mai cu desene, cu poze."
- ],
- [
-  "F",
-  "53:56",
-  "A, mă mai gândeam la o chestie. Dacă OCR-ul să scoată... gibberish."
- ],
- [
-  "P",
-  "54:04",
-  "Păi da, trebuie să te uiți la... Ai vrea să poți să le..."
+  "O",
+  "53:57",
+  "Mă mai gândeam la o chestie: dacă OCR-ul scoate gibberish."
  ],
  [
   "F",
   "54:06",
-  "Dar ai vrea să poți să editezi textul din OCR ca să-l corectezi?"
+  "Ai vrea să poți să editezi textul din OCR ca să-l corectezi?"
  ],
  [
   "P",
-  "54:10",
-  "Poți să-l... La modelul se trenează..."
- ],
- [
-  "F",
   "54:12",
-  "Se trenează stupid question, dar se trenează pe imaginea documentului sau pe rezultatul OCR-ului?"
+  "Dar modelul se antrenează — stupid question — pe imaginea documentului sau pe rezultatul OCR-ului?"
  ],
  [
-  "P",
-  "54:19",
-  "Pe rezultatul OCR-ului. Păi atunci dacă..."
- ],
- [
-  "B",
-  "54:20",
-  "Dar tu n-ar trebui să aduci... <span class=\"unsure\" title=\"Phase-1 confirm: ASR 'garblades' -> 'garbled'\">garbled</span> textul OCR în model training."
+  "O",
+  "54:18",
+  "Pe rezultatul OCR-ului. Și atunci n-ar trebui să aduci garbage textul OCR în model training."
  ],
  [
   "F",
   "54:26",
-  "Păi nu, dar deci tu încarci documentele, se rulează OCR-ul, îți scoate textul, se scoate textul, încearcă LLM-ul clasifică textul."
+  "Tu încarci documentele, se rulează OCR-ul, scoate textul, și LLM-ul clasifică textul."
  ],
  [
-  "B",
+  "O",
   "54:36",
-  "Nu, n-aș... eu aș avea acolo gate. Dacă OCR score e sub 0.6, nu mă duc la clasificare, mă duc la un și zic... sau încerc... cum făcusem eu, dacă cu 0.6 e pus deja în altă parte. Dacă e sub 0.6 OCR-ul, încearcă și un LLM."
- ],
- [
-  "F",
-  "54:53",
-  "A, mai pune un LLM peste. Ok."
- ],
- [
-  "B",
-  "54:55",
-  "Știi? Și scoate pagina aia cu LLM și o scoate ceva mai bine și atunci de abia poți să te duci la clasificare."
+  "Nu, eu aș avea acolo un gate: dacă OCR score e sub 0.6, nu mă duc la clasificare — încerc cu un LLM, scoate pagina aia mai bine, și de-abia atunci te duci la clasificare."
  ],
  [
   "F",
   "55:00",
-  "Ca să nu pierdem token, da, putem să-l scoatem... putem să-l scoatem fără clasă, practic."
+  "Ca să nu pierdem token, putem să-l scoatem fără clasă, practic — cu un warning de zero confidence și fără clasă."
  ],
  [
-  "P",
-  "55:06",
-  "Cu un warning de low... adică zero confidence și fără clasă."
- ],
- [
-  "B",
+  "O",
   "55:11",
-  "Dar aia o faci... dar asta zic, o faci până ajunge aici, știi? Până... până antrenezi modelul."
+  "Dar asta o faci până ajunge aici, până antrenezi modelul."
  ],
  [
-  "F",
+  "P",
   "55:16",
-  "Da, dar înseamnă că dacă cineva va ajunge aici și e un garbage, înseamnă că trebuie să poți să-i dai skip, că nu vrei să... Da, da, da, nu știu."
+  "Da, dar dacă cineva ajunge aici și e un garbage, înseamnă că trebuie să poți să-i dai skip."
  ],
  [
-  "P",
+  "F",
   "55:22",
-  "Nu, eu l-aș lăsa pe user să editeze ăsta."
+  "Da, nu știu — eu l-aș lăsa pe user să editeze ăsta."
  ],
  [
-  "F",
+  "P",
   "55:26",
-  "Să editeze, dar poate user-ul nu e dispus să editeze, nici măcar să poată să... Poate editeze, că dacă e mult text, n-o să stea la să editeze. Mai preferă să-l șteargă, știi?"
+  "Să editeze, dar poate user-ul nu e dispus să editeze."
  ],
  [
-  "P",
-  "55:34",
-  "Da. Ok, poate să-l șteargă. Da, să-l șteargă sau să-l editeze."
- ],
- [
-  "F",
-  "55:39",
-  "Sau l-ai scris. Ok."
- ],
- [
-  "P",
-  "55:41",
-  "La tine, nu știu, la mine cred că era și editabil."
+  "O",
+  "55:29",
+  "Dacă e mult text, n-o să stea să editeze — mai preferă să-l șteargă."
  ],
  [
   "F",
-  "55:44",
-  "Nu mai știu. Eu nu fac... parcă n-am văzut să fie editabil."
+  "55:35",
+  "Ok, poate să-l șteargă sau să-l editeze. Hai să punem decizie aici: dacă vrea, face edit; dacă nu, poate să dea delete."
  ],
  [
-  "P",
-  "55:47",
-  "Text. Ia. Nu e editabil. Nu e editabil."
- ],
- [
-  "F",
-  "55:50",
-  "E doar... e doar pe label. Da, nu e, că e..."
- ],
- [
-  "B",
-  "55:54",
-  "Păi mă gândesc dacă greșește ceva, like un trei seamănă cu un opt sau... A, nu, e asta decizia la... Adică e aia <span class=\"unsure\" title=\"Phase-1 query: garbled term - what did Bogdan mean? (context: OCR misreads like claim/clim/glim)\">British cans</span>, ăla e important sau să scrie, nu știu, claim și să nu scrie clim sau altceva sau glim."
- ],
- [
-  "F",
-  "56:14",
-  "Ba, asta s-ar putea ca o chestie for advanced people care chiar sunt nitty gritty de editat sau de șters."
- ],
- [
-  "P",
-  "56:22",
-  "Nu știu, la noi ce să..."
- ],
- [
-  "F",
-  "56:24",
-  "De ce? Să nu facem... feature-ul ăsta de nitty gritty."
- ],
- [
-  "P",
-  "56:29",
-  "Ok."
- ],
- [
-  "F",
-  "56:31",
-  "Ok, poate poți să-l ștergi, da."
- ],
- [
-  "P",
-  "56:33",
-  "Cred că trebuie, că altfel... altfel în situația asta, cum forțezi pe unul dacă nu e dispus să treacă printr-o mie de documente să bage gunoiul acolo, știi? Și... Da, sau să-l reia."
- ],
- [
-  "F",
-  "56:43",
-  "Ok."
- ],
- [
-  "P",
-  "56:44",
-  "Asta e, punem atunci decizie aici, dacă vrea să facă edit, bine, dacă nu, poate să-i dea delete."
- ],
- [
-  "F",
-  "56:51",
-  "Da."
- ],
- [
-  "P",
-  "56:52",
-  "Atunci poate astea-s direct editabile."
- ],
- [
-  "F",
-  "56:55",
-  "Da, dar atunci n-are sens label-ul. Adică dacă îi dai delete..."
+  "O",
+  "55:51",
+  "Da, dar atunci n-are sens label-ul."
  ],
  [
   "P",
   "57:02",
-  "Dacă-i dai delete, da. Dar dacă deschid ăsta și expandez și dau, pot să scriu aici. Da."
+  "Dacă-i dai delete, da. Dar dacă deschid ăsta, expandez și dau, pot să scriu aici."
  ],
  [
   "F",
-  "57:08",
-  "Așa. Și ce mai scosesem eu? Metrics to show for each model train. A, metricele pentru modelul antrenat. Acest average accuracy."
- ],
- [
-  "P",
-  "57:17",
-  "Așa, mai zisese și Horia. Și acest per class ratio între correct prediction and available test data."
- ],
- [
-  "F",
-  "57:27",
-  "Câte a ghicit din câte a avut în training."
+  "57:06",
+  "A, da, ok. Și ce mai scosesem eu? „Metrics to show for each model train” — metricele pentru modelul antrenat. Average accuracy. Și un per-class ratio între correct prediction și available test data — câte a ghicit din câte a avut în training."
  ],
  [
   "P",
   "57:32",
-  "Mai zisese și Horia niște chestii. Odată să vezi când are confidence mic, să vezi ce mai voia, ce ce era tentat să mai label-uiască."
+  "Mai zisese și Horia niște chestii: când are confidence mic, să vezi ce era tentat să mai labeluiască."
  ],
  [
-  "F",
-  "57:41",
-  "Nu aș prinde doar pe cele de confidence mai mic, aș pune pe toate la hover."
+  "O",
+  "57:42",
+  "Nu aș prinde doar pe cele de confidence mai mic — aș pune pe toate la hover."
  ],
  [
   "P",
   "57:45",
-  "Deci ai 98% ceva, 2% altceva. Da."
- ],
- [
-  "F",
-  "57:49",
-  "Și mai era ceva, mai erau niște chestii, dar am trecut un pic pe ele, dar..."
+  "Deci ai „98% ceva, 2% altceva”."
  ],
  [
   "P",
-  "57:55",
-  "Ăsta e cu classic, de ce sunt la... Erau multe... Single overall accuracy, ok. Și mai era ceva per class, show per class recall. Mamă, ce bine ar ieși ăsta."
- ],
- [
-  "F",
-  "58:09",
-  "Da."
+  "58:03",
+  "Single overall accuracy, ok. Și mai era ceva per class — show per-class recall."
  ],
  [
   "P",
-  "58:11",
-  "Dar nu, chiar ești..."
- ],
- [
-  "F",
-  "58:12",
-  "Product. Da. Bagă."
- ],
- [
-  "P",
-  "58:14",
-  "Și m-am uitat în schimb și e încă mult bullshit acolo, dar mai poate fi optimizat ceva."
- ],
- [
-  "F",
   "58:20",
-  "Ok, le bag și pe astea, că păreau destul de generale, adică nu părea ceva de super user."
+  "Le bag și pe astea, că păreau destul de generale — nu ceva de super-user."
  ],
  [
-  "P",
+  "O",
   "58:26",
   "Da, doar să mai verificăm o dată cu Claude cum se calculează metricele alea."
  ],
  [
+  "P",
+  "58:32",
+  "That sounds like it."
+ ],
+ [
+  "O",
+  "58:37",
+  "Mi-a arătat aici. Frumos."
+ ],
+ [
   "F",
-  "58:31",
-  "Da. That sounds like it's going to work."
+  "58:41",
+  "Că nu e suficient să te uiți la transcript."
  ],
  [
   "P",
-  "58:35",
-  "Uite și screenshot de când vorbeam. Mi-a arătat aici."
- ],
- [
-  "F",
-  "58:39",
-  "Frumos. Da."
- ],
- [
-  "P",
-  "58:40",
-  "Chiar... Că nu e suficient să te uiți la transcript."
- ],
- [
-  "F",
   "58:44",
-  "Hai că închid... Yes. meeting-ul ăsta. Mersi."
+  "Hai că închid meeting-ul ăsta. Mersi."
  ],
  [
-  "P",
+  "F",
   "58:48",
   "Mersi mult, Bogdan."
  ],
  [
-  "F",
+  "P",
   "58:49",
-  "Și... Cred că ăsta o să fie cel mai greu de..."
+  "Cred că ăsta o să fie cel mai greu de făcut."
  ]
 ];
 
 const IDEAS = [
  {
   "id": "idea-01",
-  "title": "On entry, surface exactly which model is running now",
-  "category": "design_insight",
-  "detail": "Ana's core need: regardless of how many candidates exist, the first thing you see should be exactly what's live on the nodes — so that days later, if a node misclassifies, you can come back and see the exact model (and its class snapshot) that was running.",
-  "quote": "three days later, vreau să văd exact ce rulează în momentul ăsta pe noduri… să pot să mă întorc aici și să văd exact cum a arătat modelul pe care a rulat.",
+  "title": "One-click “start training with all data” for the first iteration",
+  "category": "feature_request",
+  "detail": "Ana proposed a fast path: a button that trains on the whole corpus plus whatever you just uploaded, so the first iteration is low-effort. A second button (“send to training corpus”) covers add-without-train, and you can still train on a subset — but the happy path is upload-then-train-on-everything.",
+  "quote": "să ai și o opțiune de „start training with all data”, care o să conțină tot corpusul plus datele pe care le-ai mai încărcat.",
   "speaker": "F",
   "confidence": "high",
   "needs": false,
   "anchors": [
-   163,
-   155,
-   157
+   7,
+   9,
+   10
   ],
   "topics": [
-   "Tab structure & navigation",
-   "Comparison, promotion & metrics"
+   "Corpus & data split",
+   "Training & candidates"
   ]
  },
  {
   "id": "idea-02",
-  "title": "Overview = read-only snapshot of the running model; edit classes elsewhere",
+  "title": "Two explicit upload actions: “add to corpus” vs “add & train”",
   "category": "design_decision",
-  "detail": "Editing classes from inside a running model's overview is misleading (what does the edit affect?). Landed: overview is a read-only snapshot of the actively-used model — its classes, confusion matrix, distribution — and class editing moves to its own tab.",
-  "quote": "ar fi misleading să poți să editezi clasele din overview-ul unui model care rulează.",
-  "speaker": "F",
+  "detail": "The group converged on framing the upload outcome as two clear actions rather than an implicit one — add to the corpus only, or add and immediately train. Adding has no automatic effect on existing models.",
+  "quote": "Deci opțiunile sunt „add to corpus” sau „add și train”.",
+  "speaker": "P",
   "confidence": "high",
   "needs": false,
   "anchors": [
-   145,
-   138,
-   136
+   6,
+   10,
+   11
   ],
   "topics": [
-   "Tab structure & navigation",
-   "Classes ↔ model coupling"
+   "Corpus & data split"
   ]
  },
  {
   "id": "idea-03",
-  "title": "Agreed tab structure: main model + candidates / classes / corpus",
-  "category": "design_decision",
-  "detail": "The reorganization the two converged on: a tab with the main model plus the other promotable models, a classes tab, and a corpus tab — you train from corpus and a new candidate appears in the main tab to promote or not. Ana: \"pare un flow ok.\"",
-  "quote": "am avea un tab cu modelul main și cu celelalte modele care pot fi făcute main, un tab cu clase și un tab cu corpus.",
-  "speaker": "P",
-  "confidence": "high",
+  "title": "Make moving documents between train/test pool easy + clearer split",
+  "category": "feature_request",
+  "detail": "Ana wants an obvious way to reassign a document from the training pool to the testing pool (e.g. a segmented-button filter like the post-train views). Open: whether the 80/20 split is applied per page or per document — she's confident it's per page, not per document.",
+  "quote": "m-ar ajuta să am o modalitate ușoară să mă trec din train în test… un filtru mai evident.",
+  "speaker": "F",
+  "confidence": "medium",
   "needs": false,
   "anchors": [
-   164,
-   167,
-   171
+   14,
+   15
   ],
   "topics": [
-   "Tab structure & navigation"
+   "Corpus & data split"
   ]
  },
  {
   "id": "idea-04",
-  "title": "Rename the “training” tab — “candidates” vs “trained models” still open",
-  "category": "naming_copy",
-  "detail": "The “training” tab is not only where you train — it's also where already-trained variants live, so it needs a better name. Options floated: candidates, versions, trained models. Leaning toward “trained models”/“candidates” but not finalized.",
-  "quote": "nu e doar zona unde trainezi, este zona și unde trăiesc cei trainați deja. E lista de variante de model.",
+  "title": "Optional custom name + date label when adding documents to the corpus",
+  "category": "feature_request",
+  "detail": "Beyond the auto-applied tags, Bogdan wants an optional free label/name at add-time so documents can be filtered later — today you only have class and date to filter by. Ana added: also tag the date they were ingested.",
+  "quote": "ai putea să adaugi opțional și un label, un nume… și după aia te ajută să le filtrezi.",
   "speaker": "P",
   "confidence": "medium",
   "needs": false,
   "anchors": [
-   87,
-   93,
-   94
+   16,
+   17,
+   18
   ],
   "topics": [
+   "Corpus & data split",
    "Naming & labels"
   ]
  },
  {
   "id": "idea-05",
-  "title": "Rename the catch-all class “misc” → “other” (or “unknown”)",
-  "category": "naming_copy",
-  "detail": "Ana proposed renaming “misc” to “other”; Bogdan-designer agreed and had been thinking the same (“other” or “unknown”) for the empty/catch-all class.",
-  "quote": "să schimbăm misc cu other.",
+  "title": "Don't duplicate the corpus table in the Train tab",
+  "category": "design_decision",
+  "detail": "Bogdan's prototype duplicated the corpus table under Train (with a train button instead of delete). Ana questioned duplicating it; this fed directly into rethinking the tab structure — training shouldn't be its own redundant table view.",
+  "quote": "nu știu dacă are sens să duplicăm tabelul ăsta.",
   "speaker": "F",
-  "confidence": "high",
+  "confidence": "medium",
   "needs": false,
   "anchors": [
-   182,
-   183
+   22,
+   24,
+   25
   ],
   "topics": [
-   "Naming & labels"
+   "Information architecture",
+   "Training & candidates"
   ]
  },
  {
   "id": "idea-06",
-  "title": "Empty states must hand the user their next concrete step",
-  "category": "design_decision",
-  "detail": "Empty states should guide the user contextually depending on what they already have: no classes → “make a class”; classes but no data → “add training data”; ready → “train a model.” Ana: the empty state gives you the first step to take.",
-  "quote": "dacă ai clase, dar n-ai training data, îți zice, ok, fă o clasă, pune training… te ghidează cumva în ce poți să faci.",
-  "speaker": "P",
+  "title": "Candidates list: per-model status, cancel in-progress, parallel training",
+  "category": "feature_request",
+  "detail": "After triggering a train, you land on a table of all candidates with details, status, and actions. Ana wants to cancel an in-progress run and to allow several trainings in parallel — since each trains from scratch, the only real limit is compute.",
+  "quote": "să putem avea mai mulți in progress… nu e un motiv pentru care n-aș putea antrena în paralel două modele. În afară de resurse.",
+  "speaker": "F",
   "confidence": "high",
   "needs": false,
   "anchors": [
-   188,
-   189,
-   190
+   27,
+   28,
+   30
   ],
   "topics": [
-   "Empty states & guidance"
+   "Training & candidates"
   ]
  },
  {
   "id": "idea-07",
-  "title": "Add brief, in-context concept definitions at the point of creation",
-  "category": "feature_request",
-  "detail": "Ana wants very short definitions of each concept surfaced where it's used (what a class is, why a description matters). Bogdan-designer agreed but would put it at the moment of creation, not as a wall of text on the page (“n-o s-o citească”).",
-  "quote": "să aduc niște mici definiții very short despre conceptul respectiv… să-ți explic briefly ce e o clasă.",
-  "speaker": "F",
+  "title": "Naming the model-variants area is unresolved: Candidates / Trained models / versions",
+  "category": "open_question",
+  "detail": "“Training” undersells it — the area also holds already-trained variants (the list of model versions). Bogdan likes “Candidates”; Ana floated “Trained models” and “versions”. Also unresolved: what to call a single variant (“model” is wrong since there are many). Left open.",
+  "quote": "rămâne să vedem ce nume ar fi cel mai bun… „Candidates” sună bine, dar poate ne vine și altceva.",
+  "speaker": "P",
   "confidence": "medium",
   "needs": false,
   "anchors": [
-   199,
-   200,
-   204
+   31,
+   32,
+   61,
+   62
   ],
   "topics": [
-   "Empty states & guidance"
+   "Naming & labels",
+   "Training & candidates"
   ]
  },
  {
   "id": "idea-08",
-  "title": "Classes are part of the model definition → editing them forces a retrain",
-  "category": "design_insight",
-  "detail": "Because classes are part of the model's definition, changing a class means the model should be retrained — though it depends on what exactly you change.",
-  "quote": "clasele fiind o parte din definiția modelului, modelul ar trebui reantrenat. Dar depinde ce modifici la clase.",
-  "speaker": "F",
+  "title": "Don't keep Testing/Comparison as a top-level tab — nest it under a model",
+  "category": "design_decision",
+  "detail": "Bogdan argued testing/comparison shouldn't sit parallel to training: with five models you'd get five such pages. Comparison and a model's test view belong nested inside a selected model (or reached by clicking a trained model), not as a sibling tab.",
+  "quote": "poate o scot și o pun nested în interiorul unui model… vor fi cinci pagini de genul ăsta dacă ai cinci modele.",
+  "speaker": "P",
   "confidence": "high",
   "needs": false,
   "anchors": [
-   277,
-   275,
-   283
+   34,
+   35
   ],
   "topics": [
-   "Classes ↔ model coupling"
+   "Information architecture",
+   "Comparison & metrics"
   ]
  },
  {
   "id": "idea-09",
-  "title": "After promotion, classes & positive examples are frozen — editable only inside a train action",
-  "category": "design_decision",
-  "detail": "Bogdan-designer raised the risk that editing examples on a candidate could silently change the live model. Ana's resolving rule: once a model is promoted, its classes and positive examples are frozen, and you can only edit them as part of a (re)train decision.",
-  "quote": "după ce ai promovat un model, clasele și positive examples sunt frozen și… poți să le editezi când antrenezi.",
+  "title": "Show each model's classes — models may be trained on different class sets",
+  "category": "feature_request",
+  "detail": "Ana wants per-model class info surfaced, because different candidates can be trained on different classes (and class details may have changed between trainings).",
+  "quote": "aș scoate clasele, pentru că e posibil să fie antrenate pe clase diferite.",
   "speaker": "F",
   "confidence": "high",
   "needs": false,
   "anchors": [
-   304,
-   306,
-   301,
-   303
+   36,
+   37
   ],
   "topics": [
-   "Classes ↔ model coupling",
-   "Examples & keywords editing"
+   "Classes & keywords",
+   "Comparison & metrics"
   ]
  },
  {
   "id": "idea-10",
-  "title": "Positive/negative examples are user-provided and live at the class (resource) level",
-  "category": "design_decision",
-  "detail": "Distinction drawn by Ana: positive/negative examples are provided by the user from scratch, so they belong at the class/resource level — unlike the system keywords, which are an output of training.",
-  "quote": "positive, negative examples mi se pare că are sens să fie la nivel de resursă, pentru că alea sunt date de către user, sunt propuse de către user from scratch.",
-  "speaker": "F",
+  "title": "A model's snapshot of classes can drift from the current (edited) class definitions",
+  "category": "design_insight",
+  "detail": "Bogdan flagged the conceptual risk that the Overview of a running “main” model shows current class definitions, which may no longer match the classes that model was actually trained on. Not necessarily a bug — but the UI must make the distinction explicit. This is what drove splitting Overview (read-only running model) from editable Classes.",
+  "quote": "poți avea un overview al unui model main care nu mai reflectă ce vezi în clasă… doar să fim aware.",
+  "speaker": "P",
   "confidence": "high",
   "needs": false,
   "anchors": [
-   300,
-   298
+   38,
+   42,
+   45
   ],
   "topics": [
-   "Examples & keywords editing",
-   "Classes ↔ model coupling"
+   "Overview & current model",
+   "Classes & keywords"
   ]
  },
  {
   "id": "idea-11",
-  "title": "Editing system (SPLADE) keywords is an advanced feature — defer, but don't architecturally block it",
+  "title": "Split read-only “Overview / current running model” from editable “Classes”",
   "category": "design_decision",
-  "detail": "Bogdan-researcher argued a power user would want to view/edit the SPLADE keywords the model derives. Ana pushed back on scope — nobody but Horia would use it (“deja facem ML Ops aici”). Landed: a genuine advanced use case tied to the training process — not in the first phase, but worth knowing if it's ever wanted so the architecture allows it. Bogdan-designer sees it as a hidden ultra-power-user feature.",
-  "quote": "e clar că e ceva ce ține de procesul de antrenare a modelului… it's for sure something advanced.",
-  "speaker": "B",
-  "confidence": "medium",
+  "detail": "Landing point of a long exchange: Overview is a read-only snapshot of the model running now (its classes, confusion matrix, distribution — no testing); a separate Classes tab is where you actually edit classes. Editing classes from a running model's overview would be misleading. “settings” was rejected as a confusing label.",
+  "quote": "ar fi misleading să poți edita clasele din overview-ul unui model care rulează… hai să păstrăm overview ca să vezi cum arată modelul care rulează acum.",
+  "speaker": "F",
+  "confidence": "high",
   "needs": false,
   "anchors": [
-   337,
-   347,
-   348,
-   354,
-   374,
-   375
+   41,
+   43,
+   47,
+   49,
+   50
   ],
   "topics": [
-   "Examples & keywords editing"
+   "Overview & current model",
+   "Information architecture",
+   "Classes & keywords"
   ]
  },
  {
   "id": "idea-12",
-  "title": "Editing/deleting system keywords triggers a retrain and yields a new candidate",
+  "title": "Overview must show exactly what's running, for debugging misclassifications later",
   "category": "design_insight",
-  "detail": "After some back-and-forth (was it retrain or just retest?), the researcher's clarification settled it: editing or deleting the system keywords goes back into the model, so any such edit triggers a retrain and produces a new candidate with its own results.",
-  "quote": "orice editare a acelor keywords, fie că-s cele pozitive, fie că-s negative, o să trigger-uiască o reantrenare și o să vezi… rezultatele ca un alt candidate.",
+  "detail": "Ana's core need: even with many versions/candidates, see at a glance the version actively used in the workflow — including a class snapshot — so that days later, if a node misclassifies, she can return and see exactly how the running model looked.",
+  "quote": "three days later vreau să văd exact ce rulează pe noduri… să mă întorc aici și să văd exact cum a arătat modelul pe care a rulat.",
   "speaker": "F",
-  "confidence": "medium",
+  "confidence": "high",
   "needs": false,
   "anchors": [
-   375,
-   344,
-   346
+   44,
+   53,
+   54
   ],
   "topics": [
-   "Examples & keywords editing",
-   "Classes ↔ model coupling"
+   "Overview & current model"
   ]
  },
  {
   "id": "idea-13",
-  "title": "System keywords are baked into a trained candidate, hidden initially, tied to that version",
-  "category": "design_insight",
-  "detail": "Training a model produces, per class, a series of keywords that you don't see initially — they're baked into the trained candidate and belong to that specific version; surfacing/editing them later means retraining.",
-  "quote": "în urma antrenării îți iese modelul antrenat, plus pe fiecare clasă, seria aia de keyword-uri… pe care n-o s-o vezi inițial… ea o să țină de un candidat.",
-  "speaker": "F",
-  "confidence": "medium",
+  "title": "Agreed IA: Overview (main + promotable models) / Classes / Corpus",
+  "category": "design_decision",
+  "detail": "The structure they landed on: a tab for the main model plus other promotable models, a Classes tab, and a Corpus tab. You train from the corpus; each train adds a candidate to the main tab, which you can choose to promote (set as default via a star) — reversibly.",
+  "quote": "am avea un tab cu modelul main și celelalte modele care pot fi făcute main, un tab cu clase și un tab cu corpus… pare un flow ok.",
+  "speaker": "P",
+  "confidence": "high",
   "needs": false,
   "anchors": [
-   367,
-   371
+   50,
+   55,
+   56,
+   57,
+   58
   ],
   "topics": [
-   "Examples & keywords editing"
+   "Information architecture"
   ]
  },
  {
   "id": "idea-14",
-  "title": "Root of the confusion: positive/negative examples ≠ SPLADE keywords",
-  "category": "design_insight",
-  "detail": "Ana flagged her own mistaken assumption — that positive/negative examples and the model's keywords were the same thing — as the source of the confusion. This is what prompted calling in Bogdan-researcher, who separated user-provided examples (input) from training-derived keywords (output via SPLADE + LightGBM).",
-  "quote": "asumpția mea că positive and negative examples și aceste keywords pe care le folosește modelul sunt același lucru, it's wrong.",
+  "title": "Empty states should guide the first step based on what the user already has",
+  "category": "design_decision",
+  "detail": "From any empty state the system should tell the user the next concrete step — no classes → “make a class”; classes but no data → “add training data”; data but no trained model → “train a model”. Both felt this would make the flow clearer than the current live version.",
+  "quote": "empty state-ul îți dă primul pas pe care trebuie să-l faci, depinzând de unde ești și ce ai deja.",
   "speaker": "F",
-  "confidence": "medium",
+  "confidence": "high",
   "needs": false,
   "anchors": [
-   313,
-   319
+   58,
+   63,
+   64,
+   65
   ],
   "topics": [
-   "Examples & keywords editing"
+   "Empty states & onboarding"
   ]
  },
  {
   "id": "idea-15",
-  "title": "Comparison summary: an agent that narrates win/loss and recommends which candidate to promote",
-  "category": "feature_request",
-  "detail": "Reading the comparison matrix directly is tiring; Ana (from Șerban's suggestion) wants a natural-language summary of what was gained/lost between two candidates plus a recommendation on which to promote. Bogdan-designer: “Recomandarea mea este să-l promovezi pe ăsta.” Most useful when two models genuinely behave differently and it's unclear which is better overall.",
-  "quote": "practic tu te uiți la matricea asta, dar e un pic obositor și… să-ți zică ok, ce s-a câștigat, ce s-a pierdut în mare și… îți dă și o recomandare dacă tu să mergi pe el.",
+  "title": "Rename the catch-all class “misc” → “other” (or “unknown”)",
+  "category": "naming_copy",
+  "detail": "Quick naming fix Ana raised and Bogdan agreed: the default catch-all class should be “other”/“unknown” rather than “misc”.",
+  "quote": "să schimbăm „misc” cu „other”.",
   "speaker": "F",
-  "confidence": "medium",
+  "confidence": "high",
   "needs": false,
   "anchors": [
-   411,
-   398,
-   414
+   60,
+   61
   ],
   "topics": [
-   "Comparison, promotion & metrics"
+   "Naming & labels"
   ]
  },
  {
   "id": "idea-16",
-  "title": "Comparison highlights could also be derived rule-based, not only via an agent",
-  "category": "design_insight",
-  "detail": "Bogdan-researcher pointed out the comparison highlights (e.g. “most confused” classes) can be pulled rule-based from the confusion matrix, not necessarily through an LLM agent — complementing Ana's agent-summary idea.",
-  "quote": "poți să le scoți și rule-based, știi?… Uite cum e aia, most confused, știi?",
-  "speaker": "B",
+  "title": "Short inline concept definitions — at the moment of action, not dumped on the page",
+  "category": "design_decision",
+  "detail": "Ana wants very short definitions of concepts on empty states (what a class is, and why a description matters). Bogdan refined the placement: don't put all the explanation on the page (users won't read it) — surface it contextually at creation time. Partly already happening.",
+  "quote": "să scriu niște mici definiții very short despre concept… — n-aș da toată informația direct pe pagină, dar când creezi o clasă: „ce e o clasă?”.",
+  "speaker": "F",
   "confidence": "medium",
   "needs": false,
   "anchors": [
-   402,
-   404
+   67,
+   68
   ],
   "topics": [
-   "Comparison, promotion & metrics"
+   "Empty states & onboarding"
   ]
  },
  {
   "id": "idea-17",
-  "title": "Auto-promote a candidate on improvement, gated on no degradation of critical labels",
-  "category": "design_decision",
-  "detail": "If a candidate is better than the current one it could auto-promote — the gating rule being no degradation on critical labels and improvement on everything else.",
-  "quote": "dacă vezi că e mai bună ca ailaltă, se autopromoveze… nu ai degradation pe critical labels și că ai improvement pe orice altceva.",
-  "speaker": "F",
+  "title": "Surface model-suggested class improvements as a non-intrusive “sparkles” card with a diff",
+  "category": "feature_request",
+  "detail": "Instead of a modal interrupting a test run, Bogdan proposed a small “sparkles” card in the Classes tab: “we found improvements you can make” → review → a diff between current class data and what's proposed → tick to accept (“yes, update them”).",
+  "quote": "un mini-card din ăla cu sparkles care zice „am identificat niște îmbunătățiri”… îți face un diff… și le dai bifă.",
+  "speaker": "P",
   "confidence": "medium",
   "needs": false,
   "anchors": [
-   417,
-   418,
-   419
+   73,
+   74
   ],
   "topics": [
-   "Comparison, promotion & metrics"
+   "Classes & keywords"
   ]
  },
  {
   "id": "idea-18",
-  "title": "Train multiple candidates in parallel; cancel in-progress runs; show per-candidate status",
-  "category": "feature_request",
-  "detail": "Since training is from scratch, there's no reason you couldn't train several candidates in parallel (only back-end resources limit it); you should also be able to cancel an in-progress run and see a status per candidate.",
-  "quote": "se face from scratch, atunci nu… e un motiv pentru care n-aș putea să antrenez în paralel două modele. În afară de obviously resurse.",
+  "title": "Positive/negative examples & keywords are an OUTPUT of training, not a pre-set class definition",
+  "category": "context",
+  "detail": "Key clarified concept (Ana, relaying Horia + the engineer): training (SPLADE + LightGBM) identifies keywords from your labeled data, converts them to vectors, and matches documents to classes. The per-class keyword list is produced by training and is baked into the trained model — it isn't visible up front, and it's tied to a specific candidate. Positive/negative examples can be user-provided up front OR emerge from training.",
+  "quote": "în urma antrenării îți iese modelul antrenat plus, pe fiecare clasă, seria aia de keyword-uri — care nu o vezi inițial… există baked in modelul antrenat.",
   "speaker": "F",
-  "confidence": "medium",
+  "confidence": "high",
   "needs": false,
   "anchors": [
+   75,
    85,
-   83,
-   390
+   120,
+   121,
+   122
   ],
   "topics": [
-   "Corpus & training flow",
-   "Comparison, promotion & metrics"
+   "Classes & keywords"
   ]
  },
  {
   "id": "idea-19",
-  "title": "Corpus add options: “add to corpus” vs “add & train”; expose “start training with all data”",
+  "title": "Editing/deleting trained keywords must trigger a re-train → produces a new candidate",
   "category": "design_decision",
-  "detail": "Ana's model for the corpus actions: a “send to training corpus” button and a “start training with all data” option (upload + full corpus). The happy path: upload something, then train on upload + existing corpus. Bogdan-designer summarized it as “add to corpus” or “add & train.”",
-  "quote": "happy path-ul o să fie… în multe cazuri să poți să încarci ceva și apoi să antrenezi cu ce ai încărcat plus corpusul existent.",
+  "detail": "Since keywords are bound to a trained model version, any edit/delete of positive/negative keywords forces a re-train, yielding a new candidate with its own score. Bogdan also wants a permission toggle so a re-train doesn't silently overwrite manual edits. Ana would keep this out of the first release but design for it, since mid-project it'll be needed.",
+  "quote": "orice editare a acelor keywords… o să triggeruiască o reantrenare și o să vezi rezultatele ca un alt candidate.",
   "speaker": "F",
   "confidence": "high",
   "needs": false,
   "anchors": [
-   22,
-   27,
-   29
+   94,
+   112,
+   126
   ],
   "topics": [
-   "Corpus & training flow"
+   "Classes & keywords"
+  ],
+  "conflictsWith": [
+   "idea-20"
   ]
  },
  {
   "id": "idea-20",
-  "title": "Allow an optional name/label when adding to the corpus (beyond class + date)",
-  "category": "feature_request",
-  "detail": "Bogdan-designer suggested that when you add something to the corpus you could optionally attach a name/label, which then helps you filter — today you only have class and date. Ana would also surface the date it was added.",
-  "quote": "în momentul când tu adaugi ceva în corpus, ai putea să adaugi opțional și un label, un nume undeva, știi?",
-  "speaker": "P",
+  "title": "Keyword editing is too ML-Ops / niche — “nobody but Horia will use it”",
+  "category": "design_insight",
+  "detail": "The engineer pushed back that exposing keyword editing is essentially ML-Ops and effectively nobody on a real project would use it except a power user like Horia — “minimum minimorum, the smallest granularity.” In tension with shipping it as an (eventually necessary) advanced feature; they converged on building it but hiding it as an ultra-power-user capability.",
+  "quote": "deja facem ML Ops aici, n-o să folosească nimeni… decât Horia.",
+  "speaker": "O",
   "confidence": "medium",
   "needs": false,
   "anchors": [
-   48,
-   51,
-   53
+   113,
+   116,
+   119,
+   125
   ],
   "topics": [
-   "Corpus & training flow",
-   "Naming & labels"
+   "Classes & keywords"
+  ],
+  "conflictsWith": [
+   "idea-19"
   ]
  },
  {
   "id": "idea-21",
-  "title": "Easy train↔test toggle (segmented-button filter); clarify the 80/20 per-page split",
+  "title": "Natural-language summary comparing two candidates (what was gained/lost + a recommendation)",
   "category": "feature_request",
-  "detail": "Ana wants an easy way to move items between train and test (a segmented-button-style filter like the one after train). Also agreed to clarify that after adding, data is split 80/20 (20% testing) and that the split is per-page, not per-document.",
-  "quote": "m-ar ajuta să am o modalitate ușoară să pot să mă trec din train în test… un segmented button or something.",
-  "speaker": "F",
+  "detail": "Reading the confusion matrix to compare candidates is tiring; the group (Bogdan + Ana, originally Șerban's suggestion) wants a plain-language summary of what improved/regressed plus a recommendation (e.g. “I recommend promoting this one”). Open whether it needs an agent or can be rule-based.",
+  "quote": "poate să-ți zică ce s-a câștigat, ce s-a pierdut în mare, și o recomandare… „Recomandarea mea e să-l promovezi pe ăsta”.",
+  "speaker": "P",
   "confidence": "medium",
   "needs": false,
   "anchors": [
-   45,
-   47,
-   44,
-   57
+   131,
+   135,
+   137
   ],
   "topics": [
-   "Corpus & training flow"
+   "Comparison & metrics"
   ]
  },
  {
   "id": "idea-22",
-  "title": "OCR confidence gate: below 0.6, route to an LLM fallback before classification",
-  "category": "design_decision",
-  "detail": "Bogdan-researcher proposed a quality gate: if the OCR score is below 0.6, don't go straight to classification — run an LLM pass to recover the page better first, then classify. Bogdan-designer: pages that still fail get a zero-confidence warning and no class.",
-  "quote": "dacă OCR score e sub 0.6, nu mă duc la clasificare… încearcă și un LLM… și atunci de abia poți să te duci la clasificare.",
-  "speaker": "B",
-  "confidence": "medium",
-  "needs": false,
-  "anchors": [
-   469,
-   471,
-   472
-  ],
-  "topics": [
-   "OCR & document handling"
-  ]
- },
- {
-  "id": "idea-23",
-  "title": "Let users edit or delete low-quality OCR text",
-  "category": "design_decision",
-  "detail": "Bogdan-designer wanted the OCR text editable so users can fix misreads; Ana noted that with a wall of text users would rather delete/skip than edit. Landed on supporting both — edit if you want, otherwise delete.",
-  "quote": "punem atunci decizie aici, dacă vrea să facă edit, bine, dacă nu, poate să-i dea delete.",
-  "speaker": "P",
-  "confidence": "high",
-  "needs": false,
-  "anchors": [
-   476,
-   492,
-   475,
-   477
-  ],
-  "topics": [
-   "OCR & document handling"
-  ]
- },
- {
-  "id": "idea-24",
-  "title": "Per-model metrics: average accuracy + per-class recall, with per-prediction confidence on hover",
+  "title": "Auto-promotion rule: no degradation on critical labels + improvement elsewhere",
   "category": "feature_request",
-  "detail": "From Horia's input: show single overall (average) accuracy and per-class recall (correct predictions vs available test data). Ana would surface the lower-confidence breakdown on hover for all predictions, not only the low-confidence ones.",
-  "quote": "Single overall accuracy, ok. Și mai era ceva per class, show per class recall. Mamă, ce bine ar ieși ăsta.",
-  "speaker": "P",
-  "confidence": "medium",
-  "needs": false,
-  "anchors": [
-   504,
-   498,
-   501
-  ],
-  "topics": [
-   "Comparison, promotion & metrics"
-  ]
- },
- {
-  "id": "idea-25",
-  "title": "Model type choice (document classifier vs generic binary) changes whether an “other” class is needed",
-  "category": "design_insight",
-  "detail": "When creating a model you'd choose between a document classifier and a generic binary model. A generic binary model classifies binary, so it doesn't need the “other” catch-all class — and much of this document-classification flow wouldn't apply to it.",
-  "quote": "când alegi ce model faci, o să alegi între document classifier și generic binary model sau ceva.",
+  "detail": "The engineer pointed at his existing “promotion” algorithm: confidence classes that auto-promote a candidate when it beats the current one. Ana sharpened the rule: promote when there's no degradation on critical labels and improvement on everything else.",
+  "quote": "că n-ai degradation pe critical labels și că ai improvement pe orice altceva.",
   "speaker": "F",
   "confidence": "medium",
   "needs": false,
   "anchors": [
-   450,
-   442,
-   443
+   139,
+   140,
+   141
   ],
   "topics": [
-   "Classes ↔ model coupling",
-   "Naming & labels"
+   "Comparison & metrics"
+  ]
+ },
+ {
+  "id": "idea-23",
+  "title": "OCR confidence gate before classification — don't feed garbage OCR into training",
+  "category": "design_decision",
+  "detail": "The engineer's pipeline rule: if OCR score < 0.6, don't classify — route to an LLM that re-extracts the page better, then classify. Garbage OCR text must not enter model training. Low-confidence pages can be surfaced with zero confidence and no class.",
+  "quote": "dacă OCR score e sub 0.6, nu mă duc la clasificare… n-ar trebui să aduci garbage textul OCR în model training.",
+  "speaker": "O",
+  "confidence": "high",
+  "needs": false,
+  "anchors": [
+   156,
+   158,
+   159
+  ],
+  "topics": [
+   "OCR & document quality"
+  ]
+ },
+ {
+  "id": "idea-24",
+  "title": "Let users edit OR delete low-quality OCR text — add a decision point on the document",
+  "category": "design_decision",
+  "detail": "For garbage OCR, Bogdan argued you must be able to skip/delete (you can't force someone to fix thousands of docs); Ana leaned to letting the user edit. They converged: offer a decision — edit if you want, otherwise delete. Editable text lives in the expanded document view (not just the label).",
+  "quote": "hai să punem decizie aici: dacă vrea să facă edit, bine; dacă nu, poate să-i dea delete.",
+  "speaker": "F",
+  "confidence": "high",
+  "needs": false,
+  "anchors": [
+   161,
+   165,
+   167
+  ],
+  "topics": [
+   "OCR & document quality"
+  ]
+ },
+ {
+  "id": "idea-25",
+  "title": "Per-model metrics to show: overall accuracy, per-class recall/ratio, confidence on hover",
+  "category": "feature_request",
+  "detail": "Metrics to surface for each trained model: single overall accuracy, a per-class ratio of correct predictions vs available test data, per-class recall, and — per the engineer — the confidence breakdown on hover for every class (not only low-confidence ones). Treated as general, not super-user.",
+  "quote": "Single overall accuracy… show per-class recall… aș pune pe toate la hover.",
+  "speaker": "P",
+  "confidence": "high",
+  "needs": true,
+  "q": "Confirm with engineering exactly how each metric (accuracy, per-class recall, the correct/available-test-data ratio) is computed — they flagged “să mai verificăm o dată cu Claude cum se calculează metricele alea”.",
+  "anchors": [
+   168,
+   170,
+   172,
+   174
+  ],
+  "topics": [
+   "Comparison & metrics"
+  ]
+ },
+ {
+  "id": "idea-26",
+  "title": "Generic (non-document-classifier) model needs no “other” class",
+  "category": "open_question",
+  "detail": "Relaying Horia: a generic binary model classifies binary, so it doesn't need the “other” catch-all. This points to a model-type choice up front — “document classifier” vs “generic binary model” — but the engineer noted much of this corpus/training flow may not apply to the generic case. Left unresolved.",
+  "quote": "dacă o să avem un model generic, nu ai nevoie de acel „other”, că el oricum clasifică binar.",
+  "speaker": "F",
+  "confidence": "low",
+  "needs": false,
+  "anchors": [
+   147,
+   148,
+   149
+  ],
+  "topics": [
+   "Classes & keywords",
+   "Information architecture"
   ]
  }
 ];
@@ -3474,42 +1819,89 @@ const IDEAS = [
 const REPAIRS = {
  "auto": [
   [
-   "Splayd · Splayd-ul · splayd",
-   "SPLADE  (sparse retrieval model)"
+   "Splay · Splai · splay-ul",
+   "SPLADE (sparse keyword→vector retrieval model)"
+  ],
+  [
+   "LightGBM · lait GBM",
+   "LightGBM"
+  ],
+  [
+   "corpus · corpul · corpusul",
+   "corpus / corpusul"
+  ],
+  [
+   "candidați · candidates · candidate",
+   "candidate / candidates"
+  ],
+  [
+   "confusion matrix · matricea de confuzie",
+   "confusion matrix"
+  ],
+  [
+   "training distribution · distribuția",
+   "training distribution"
+  ],
+  [
+   "positive și negative examples · positive/negative",
+   "positive and negative examples"
+  ],
+  [
+   "key-word-uri · keyword-uri · cuvinte cheie",
+   "keywords / keyword-uri"
+  ],
+  [
+   "OCR · ocr-ul",
+   "OCR"
+  ],
+  [
+   "re-embedded · ri-embedded",
+   "re-embedded"
+  ],
+  [
+   "ML Ops · ML ops · em el ops",
+   "ML Ops"
+  ],
+  [
+   "overview · overviu",
+   "overview"
+  ],
+  [
+   "segmented button",
+   "segmented button"
+  ],
+  [
+   "recall · ricol",
+   "recall"
+  ],
+  [
+   "accuracy · acurățețe",
+   "accuracy"
+  ],
+  [
+   "misc · miscul · miscul ăla",
+   "misc (catch-all class)"
+  ],
+  [
+   "Don't get it behind the motion. (21:40) · I don't think we have that much. (21:33)",
+   "__DROP__"
+  ],
+  [
+   "[neinteligibil] · Hăâ · repeated da/da/da · Mhm-uri",
+   "__DROP__"
   ]
  ],
  "confirm": [
   [
-   "@37:21–39:59 — gender tagger marked several of Ana's lines (m)",
-   "Confirmed in review: this exchange is Ana ↔ Bogdan (researcher), NOT the designer. Lines kept with Ana (Gemini's label); the (m) tags were mis-reads. Acoustic diarization didn't run, which is why the tag slipped."
+   "Close, but the division of labor is a bit different from SPLADE find keywords… Let me break down. (27:53)",
+   "Confirmed: Ana reading an on-screen Claude/LLM explanation aloud — kept as a quoted on-screen snippet, not her own words."
   ],
   [
-   "garblades textul OCR (54:20)",
-   "garbled (the OCR text)"
-  ],
-  [
-   "O să locuiești la astea de mâini (53:34)",
-   "best-guess: „o să lucrezi la astea mâine”"
-  ],
-  [
-   "ca să documenteiască (52:23)",
-   "ca să documenteze"
-  ],
-  [
-   "la sumatrice (49:09)",
-   "best-guess: „la sumar / summary”"
+   "Popa ăsta. Șerban cum îl cheamă? … DevOps",
+   "Bogdan referring to Șerban (DevOps) re: compute/CPU contention — confirm surname „Popa” / that this is the same Șerban referenced elsewhere."
   ]
  ],
- "query": [
-  [
-   "British cans (55:54, Bogdan-researcher)",
-   "Garbled term, still unresolved — what did he mean? Context: OCR misreads of important fields like claim → clim/glim. (Line reattributed to the researcher in review.)"
-  ],
-  [
-   "[neinteligibil] (39:59)",
-   "A line in the Ana ↔ researcher exchange was unintelligible in the audio — what was said? (likely unrecoverable)"
-  ]
- ]
+ "query": []
 };
 
 const turnToIdeas={};
@@ -3517,21 +1909,11 @@ IDEAS.forEach(it=>it.anchors.forEach(a=>{(turnToIdeas[a]=turnToIdeas[a]||[]).pus
 const ORIG={};IDEAS.forEach(it=>{ORIG[it.id]=it;});
 const REVIEW={edits:{},notes:{},repairComments:{},repairSectionNote:"",turnComments:{},reportNote:""};
 function effective(it){return Object.assign({},it,REVIEW.edits[it.id]||{});}
-const SPK = {
- "P": "Bogdan (designer)",
- "F": "Ana (PM)",
- "B": "Bogdan (researcher)",
- "O": "—"
-};
+const SPK={"P": "Bogdan — Designer", "F": "Ana — PM", "B": "—", "O": "ML Engineer"};
 
 // Session provenance — flattened onto every exported insight so each one is
 // self-describing in a cross-session pool. `id` (slug <feature>-<date>) is the namespace.
-const SESSION={
- "id": "ml-doc-training-bogdan-ana-2026-06-26",
- "feature": "Document-classifier model training UX",
- "date": "2026-06-26",
- "participant": "Bogdan (designer) · Ana (PM) · Bogdan (researcher)"
-};
+const SESSION={"id": "ml-doc-training-bogdan-ana-2026-06-26", "feature": "AI Document Classification — model training & management UI", "date": "2026-06-26", "participant": "Bogdan (Designer), Ana (PM), ML Engineer"};
 
 const scriptEl=document.getElementById('script');
 TURNS.forEach((t,i)=>{

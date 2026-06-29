@@ -20,22 +20,23 @@
  },
  {
   "id": "ml-doc-training-bogdan-ana-2026-06-26",
-  "title": "Document classifier — model training UX",
-  "feature": "Document-classifier model training UX",
+  "title": "AI Document Classification — training & management UI",
+  "feature": "AI Document Classification — model training & management UI",
   "date": "2026-06-26",
-  "participant": "Bogdan (designer) · Ana (PM) · Bogdan (researcher)",
+  "participant": "Bogdan (Designer), Ana (PM), ML Engineer",
   "file": "sessions/ml-doc-training-bogdan-ana-2026-06-26.html",
   "topics": [
-   "Classes ↔ model coupling",
-   "Comparison, promotion & metrics",
-   "Corpus & training flow",
-   "Empty states & guidance",
-   "Examples & keywords editing",
+   "Classes & keywords",
+   "Comparison & metrics",
+   "Corpus & data split",
+   "Empty states & onboarding",
+   "Information architecture",
    "Naming & labels",
-   "OCR & document handling",
-   "Tab structure & navigation"
+   "OCR & document quality",
+   "Overview & current model",
+   "Training & candidates"
   ],
-  "insights": 25,
+  "insights": 26,
   "published": "2026-06-29"
  },
  {
