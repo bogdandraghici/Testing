@@ -335,7 +335,16 @@
       was tagged Bogdan; <b>fixed</b>. The reflective line <b>„asumpția mea… it's wrong” reads as Bogdan-D</b>
       per the re-transcription + content (his Claude chat, his own assumption), but it was flagged as possibly
       Ana's — left as a best-guess and surfaced as an open query (idea-07 carries <i>needs confirmation</i>)
-      rather than silently flipped.</div>
+      rather than silently flipped.
+      <br><br><b>Diarization sweep of 20:00–40:00 (the keyword/retrain debate).</b> Re-transcribing this dense
+      Bogdan↔Ana stretch twice with the roster fed in showed the ASR diarization is <b>unstable on these
+      same-voice peer lines</b> — the two runs disagreed with each other (and with the original) on who-said-what,
+      e.g. one run put „l-am summonat pe Bogdan” on Ana and the other on Bogdan. So per-turn speakers in this zone
+      are <b>best-guess</b>, not reliable. What <i>is</i> solid is content-anchored: the English lines read aloud
+      from the Claude chat („I don't think we have that”, „Don't get it behind the motion”) are <b>Bogdan</b>
+      (it's his chat) — those were tagged Ana and are now <b>fixed</b>. idea-10 (retrain-vs-retest) sits in this
+      unstable zone and is flagged <i>needs confirmation</i>. The reliable way to settle the rest is your own
+      review (you were in the room): edit cards in place and hit <b>Send to Claude ↑</b>.</div>
     <p class="hint">Phase-1 repairs. <span style="color:var(--green)">Green</span> = applied ·
       <span style="color:var(--amber)">amber</span> = confirm · <span style="color:var(--mark)">red</span> = needs you.</p>
     <div id="repairs"></div>
@@ -1320,19 +1329,19 @@ const TURNS = [
   "Din..."
  ],
  [
-  "P",
+  "B",
   "21:33",
   "I don't think we have that."
  ],
  [
-  "P",
+  "B",
   "21:37",
   "Și ăsta cred că e relevant."
  ],
  [
-  "P",
+  "B",
   "21:40",
-  "<span class='unsure' title=\"ASR — citește cu voce tare din chat-ul cu Claude; frază engleză distorsionată\">Don't get it behind the motion.</span>"
+  "<span class='unsure' title=\"ASR — citește cu voce tare din chat-ul cu Claude (al lui Bogdan); frază engleză distorsionată\">Don't get it behind the motion.</span>"
  ],
  [
   "P",
@@ -2876,7 +2885,7 @@ const IDEAS = [
   "speaker": "B",
   "confidence": "high",
   "needs": true,
-  "q": "Quote attribution contested: re-transcription with the roster + content cues (his Claude chat, his own assumption) read this line as Bogdan-D, but it was flagged as possibly Ana's. Who said it — Bogdan-D or Ana?",
+  "q": "Two roster-steered re-transcriptions + content cues (his Claude chat, his own assumption) all read this line as Bogdan-D — but you flagged it as possibly Ana's. Confirm: Bogdan-D or Ana?",
   "anchors": [
    238,
    241,
@@ -2939,7 +2948,8 @@ const IDEAS = [
   "quote": "acțiunea pe care vrei să o faci după nu e să reantrenezi, e să retestezi.",
   "speaker": "B",
   "confidence": "medium",
-  "needs": false,
+  "needs": true,
+  "q": "This whole retrain-vs-retest exchange (~24:00–32:00) is the densest Bogdan↔Ana back-and-forth, and roster-steered re-transcription was unstable there (it disagreed with itself and with the original on who-said-what). Per-turn speakers in this zone are best-guess — confirm the attribution if it matters for this card.",
   "anchors": [
    193,
    220,
