@@ -329,7 +329,13 @@
       last chunk). Two Bogdans, so they're tagged <b>Bogdan-D</b> / <b>Bogdan-R</b>. Domain terms recovered:
       <b>„splay” → SPLADE</b> and <b>LightGBM</b> (the training pipeline). Heads-up on timestamps: the chunk-1
       cluster shown as 00:22–00:31 is an ASR re-basing artifact — that stretch is actually ~22–32 min and the
-      conversation is continuous; insight tracing uses turn order, not timestamps, so it's unaffected.</div>
+      conversation is continuous; insight tracing uses turn order, not timestamps, so it's unaffected.
+      <br><br><b>Diarization re-audit (peer-meeting pass).</b> Re-transcribing the contested ~33:30 stretch with
+      the speaker roster fed in showed <b>„L-am sunat pe Bogdan” is Ana</b> (she summoned the researcher) — it
+      was tagged Bogdan; <b>fixed</b>. The reflective line <b>„asumpția mea… it's wrong” reads as Bogdan-D</b>
+      per the re-transcription + content (his Claude chat, his own assumption), but it was flagged as possibly
+      Ana's — left as a best-guess and surfaced as an open query (idea-07 carries <i>needs confirmation</i>)
+      rather than silently flipped.</div>
     <p class="hint">Phase-1 repairs. <span style="color:var(--green)">Green</span> = applied ·
       <span style="color:var(--amber)">amber</span> = confirm · <span style="color:var(--mark)">red</span> = needs you.</p>
     <div id="repairs"></div>
@@ -1599,14 +1605,14 @@ const TURNS = [
   "Și oricum, n-am rezolvat problema de la care am plecat. Că problema de la care am plecat e că, după un training nou, primești niște sugestii de improvement. Iar dacă tu editezi clasele la momentul trainingului, asta înseamnă că după training primești sugestiile alea, dar tot nu sunt incluse — ori nu sunt incluse în ce tocmai ai trainat, ori sunt incluse, dar atunci tu nu mai poți face modificări manuale, că peste ele vin modificările propuse de agentul de la Google."
  ],
  [
-  "B",
+  "P",
   "33:37",
-  "Da. L-am sunat pe Bogdan."
+  "Da. L-am sunat pe Bogdan. (l-am summonat, de fapt.)"
  ],
  [
   "B",
   "33:42",
-  "A zis că e suficient de drăguț încât să ne ajute — zicea că poate să vină un pic."
+  "E suficient de drăguț încât să ne ajute — zicea că poate să vină un pic."
  ],
  [
   "B",
@@ -2869,7 +2875,8 @@ const IDEAS = [
   "quote": "asumpția mea — că positive and negative examples și aceste keywords… sunt același lucru — it's wrong, și că asta face parte din confuzie.",
   "speaker": "B",
   "confidence": "high",
-  "needs": false,
+  "needs": true,
+  "q": "Quote attribution contested: re-transcription with the roster + content cues (his Claude chat, his own assumption) read this line as Bogdan-D, but it was flagged as possibly Ana's. Who said it — Bogdan-D or Ana?",
   "anchors": [
    238,
    241,
@@ -3242,6 +3249,10 @@ const REPAIRS = {
   [
    "că de aia mă ia Ioan (40:21)",
    "Researcher's opening question is partly garbled — what was actually asked?"
+  ],
+  [
+   "@33:49 „Cred că asumpția mea… it's wrong” — currently Bogdan-D",
+   "Speaker contested: roster re-transcription + content cues read it as Bogdan-D, but it was flagged as possibly Ana's. Who said it? (idea-07 rides on this.)"
   ]
  ]
 };
