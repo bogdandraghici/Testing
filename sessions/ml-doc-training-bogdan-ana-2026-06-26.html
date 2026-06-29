@@ -332,10 +332,10 @@
       conversation is continuous; insight tracing uses turn order, not timestamps, so it's unaffected.
       <br><br><b>Diarization re-audit (peer-meeting pass).</b> Re-transcribing the contested ~33:30 stretch with
       the speaker roster fed in showed <b>„L-am sunat pe Bogdan” is Ana</b> (she summoned the researcher) — it
-      was tagged Bogdan; <b>fixed</b>. The reflective line <b>„asumpția mea… it's wrong” reads as Bogdan-D</b>
-      per the re-transcription + content (his Claude chat, his own assumption), but it was flagged as possibly
-      Ana's — left as a best-guess and surfaced as an open query (idea-07 carries <i>needs confirmation</i>)
-      rather than silently flipped.
+      was tagged Bogdan; <b>fixed</b>. The reflective line <b>„asumpția mea… it's wrong” is Ana</b>: a
+      voice-gender-tagged re-transcription (transcribe-video <code>--voice-attrs</code>) heard that whole block
+      as a female voice, corroborating the in-room note that it was Ana's — so <b>idea-07 is now attributed to
+      Ana</b> (the two earlier genderless runs had mislabeled it Bogdan).
       <br><br><b>Diarization sweep of 20:00–40:00 (the keyword/retrain debate).</b> Re-transcribing this dense
       Bogdan↔Ana stretch twice with the roster fed in showed the ASR diarization is <b>unstable on these
       same-voice peer lines</b> — the two runs disagreed with each other (and with the original) on who-said-what,
@@ -1624,12 +1624,12 @@ const TURNS = [
   "E suficient de drăguț încât să ne ajute — zicea că poate să vină un pic."
  ],
  [
-  "B",
+  "P",
   "33:49",
   "Cred că asumpția mea — că positive and negative examples și aceste keywords pe care le folosește modelul sunt același lucru — it's wrong, și că asta face parte din confuzie."
  ],
  [
-  "B",
+  "P",
   "34:06",
   "Din discuția mea cu Claude nu m-a lămurit neapărat."
  ],
@@ -2880,12 +2880,11 @@ const IDEAS = [
    "Keywords (SPLADE)",
    "Classes & examples"
   ],
-  "detail": "The session's biggest unlock. The designer initially assumed the SPLADE keywords and the positive/negative examples were the same thing — they're not. positive/negative examples are user-provided at the class/resource level; the SPLADE+LightGBM keywords are extracted as a result of training and baked into each trained candidate per class. Recognising this resolved much of the earlier confusion (confirmed later with the researcher).",
+  "detail": "The session's biggest unlock: the SPLADE keywords and the positive/negative examples had been treated as the same thing — they're not. positive/negative examples are user-provided at the class/resource level; the SPLADE+LightGBM keywords are extracted as a result of training and baked into each trained candidate per class. Ana naming the conflation as the source of the confusion is what unblocked the discussion (later confirmed with the researcher).",
   "quote": "asumpția mea — că positive and negative examples și aceste keywords… sunt același lucru — it's wrong, și că asta face parte din confuzie.",
-  "speaker": "B",
+  "speaker": "P",
   "confidence": "high",
-  "needs": true,
-  "q": "Two roster-steered re-transcriptions + content cues (his Claude chat, his own assumption) all read this line as Bogdan-D — but you flagged it as possibly Ana's. Confirm: Bogdan-D or Ana?",
+  "needs": false,
   "anchors": [
    238,
    241,
@@ -3259,10 +3258,6 @@ const REPAIRS = {
   [
    "că de aia mă ia Ioan (40:21)",
    "Researcher's opening question is partly garbled — what was actually asked?"
-  ],
-  [
-   "@33:49 „Cred că asumpția mea… it's wrong” — currently Bogdan-D",
-   "Speaker contested: roster re-transcription + content cues read it as Bogdan-D, but it was flagged as possibly Ana's. Who said it? (idea-07 rides on this.)"
   ]
  ]
 };
