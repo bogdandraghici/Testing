@@ -1,5 +1,25 @@
 [
  {
+  "id": "doc-classifier-cata-2026-07-02",
+  "title": "Document-classification ML model builder",
+  "feature": "Document-classification ML model builder",
+  "date": "2026-07-02",
+  "participant": "Cata",
+  "file": "sessions/doc-classifier-cata-2026-07-02.html",
+  "topics": [
+   "Class definition",
+   "Data upload & labeling",
+   "Metrics & evaluation",
+   "Model comparison",
+   "Onboarding & navigation",
+   "Terminology",
+   "Training & corpus",
+   "Visual design"
+  ],
+  "insights": 25,
+  "published": "2026-07-06"
+ },
+ {
   "id": "ml-model-training-delia-2026-06-30",
   "title": "ML model creation & training",
   "feature": "ML model creation & training",
