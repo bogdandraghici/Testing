@@ -1,5 +1,25 @@
 [
  {
+  "id": "ml-model-training-goj-2026-07-03",
+  "title": "ML Model Training — Document Classification",
+  "feature": "ML Model Training — Document Classification",
+  "date": "2026-07-03",
+  "participant": "Goj",
+  "file": "sessions/ml-model-training-goj-2026-07-03.html",
+  "topics": [
+   "Class definition",
+   "Discoverability & IA",
+   "Layout & density",
+   "Model comparison",
+   "Model evaluation",
+   "Naming & labels",
+   "Onboarding & empty states",
+   "Training flow & mental model"
+  ],
+  "insights": 19,
+  "published": "2026-07-06"
+ },
+ {
   "id": "doc-classifier-cata-2026-07-02",
   "title": "Document-classification ML model builder",
   "feature": "Document-classification ML model builder",
