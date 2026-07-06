@@ -1,5 +1,24 @@
 [
  {
+  "id": "product-preplanning-2026-07-06",
+  "title": "Product pre-planning",
+  "feature": "Product pre-planning",
+  "date": "2026-07-06",
+  "participant": "Presenters: Raluca, Diana, Ana · Reviewers: Bogdan, Elena + product team",
+  "file": "sessions/product-preplanning-2026-07-06.html",
+  "topics": [
+   "Data, labeling & corpus",
+   "Layout & spacing",
+   "ML model training",
+   "Naming, copy & polish",
+   "Process Designer",
+   "Save & autosave",
+   "Settings & UI guidelines"
+  ],
+  "insights": 28,
+  "published": "2026-07-06"
+ },
+ {
   "id": "ml-model-training-goj-2026-07-03",
   "title": "ML Model Training — Document Classification",
   "feature": "ML Model Training — Document Classification",
