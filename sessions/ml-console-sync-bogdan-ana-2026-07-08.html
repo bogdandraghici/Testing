@@ -353,7 +353,7 @@
   </section>
 
   <section id="view-rep" class="hidden">
-    <div class="note" data-ro="&lt;b&gt;Sync între doi colegi, voci de gen diferit.&lt;/b&gt; Tag-urile de gen per linie (&lt;i&gt;m&lt;/i&gt;/&lt;i&gt;f&lt;/i&gt;) au fixat fiecare linie &lt;i&gt;(f)&lt;/i&gt; pe Ana și &lt;i&gt;(m)&lt;/i&gt; pe Bogdan, deci atribuirea vorbitorilor e sigură (2 vorbitori, fără fantome). Gemini a transcris curat: reparațiile au fost ușoare — „Cloud”→&lt;b&gt;„Claude”&lt;/b&gt;, eliminarea discuției de setup/audio de la început, plus două reconstrucții (noduri care &lt;b&gt;cheamă&lt;/b&gt; workflow-uri; &lt;b&gt;raportul&lt;/b&gt; Figma)."><b>Two-person cross-gender sync.</b> Per-line voice-gender tags (<i>m</i>/<i>f</i>) pinned every <i>(f)</i> line to Ana and <i>(m)</i> to Bogdan, so speaker attribution is reliable (2 speakers, no phantoms). Gemini transcribed cleanly: repairs were light — “Cloud”→<b>“Claude”</b>, dropping the pre-meeting setup/audio chatter, plus two reconstructions (nodes that <b>call</b> workflows; the Figma <b>report</b>).</div>
+    <div class="note" data-ro="&lt;b&gt;Sync între doi colegi, voci de gen diferit.&lt;/b&gt; Tag-urile de gen per linie (&lt;i&gt;m&lt;/i&gt;/&lt;i&gt;f&lt;/i&gt;) au fixat fiecare linie &lt;i&gt;(f)&lt;/i&gt; pe Ana și &lt;i&gt;(m)&lt;/i&gt; pe Bogdan, deci atribuirea vorbitorilor e sigură (2 vorbitori, fără fantome). Gemini a transcris curat: reparațiile au fost ușoare — „Cloud”→&lt;b&gt;„Claude”&lt;/b&gt;, „coluiesc”→&lt;b&gt;„cheamă”&lt;/b&gt; workflow-uri (confirmat), și eliminarea discuției de setup/audio de la început."><b>Two-person cross-gender sync.</b> Per-line voice-gender tags (<i>m</i>/<i>f</i>) pinned every <i>(f)</i> line to Ana and <i>(m)</i> to Bogdan, so speaker attribution is reliable (2 speakers, no phantoms). Gemini transcribed cleanly: repairs were light — “Cloud”→<b>“Claude”</b>, “coluiesc”→<b>“call”</b> workflows (confirmed), and dropping the pre-meeting setup/audio chatter.</div>
     <p class="hint">Phase-1 repairs. <span style="color:var(--green)">Green</span> = applied ·
       <span style="color:var(--amber)">amber</span> = confirm · <span style="color:var(--mark)">red</span> = needs you.</p>
     <div id="repairs"></div>
@@ -1166,46 +1166,6 @@ const TURNS = [
   "P",
   "35:39",
   "Da. De asta nu mă grăbesc să pun meeting-urile — aștept o propunere de la tine."
- ],
- [
-  "P",
-  "36:01",
-  "Mi se pare interesting <span class='unsure' title='Phase-1 confirm: „are por” reconstruit ca „raportul”'>raportul</span> ăsta."
- ],
- [
-  "B",
-  "36:07",
-  "A, credeam că e ceva feature anunțat."
- ],
- [
-  "P",
-  "36:09",
-  "Nu, e un raport de collaboration cu AI și how people are using it. Și mi s-a părut interesant că în Figma există un „Head of Insights”. Which I found very funny — at the same time could be useful."
- ],
- [
-  "B",
-  "36:52",
-  "N-am nimic cu ei, o să-l citesc că mi se pare interesant, dar feature-urile lor sunt în urmă, AI-ul costă foarte mult, și they keep trying to make it work în frame-ul lor de aplicație, care e kind of outdated. Există Pencil App, care nu e LLM-first, dar e mai friendly cu LLM-uri."
- ],
- [
-  "P",
-  "37:19",
-  "You realize you're describing FlowX right now?"
- ],
- [
-  "B",
-  "37:26",
-  "Nu m-am gândit la asta, sper să nu — dar poate încercarea asta de pivot, GPT, e o încercare, cum încearcă și ei. Ce încercăm noi e să ne adaptăm."
- ],
- [
-  "P",
-  "37:43",
-  "Încercăm să ne adaptăm, cu acest AI-assisted building. This is what we're trying to do."
- ],
- [
-  "B",
-  "37:50",
-  "This is what I'm working on."
  ]
 ];
 
@@ -1727,26 +1687,6 @@ const IDEAS = [
    141,
    144
   ]
- },
- {
-  "id": "idea-26",
-  "title": "Tangent: Figma's AI report & “this is describing FlowX”",
-  "title_ro": "Tangentă: raportul AI al Figma & „asta descrie FlowX”",
-  "category": "context",
-  "topics": [
-   "Ways of working"
-  ],
-  "detail": "Off-topic wrap-up: Ana shares a Figma report on AI collaboration (and a “Head of Insights” role she found funny). Bogdan critiques Figma as behind and not LLM-first; Ana counters “you realize you're describing FlowX right now?” — a light reflection on FlowX's own AI-assisted-building pivot.",
-  "detail_ro": "Încheiere off-topic: Ana arată un raport Figma despre colaborarea cu AI (și un rol de „Head of Insights” care i s-a părut amuzant). Bogdan critică Figma ca fiind în urmă și non-LLM-first; Ana ripostează „îți dai seama că descrii FlowX chiar acum?” — o reflecție ușoară despre propriul pivot FlowX de AI-assisted building.",
-  "quote": "You realize you're describing FlowX right now?",
-  "speaker": "P",
-  "confidence": "low",
-  "needs": false,
-  "anchors": [
-   147,
-   149,
-   151
-  ]
  }
 ];
 
@@ -1813,10 +1753,6 @@ const REPAIRS = {
   ]
  ],
  "confirm": [
-  [
-   "Ești cu are por · mi se pare interesting acest…",
-   "„mi se pare interesting raportul ăsta” — raportul Figma despre colaborarea cu AI"
-  ],
   [
    "Un braț verde, nu te speria",
    "„un branch verde” — Ana naviga mediile/branch-urile (verde = ok)"
