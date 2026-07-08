@@ -1,5 +1,24 @@
 [
  {
+  "id": "ml-console-sync-bogdan-ana-2026-07-08",
+  "title": "ML runtime training + Console log",
+  "feature": "ML runtime training + Console log",
+  "date": "2026-07-08",
+  "participant": "Bogdan (design) · Ana (PM)",
+  "file": "sessions/ml-console-sync-bogdan-ana-2026-07-08.html",
+  "topics": [
+   "Console Log — information design",
+   "Console Log — nesting & navigation",
+   "Console Log — workflow as tools",
+   "ML — Model overview",
+   "ML — Review queue",
+   "ML — Training & promotion",
+   "Ways of working"
+  ],
+  "insights": 26,
+  "published": "2026-07-08"
+ },
+ {
   "id": "product-preplanning-2026-07-06",
   "title": "Product pre-planning",
   "feature": "Product pre-planning",
